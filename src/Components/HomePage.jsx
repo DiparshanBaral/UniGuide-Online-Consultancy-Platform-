@@ -1,42 +1,6 @@
 function HomePage() {
   return (
     <div className="font-sans">
-      {/* Header Section */}
-      <header className="bg-blue-600 text-white py-4">
-        <div className="container mx-auto flex justify-between items-center px-4">
-          <h1 className="text-2xl font-bold">Uniguide: Online Consultancy Platform</h1>
-          <nav>
-            <ul className="flex space-x-4">
-              <li>
-                <a href="#" className="hover:underline">
-                  Home
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:underline">
-                  About Us
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:underline">
-                  IELTS Section
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:underline">
-                  Discussion Rooms
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:underline">
-                  Contact Us
-                </a>
-              </li>
-            </ul>
-          </nav>
-        </div>
-      </header>
-
       {/* Hero Section */}
       <section
         className="relative bg-cover bg-center h-96"
