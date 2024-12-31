@@ -14,19 +14,29 @@ function Navbar() {
         <nav>
           <ul className="flex space-x-6">
             <li>
-              <Link to="/" className="hover:underline">Home</Link>
+              <Link to="/" className="hover:underline">
+                Home
+              </Link>
             </li>
             <li>
-              <Link to="/about" className="hover:underline">About Us</Link>
+              <Link to="/about" className="hover:underline">
+                About Us
+              </Link>
             </li>
             <li>
-              <Link to="/ielts" className="hover:underline">IELTS Section</Link>
+              <Link to="/ielts" className="hover:underline">
+                IELTS Section
+              </Link>
             </li>
             <li>
-              <Link to="/discussion" className="hover:underline">Discussion Rooms</Link>
+              <Link to="/discussion" className="hover:underline">
+                Discussion Rooms
+              </Link>
             </li>
             <li>
-              <Link to="/contact" className="hover:underline">Contact Us</Link>
+              <Link to="/contact" className="hover:underline">
+                Contact Us
+              </Link>
             </li>
           </ul>
         </nav>
