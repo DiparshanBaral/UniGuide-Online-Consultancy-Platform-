@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 function Navbar() {
   return (
     <header
-      className="bg-white/30 backdrop-blur-md border-b shadow-sm z-50"
+      className="bg-white/60 backdrop-blur-2xl fixed w-full border-b shadow-sm z-50"
     >
       <div className="container mx-auto flex justify-between items-center px-4">
         {/* Logo */}
