@@ -2,11 +2,13 @@ import { Link } from 'react-router-dom';
 
 function Navbar() {
   return (
-    <header className="bg-blue-600 text-white py-4">
+    <header
+      className="bg-white/30 backdrop-blur-md border-b shadow-sm z-50"
+    >
       <div className="container mx-auto flex justify-between items-center px-4">
         {/* Logo */}
         <div className="flex items-center">
-          <img src="./src/Img/logo.png" alt="UniGuide Logo" className="h-10 mr-3" />
+          <img src="./src/Img/logo.png" alt="UniGuide Logo" className="h-[75px] mr-3" />
           <h1 className="text-xl font-bold">UniGuide</h1>
         </div>
 
