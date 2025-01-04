@@ -11,15 +11,24 @@ function App() {
   return (
     <>
       <Router>
-        <Navbar />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/profile" element={<Profile />} />
-        </Routes>
+        <div className="flex flex-col min-h-screen">
+          {/* Navbar */}
+          <Navbar />
+
+          {/* Main Content */}
+          <div className="flex-grow">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/profile" element={<Profile />} />
+            </Routes>
+          </div>
+
+          {/* Footer */}
+          <Footer />
+        </div>
       </Router>
-      <Footer />
     </>
   );
 }

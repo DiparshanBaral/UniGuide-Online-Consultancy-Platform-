@@ -9,7 +9,7 @@ function Navbar() {
       <div className="container mx-auto flex justify-between items-center px-4">
         {/* Logo */}
         <div className="flex items-center ml-10">
-          <img src="./src/Img/logo.png" alt="UniGuide Logo" className="h-[75px] mr-3" />
+          <img src="./src/Img/logo.png" alt="UniGuide Logo" className="h-[75px] mr-2" />
           <h1 className="text-xl font-bold">UniGuide</h1>
         </div>
 
