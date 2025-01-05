@@ -2,15 +2,17 @@ import './App.css';
 import Signup from './Components/signup';
 import Login from './Components/login';
 import HomePage from './Components/HomePage';
-import Footer from './Components/footer';
+import Footer from './Components/Footer';
 import Navbar from './Components/Navbar';
 import Profile from './Components/Profile';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Toaster } from 'sonner';
 
 function App() {
   return (
     <>
       <Router>
+        <Toaster position="top-center" richColors />
         <div className="flex flex-col min-h-screen">
           {/* Navbar */}
           <Navbar />

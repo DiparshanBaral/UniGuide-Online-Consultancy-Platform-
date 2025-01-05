@@ -1,8 +1,31 @@
-import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 
 function Navbar() {
   const [profileDropdown, setProfileDropdown] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  // Check login state on component mount
+  useEffect(() => {
+    const session = JSON.parse(localStorage.getItem('session'));
+    if (session) {
+      setIsLoggedIn(true);
+      setUser(session);
+    }
+  }, []);
+
+  // Handle Logout
+  const handleLogout = () => {
+    localStorage.removeItem('session');
+    setIsLoggedIn(false);
+    setUser(null);
+    setProfileDropdown(false);
+    toast.success('Logged out successfully');
+    navigate('/login');
+  };
 
   return (
     <header className="bg-[rgba(209,213,219,0.6)] backdrop-blur-2xl fixed w-full border-b shadow-sm z-50">
@@ -46,35 +69,36 @@ function Navbar() {
 
         {/* Profile Portal */}
         <div className="relative mr-16">
-          <button
-            className="flex items-center"
-            onClick={() => setProfileDropdown(!profileDropdown)}
-          >
-            <img
-              src="./src/Img/default-profile.png" // Temporary placeholder for profile image
-              alt="Profile"
-              className="h-10 w-10 rounded-full border border-gray-300 object-cover"
-            />
-          </button>
-          {profileDropdown && (
-            <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2">
-              <Link
-                to="/profile"
-                className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-              >
-                View Your Profile
-              </Link>
+          {isLoggedIn ? (
+            <>
               <button
-                className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
-                onClick={() => {
-                  // Add logout functionality here
-                  console.log("User logged out");
-                  setProfileDropdown(false);
-                }}
+                className="flex items-center"
+                onClick={() => setProfileDropdown(!profileDropdown)}
               >
-                Logout
+                <img
+                  src="../Img/logo.png" 
+                  alt="Profile"
+                  className="h-10 w-10 rounded-full border border-gray-300 object-cover"
+                />
               </button>
-            </div>
+              {profileDropdown && (
+                <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2">
+                  <Link to="/profile" className="block px-4 font-bold py-2 text-gray-700 hover:bg-gray-100">
+                    {user?.firstname} {user?.lastname }
+                  </Link>
+                  <button
+                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    onClick={handleLogout}
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <Link to="/login" className="text-sm font-medium text-gray-700 hover:underline">
+              Login
+            </Link>
           )}
         </div>
       </div>

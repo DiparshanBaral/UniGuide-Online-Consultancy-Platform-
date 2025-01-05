@@ -5,7 +5,7 @@ function Profile() {
         <h1 className="text-2xl font-bold mb-4 text-center">Your Profile</h1>
         <div className="flex flex-col items-center">
           <img
-            src="./src/Img/default-profile.png" // Temporary placeholder for profile picture
+            src=".https://github.com/shadcn.png" // Temporary placeholder for profile picture
             alt="Profile"
             className="h-24 w-24 rounded-full border border-gray-300 object-cover mb-4"
           />
