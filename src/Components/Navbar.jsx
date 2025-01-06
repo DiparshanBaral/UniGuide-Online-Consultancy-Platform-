@@ -8,13 +8,28 @@ function Navbar() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  // Check login state on component mount
+  // Fetch user data on mount
   useEffect(() => {
-    const session = JSON.parse(localStorage.getItem('session'));
-    if (session) {
-      setIsLoggedIn(true);
-      setUser(session);
-    }
+    const fetchUserData = async () => {
+      const session = JSON.parse(localStorage.getItem('session'));
+      if (session) {
+        try {
+          const response = await fetch(`/users/${session._id}`); // Replace with your user fetch route
+          if (response.ok) {
+            const userData = await response.json();
+            setIsLoggedIn(true);
+            setUser(userData);
+          } else {
+            setIsLoggedIn(false);
+            setUser(null);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+          toast.error('Failed to fetch user data.');
+        }
+      }
+    };
+    fetchUserData();
   }, []);
 
   // Handle Logout
@@ -76,7 +91,7 @@ function Navbar() {
                 onClick={() => setProfileDropdown(!profileDropdown)}
               >
                 <img
-                  src="../Img/logo.png" 
+                  src="../Img/logo.png"
                   alt="Profile"
                   className="h-10 w-10 rounded-full border border-gray-300 object-cover"
                 />
@@ -84,7 +99,7 @@ function Navbar() {
               {profileDropdown && (
                 <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2">
                   <Link to="/profile" className="block px-4 font-bold py-2 text-gray-700 hover:bg-gray-100">
-                    {user?.firstname} {user?.lastname }
+                    {user?.firstname} {user?.lastname}
                   </Link>
                   <button
                     className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
