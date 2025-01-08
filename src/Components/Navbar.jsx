@@ -8,31 +8,35 @@ function Navbar() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
-  // Fetch user data on mount
   useEffect(() => {
-    const fetchUserData = async () => {
-      const session = JSON.parse(localStorage.getItem('session'));
-      if (session) {
-        try {
-          const response = await fetch(`/users/${session._id}`); // Replace with your user fetch route
-          if (response.ok) {
-            const userData = await response.json();
-            setIsLoggedIn(true);
-            setUser(userData);
-          } else {
-            setIsLoggedIn(false);
-            setUser(null);
-          }
-        } catch (error) {
-          console.error('Error fetching user data:', error);
-          toast.error('Failed to fetch user data.');
-        }
-      }
-    };
-    fetchUserData();
+    const session = JSON.parse(localStorage.getItem('session'));
+    if (session) {
+      fetchUserData(session._id);
+    }
   }, []);
 
-  // Handle Logout
+  const fetchUserData = async () => {
+    const session = JSON.parse(localStorage.getItem('session'));
+    if (session) {
+      try {
+        const response = await fetch(`http://localhost:5000/users/${session._id}`, {
+          headers: {
+            Authorization: `Bearer ${session.token}`, // Ensure token is sent
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        const userData = await response.json();
+        setIsLoggedIn(true);
+        setUser(userData);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        toast.error('Failed to fetch user data.');
+      }
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('session');
     setIsLoggedIn(false);
@@ -91,14 +95,17 @@ function Navbar() {
                 onClick={() => setProfileDropdown(!profileDropdown)}
               >
                 <img
-                  src="../Img/logo.png"
+                  src={user?.profilePicture || '../Img/default_profile.png'} // Replace with actual user profile picture path
                   alt="Profile"
                   className="h-10 w-10 rounded-full border border-gray-300 object-cover"
                 />
               </button>
               {profileDropdown && (
                 <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2">
-                  <Link to="/profile" className="block px-4 font-bold py-2 text-gray-700 hover:bg-gray-100">
+                  <Link
+                    to="/profile"
+                    className="block px-4 font-bold py-2 text-gray-700 hover:bg-gray-100"
+                  >
                     {user?.firstname} {user?.lastname}
                   </Link>
                   <button
