@@ -5,6 +5,7 @@ import HomePage from './Components/HomePage';
 import Footer from './Components/Footer';
 import Navbar from './Components/Navbar';
 import Profile from './Components/Profile';
+import Aboutus from './Components/Aboutus';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 
@@ -24,6 +25,7 @@ function App() {
               <Route path="/signup" element={<Signup />} />
               <Route path="/login" element={<Login />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/aboutus" element={<Aboutus />} />
             </Routes>
           </div>
 

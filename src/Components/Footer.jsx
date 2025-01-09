@@ -1,6 +1,6 @@
 function Footer() {
   return (
-    <footer className="bg-gray-800 text-white py-6">
+    <footer className="bg-slate-800 text-white py-6">
       <div className="container mx-auto px-4">
         <div className="flex flex-wrap justify-between items-start gap-y-4">
           {/* About Section with Logo */}
@@ -26,7 +26,7 @@ function Footer() {
                 </a>
               </li>
               <li>
-                <a href="/about" className="hover:underline">
+                <a href="/aboutus" className="hover:underline">
                   About Us
                 </a>
               </li>

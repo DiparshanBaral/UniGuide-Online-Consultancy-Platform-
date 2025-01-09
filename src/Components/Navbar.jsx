@@ -64,7 +64,7 @@ function Navbar() {
               </Link>
             </li>
             <li>
-              <Link to="/about" className="hover:underline">
+              <Link to="/aboutus" className="hover:underline">
                 About Us
               </Link>
             </li>
