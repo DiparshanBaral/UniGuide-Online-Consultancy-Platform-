@@ -79,7 +79,7 @@ function Navbar() {
               </Link>
             </li>
             <li>
-              <Link to="/contact" className="hover:underline">
+              <Link to="/contactus" className="hover:underline">
                 Contact Us
               </Link>
             </li>

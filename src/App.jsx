@@ -8,6 +8,7 @@ import Profile from './Components/Profile';
 import Aboutus from './Components/Aboutus';
 import DiscussionRooms from './Components/DiscussionRooms';
 import VisaSection from './Components/VisaSection';
+import ContactUs from './Components/ContactUs';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 
@@ -30,6 +31,7 @@ function App() {
               <Route path="/aboutus" element={<Aboutus />} />
               <Route path="/discussionrooms" element={<DiscussionRooms />} />
               <Route path="/visasection" element={<VisaSection />} />
+              <Route path="/contactus" element={<ContactUs />} />
             </Routes>
           </div>
 
