@@ -64,8 +64,8 @@ function Navbar() {
               </Link>
             </li>
             <li>
-              <Link to="/aboutus" className="hover:underline">
-                About Us
+              <Link to="/universities" className="hover:underline">
+                Universities
               </Link>
             </li>
             <li>
@@ -76,6 +76,11 @@ function Navbar() {
             <li>
               <Link to="/visasection" className="hover:underline">
                 Visa Section
+              </Link>
+            </li>
+            <li>
+              <Link to="/aboutus" className="hover:underline">
+                About Us
               </Link>
             </li>
           </ul>
