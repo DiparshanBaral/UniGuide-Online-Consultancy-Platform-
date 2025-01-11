@@ -78,11 +78,6 @@ function Navbar() {
                 Visa Section
               </Link>
             </li>
-            <li>
-              <Link to="/contactus" className="hover:underline">
-                Contact Us
-              </Link>
-            </li>
           </ul>
         </nav>
 

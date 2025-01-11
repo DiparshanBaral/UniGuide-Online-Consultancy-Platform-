@@ -1,6 +1,6 @@
 function VisaSection() {
     return (
-      <div className="px-6 sm:px-16 md:px-24 lg:px-32 py-10 bg-white text-gray-800">
+      <div className="pt-[90px] px-6 sm:px-16 md:px-24 lg:px-32 py-10 bg-white text-gray-800">
         <div className="max-w-7xl mx-auto">
           {/* Header Section */}
           <header className="text-center mb-10">
