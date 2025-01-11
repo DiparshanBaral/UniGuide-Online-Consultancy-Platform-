@@ -6,6 +6,8 @@ import Footer from './Components/Footer';
 import Navbar from './Components/Navbar';
 import Profile from './Components/Profile';
 import Aboutus from './Components/Aboutus';
+import DiscussionRooms from './Components/DiscussionRooms';
+import VisaSection from './Components/VisaSection';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 
@@ -26,6 +28,8 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/aboutus" element={<Aboutus />} />
+              <Route path="/discussionrooms" element={<DiscussionRooms />} />
+              <Route path="/visasection" element={<VisaSection />} />
             </Routes>
           </div>
 

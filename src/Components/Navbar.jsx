@@ -69,13 +69,13 @@ function Navbar() {
               </Link>
             </li>
             <li>
-              <Link to="/ielts" className="hover:underline">
-                IELTS Section
+              <Link to="/discussionrooms" className="hover:underline">
+                Discussion Rooms
               </Link>
             </li>
             <li>
-              <Link to="/discussion" className="hover:underline">
-                Discussion Rooms
+              <Link to="/visasection" className="hover:underline">
+                Visa Section
               </Link>
             </li>
             <li>
