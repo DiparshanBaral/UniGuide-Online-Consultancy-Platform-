@@ -1,27 +1,60 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 function Profile() {
   const [user, setUser] = useState(null);
+  const [isEditing, setIsEditing] = useState(false); // To toggle edit mode
+  const [updatedUser, setUpdatedUser] = useState({}); // For editing fields
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const session = JSON.parse(localStorage.getItem('session'));
+      const session = JSON.parse(localStorage.getItem("session"));
       if (session) {
         try {
           const response = await fetch(`/users/${session._id}`); // Replace with your user fetch route
           if (response.ok) {
             const userData = await response.json();
             setUser(userData);
+            setUpdatedUser(userData); // Initialize updatedUser with fetched user data
           } else {
-            console.error('Failed to fetch user data');
+            console.error("Failed to fetch user data");
           }
         } catch (error) {
-          console.error('Error fetching user data:', error);
+          console.error("Error fetching user data:", error);
         }
       }
     };
     fetchUserData();
   }, []);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setUpdatedUser((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleUpdateProfile = async () => {
+    try {
+      const response = await fetch(`/users/${user._id}`, {
+        method: "PUT", // Use PUT or PATCH depending on your backend setup
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedUser),
+      });
+
+      if (response.ok) {
+        const updatedData = await response.json();
+        setUser(updatedData);
+        setIsEditing(false); // Exit edit mode
+      } else {
+        console.error("Failed to update profile");
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
+  };
 
   if (!user) {
     return <div>Loading...</div>;
@@ -37,14 +70,62 @@ function Profile() {
             alt="Profile"
             className="h-24 w-24 rounded-full border border-gray-300 object-cover mb-4"
           />
-          <p className="text-gray-700 font-medium text-lg">
-            {user.firstname} {user.lastname}
-          </p>
-          <p className="text-gray-500 mb-4">{user.email}</p>
+          {!isEditing ? (
+            <>
+              <p className="text-gray-700 font-medium text-lg">
+                {user.firstname} {user.lastname}
+              </p>
+              <p className="text-gray-500 mb-4">{user.email}</p>
+              <button
+                className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600"
+                onClick={() => setIsEditing(true)}
+              >
+                Edit Profile
+              </button>
+            </>
+          ) : (
+            <>
+              <input
+                type="text"
+                name="firstname"
+                value={updatedUser.firstname}
+                onChange={handleInputChange}
+                className="w-full mb-2 p-2 border rounded-md"
+                placeholder="First Name"
+              />
+              <input
+                type="text"
+                name="lastname"
+                value={updatedUser.lastname}
+                onChange={handleInputChange}
+                className="w-full mb-2 p-2 border rounded-md"
+                placeholder="Last Name"
+              />
+              <input
+                type="email"
+                name="email"
+                value={updatedUser.email}
+                onChange={handleInputChange}
+                className="w-full mb-4 p-2 border rounded-md"
+                placeholder="Email"
+              />
+              <div className="flex space-x-4">
+                <button
+                  className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600"
+                  onClick={handleUpdateProfile}
+                >
+                  Save
+                </button>
+                <button
+                  className="w-full bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400"
+                  onClick={() => setIsEditing(false)}
+                >
+                  Cancel
+                </button>
+              </div>
+            </>
+          )}
         </div>
-        <button className="w-full bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600">
-          Edit Profile
-        </button>
       </div>
     </div>
   );
