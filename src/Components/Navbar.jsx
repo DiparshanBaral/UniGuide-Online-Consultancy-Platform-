@@ -6,34 +6,41 @@ function Navbar() {
   const [profileDropdown, setProfileDropdown] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState(null);
+  const [isFetchingUser, setIsFetchingUser] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const session = JSON.parse(localStorage.getItem('session'));
     if (session) {
-      fetchUserData(session._id);
+      setIsLoggedIn(true);
+      fetchUserData(session._id, session.token); // Fetch user data based on session info
+    } else {
+      setIsLoggedIn(false);
+      setIsFetchingUser(false); // No session, just stop fetching user data
     }
-  }, []);
+  }, []); // Empty dependency array means this effect runs only once (on mount)
 
-  const fetchUserData = async () => {
-    const session = JSON.parse(localStorage.getItem('session'));
-    if (session) {
-      try {
-        const response = await fetch(`http://localhost:5000/users/${session._id}`, {
-          headers: {
-            Authorization: `Bearer ${session.token}`, // Ensure token is sent
-          },
-        });
-        if (!response.ok) {
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
-        }
-        const userData = await response.json();
-        setIsLoggedIn(true);
-        setUser(userData);
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        toast.error('Failed to fetch user data.');
+  const fetchUserData = async (userId, token) => {
+    try {
+      setIsFetchingUser(true);
+      const response = await fetch(`http://localhost:5000/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Use session token to authenticate the request
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
       }
+
+      const userData = await response.json();
+      console.log('Fetched user data:', userData);  // Debugging log
+      setUser(userData);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      toast.error('Failed to fetch user data.');
+    } finally {
+      setIsFetchingUser(false);
     }
   };
 
@@ -45,6 +52,13 @@ function Navbar() {
     toast.success('Logged out successfully');
     navigate('/login');
   };
+
+  if (isFetchingUser) {
+    return <div>Loading...</div>; // Optionally, add a loading spinner or message
+  }
+
+  console.log('isLoggedIn:', isLoggedIn);  // Debugging log
+  console.log('user:', user);  // Debugging log
 
   return (
     <header className="bg-[rgba(209,213,219,0.6)] backdrop-blur-2xl fixed w-full border-b shadow-sm z-50">
@@ -88,16 +102,16 @@ function Navbar() {
 
         {/* Profile Portal */}
         <div className="relative mr-16">
-          {isLoggedIn ? (
+          {isLoggedIn && user ? (
             <>
               <button
                 className="flex items-center"
                 onClick={() => setProfileDropdown(!profileDropdown)}
               >
                 <img
-                  src={user?.profilePicture || '../Img/default_profile.png'} // Replace with actual user profile picture path
+                  src={user?.profilePicture || 'path/to/fallback-image.png'}
                   alt="Profile"
-                  className="h-10 w-10 rounded-full border border-gray-300 object-cover"
+                  className={`h-10 w-10 rounded-full border border-gray-300 object-cover`}
                 />
               </button>
               {profileDropdown && (

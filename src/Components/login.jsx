@@ -12,21 +12,22 @@ function Login() {
   const handleLogin = async (e) => {
     e.preventDefault(); // Prevent page reload on form submission
     setError(''); // Reset error before starting login
-
+  
     try {
       const response = await API.post('/users/login', { email, password });
       console.log('Login successful:', response.data);
-
+  
       // Save user info (e.g., in localStorage)
       localStorage.setItem('session', JSON.stringify(response.data));
       toast.success('Logged in successfully');
       console.log('User info saved:', response.data);
-
+  
       navigate('/'); // Adjust the path as per your app's routing
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     }
   };
+  
 
   return (
     <div
@@ -35,14 +36,12 @@ function Login() {
     >
       <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-8 w-full max-w-md">
         <h2 className="text-2xl font-semibold text-center mb-6">Login</h2>
-        {error && (
-          <p className="text-red-500 text-sm text-center mb-4">
-            {error}
-          </p>
-        )}
+        {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
         <form onSubmit={handleLogin}>
           <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+              Email
+            </label>
             <input
               type="email"
               id="email"
@@ -54,7 +53,9 @@ function Login() {
             />
           </div>
           <div className="mb-4">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              Password
+            </label>
             <input
               type="password"
               id="password"
