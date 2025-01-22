@@ -2,25 +2,32 @@ import { useState, useEffect } from "react";
 
 function Profile() {
   const [user, setUser] = useState(null);
-  const [isEditing, setIsEditing] = useState(false); // To toggle edit mode
-  const [updatedUser, setUpdatedUser] = useState({}); // For editing fields
+  const [isEditing, setIsEditing] = useState(false);
+  const [updatedUser, setUpdatedUser] = useState({});
 
   useEffect(() => {
     const fetchUserData = async () => {
       const session = JSON.parse(localStorage.getItem("session"));
-      if (session) {
+      console.log("Session Data:", session); // Debugging
+
+      if (session && session._id) {
         try {
-          const response = await fetch(`/users/${session._id}`); // Replace with your user fetch route
+          const response = await fetch(`/users/${session._id}`);
+          console.log("API Response:", response); // Debugging
+
           if (response.ok) {
             const userData = await response.json();
+            console.log("Fetched User Data:", userData); // Debugging
             setUser(userData);
-            setUpdatedUser(userData); // Initialize updatedUser with fetched user data
+            setUpdatedUser(userData);
           } else {
-            console.error("Failed to fetch user data");
+            console.error("Failed to fetch user data:", response.statusText);
           }
         } catch (error) {
           console.error("Error fetching user data:", error);
         }
+      } else {
+        console.error("No valid session found in localStorage");
       }
     };
     fetchUserData();
@@ -37,7 +44,7 @@ function Profile() {
   const handleUpdateProfile = async () => {
     try {
       const response = await fetch(`/users/${user._id}`, {
-        method: "PUT", // Use PUT or PATCH depending on your backend setup
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
@@ -49,7 +56,7 @@ function Profile() {
         setUser(updatedData);
         setIsEditing(false); // Exit edit mode
       } else {
-        console.error("Failed to update profile");
+        console.error("Failed to update profile:", response.statusText);
       }
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -66,7 +73,7 @@ function Profile() {
         <h1 className="text-2xl font-bold mb-4 text-center">Your Profile</h1>
         <div className="flex flex-col items-center">
           <img
-            src="https://github.com/shadcn.png" // Temporary placeholder for profile picture
+            src="https://github.com/shadcn.png"
             alt="Profile"
             className="h-24 w-24 rounded-full border border-gray-300 object-cover mb-4"
           />
