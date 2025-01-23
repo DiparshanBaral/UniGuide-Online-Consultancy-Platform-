@@ -1,31 +1,23 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react'; // Added useRef
 import { toast } from 'sonner';
+import { useAtom } from 'jotai';
+import { sessionAtom } from '@/atoms/session';
 
 function Navbar() {
   const [profileDropdown, setProfileDropdown] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [user, setUser] = useState(null);
+  const [session, setSession] = useAtom(sessionAtom);
   const [isFetchingUser, setIsFetchingUser] = useState(true);
   const navigate = useNavigate();
+  const dropdownRef = useRef(null); // Ref for the dropdown
 
-  useEffect(() => {
-    const session = JSON.parse(localStorage.getItem('session'));
-    if (session) {
-      setIsLoggedIn(true);
-      fetchUserData(session._id, session.token); // Fetch user data based on session info
-    } else {
-      setIsLoggedIn(false);
-      setIsFetchingUser(false); // No session, just stop fetching user data
-    }
-  }, []); // Empty dependency array means this effect runs only once (on mount)
-
-  const fetchUserData = async (userId, token) => {
+  // Memoize fetchUserData with useCallback
+  const fetchUserData = useCallback(async (userId, token) => {
     try {
       setIsFetchingUser(true);
       const response = await fetch(`http://localhost:5000/users/${userId}`, {
         headers: {
-          Authorization: `Bearer ${token}`, // Use session token to authenticate the request
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -34,31 +26,63 @@ function Navbar() {
       }
 
       const userData = await response.json();
-      console.log('Fetched user data:', userData); // Debugging log
-      setUser(userData);
+      console.log('Fetched user data:', userData);
+
+      // Only update session if the data has changed
+      setSession((prevSession) => {
+        if (JSON.stringify(prevSession) !== JSON.stringify(userData)) {
+          return userData;
+        }
+        return prevSession; // No change, return previous session
+      });
     } catch (error) {
       console.error('Error fetching user data:', error);
       toast.error('Failed to fetch user data.');
     } finally {
       setIsFetchingUser(false);
     }
-  };
+  }, [setSession]); // Add setSession as a dependency
+
+  useEffect(() => {
+    if (session && session._id && session.token) {
+      fetchUserData(session._id, session.token); // Fetch user data based on session info
+    } else {
+      setIsFetchingUser(false); // No session, just stop fetching user data
+    }
+  }, [session, fetchUserData]); // Add fetchUserData to the dependency array
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setProfileDropdown(false); // Close the dropdown
+      }
+    };
+
+    // Add event listener when the dropdown is open
+    if (profileDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    // Cleanup the event listener
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [profileDropdown]); // Run effect when profileDropdown changes
 
   const handleLogout = () => {
-    localStorage.removeItem('session');
-    setIsLoggedIn(false);
-    setUser(null);
-    setProfileDropdown(false);
+    setSession(null); // Clear session atom
+    localStorage.removeItem('session'); // Clear localStorage
+    setProfileDropdown(false); // Close the dropdown
     toast.success('Logged out successfully');
     navigate('/login');
   };
 
   if (isFetchingUser) {
-    return <div>Loading...</div>; // Optionally, add a loading spinner or message
+    return <div>Loading...</div>;
   }
 
-  console.log('isLoggedIn:', isLoggedIn); // Debugging log
-  console.log('user:', user); // Debugging log
+  console.log('session:', session);
 
   return (
     <header className="bg-[rgba(209,213,219,0.6)] backdrop-blur-2xl fixed w-full border-b shadow-sm z-50">
@@ -101,8 +125,8 @@ function Navbar() {
         </nav>
 
         {/* Profile Portal */}
-        <div className="relative mr-16">
-          {isLoggedIn && user ? (
+        <div className="relative mr-16" ref={dropdownRef}>
+          {session ? (
             <>
               <button
                 className="flex items-center"
@@ -115,15 +139,24 @@ function Navbar() {
                 />
               </button>
               {profileDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded-md py-2">
+                <div className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-md py-2">
+                  {/* User Info Section (Clickable Link) */}
                   <Link
                     to="/profile"
-                    className="block px-4 font-bold py-2 text-gray-700 hover:bg-gray-100"
+                    className="block px-4 py-3 border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200"
+                    onClick={() => setProfileDropdown(false)} // Close dropdown on click
                   >
-                    {user?.firstname} {user?.lastname}
+                    <p className="font-bold text-gray-800 text-base">
+                      {session?.firstname} {session?.lastname}
+                    </p>
+                    <p className="text-xs text-blue-500 hover:text-blue-600 transition-colors duration-200">
+                      View your profile<span className="ml-1">→</span>
+                    </p>
                   </Link>
+
+                  {/* Logout Button */}
                   <button
-                    className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                    className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200"
                     onClick={handleLogout}
                   >
                     Logout

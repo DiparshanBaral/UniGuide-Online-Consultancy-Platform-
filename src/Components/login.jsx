@@ -36,15 +36,15 @@ export default function Login() {
       // Redirect based on user role
       switch (user.role) {
         case "admin":
-          toast.success(`Welcome ADMIN ${user.firstname} ${user.lastname}`);
+          toast.success(`Welcome back, ${user.firstname} ${user.lastname}`);
           navigate("/adminDashboard");
           break;
         case "mentor":
-          toast.success(`Welcome MENTOR ${user.firstname} ${user.lastname}`);
+          toast.success(`Welcome back, ${user.firstname} ${user.lastname}`);
           navigate("/mentorDashboard");
           break;
         case "student":
-          toast.success(`Welcome STUDENT ${user.firstname} ${user.lastname}`);
+          toast.success(`Welcome back, ${user.firstname} ${user.lastname}`);
           navigate("/");
           break;
         default:
