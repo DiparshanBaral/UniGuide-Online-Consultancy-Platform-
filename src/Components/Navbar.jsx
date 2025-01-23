@@ -34,7 +34,7 @@ function Navbar() {
       }
 
       const userData = await response.json();
-      console.log('Fetched user data:', userData);  // Debugging log
+      console.log('Fetched user data:', userData); // Debugging log
       setUser(userData);
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -57,8 +57,8 @@ function Navbar() {
     return <div>Loading...</div>; // Optionally, add a loading spinner or message
   }
 
-  console.log('isLoggedIn:', isLoggedIn);  // Debugging log
-  console.log('user:', user);  // Debugging log
+  console.log('isLoggedIn:', isLoggedIn); // Debugging log
+  console.log('user:', user); // Debugging log
 
   return (
     <header className="bg-[rgba(209,213,219,0.6)] backdrop-blur-2xl fixed w-full border-b shadow-sm z-50">
@@ -109,9 +109,9 @@ function Navbar() {
                 onClick={() => setProfileDropdown(!profileDropdown)}
               >
                 <img
-                  src={user?.profilePicture || 'path/to/fallback-image.png'}
+                  src={'./src/Img/profile.png'}
                   alt="Profile"
-                  className={`h-10 w-10 rounded-full border border-gray-300 object-cover`}
+                  className="h-10 w-10 rounded-full border border-gray-300 object-cover"
                 />
               </button>
               {profileDropdown && (

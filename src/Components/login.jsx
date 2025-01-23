@@ -1,33 +1,60 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import API from '../api';
-import { toast } from 'sonner';
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import API from "../api"; 
+import { useAtom } from "jotai";
+import { sessionAtom } from "@/atoms/session";
 
-function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
+  const [, setSession] = useAtom(sessionAtom); // Accessing the atom state
 
   const handleLogin = async (e) => {
-    e.preventDefault(); // Prevent page reload on form submission
-    setError(''); // Reset error before starting login
+    e.preventDefault();
+    setError(""); // Clear previous errors
   
     try {
-      const response = await API.post('/users/login', { email, password });
-      console.log('Login successful:', response.data);
+      const response = await API.post("/users/login", { email, password });
   
-      // Save user info (e.g., in localStorage)
-      localStorage.setItem('session', JSON.stringify(response.data));
-      toast.success('Logged in successfully');
-      console.log('User info saved:', response.data);
+      // Log the response for debugging purposes
+      console.log(response);
   
-      navigate('/'); // Adjust the path as per your app's routing
+      // Assuming response contains the user data directly
+      const user = response.data;
+      
+      if (!user || !user.role) {
+        throw new Error("Invalid response from server. User data is missing.");
+      }
+  
+      // Save session data to localStorage
+      localStorage.setItem("session", JSON.stringify(response.data));
+      setSession(response.data);
+  
+      // Redirect based on user role
+      switch (user.role) {
+        case "admin":
+          toast.success(`Welcome ADMIN ${user.firstname} ${user.lastname}`);
+          navigate("/adminDashboard");
+          break;
+        case "mentor":
+          toast.success(`Welcome MENTOR ${user.firstname} ${user.lastname}`);
+          navigate("/mentorDashboard");
+          break;
+        case "student":
+          toast.success(`Welcome STUDENT ${user.firstname} ${user.lastname}`);
+          navigate("/");
+          break;
+        default:
+          toast.error("Unknown role. Please contact support.");
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
+      setError("Invalid credentials. Please try again.");
+      console.error(err.message || err);
     }
   };
-  
 
   return (
     <div
@@ -74,7 +101,7 @@ function Login() {
           </button>
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-500">
-              Don&apos;t have an account?{' '}
+              Don&apos;t have an account?{" "}
               <Link to="/signup" className="text-blue-500 hover:underline">
                 Sign up here
               </Link>
@@ -85,5 +112,3 @@ function Login() {
     </div>
   );
 }
-
-export default Login;
