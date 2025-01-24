@@ -24,27 +24,33 @@ export default function Login() {
   
       // Assuming response contains the user data directly
       const user = response.data;
-      
+  
       if (!user || !user.role) {
         throw new Error("Invalid response from server. User data is missing.");
       }
   
       // Save session data to localStorage
-      localStorage.setItem("session", JSON.stringify(response.data));
-      setSession(response.data);
+      localStorage.setItem("session", JSON.stringify({
+        _id: user._id,
+        firstname: user.firstname,
+        lastname: user.lastname,
+        email: user.email,
+        role: user.role,
+        token: user.token, // Ensure the token is saved
+      }));
+  
+      setSession(user); // Update global state (if using Jotai or similar)
+      toast.success(`Welcome back, ${user.firstname} ${user.lastname}`);
   
       // Redirect based on user role
       switch (user.role) {
         case "admin":
-          toast.success(`Welcome back, ${user.firstname} ${user.lastname}`);
           navigate("/adminDashboard");
           break;
         case "mentor":
-          toast.success(`Welcome back, ${user.firstname} ${user.lastname}`);
           navigate("/mentorDashboard");
           break;
         case "student":
-          toast.success(`Welcome back, ${user.firstname} ${user.lastname}`);
           navigate("/");
           break;
         default:
