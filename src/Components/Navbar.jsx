@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { useState, useEffect, useCallback, useRef } from 'react'; // Added useRef
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { useAtom } from 'jotai';
 import { sessionAtom } from '@/atoms/session';
@@ -9,12 +9,13 @@ function Navbar() {
   const [session, setSession] = useAtom(sessionAtom);
   const [isFetchingUser, setIsFetchingUser] = useState(true);
   const navigate = useNavigate();
-  const dropdownRef = useRef(null); // Ref for the dropdown
+  const dropdownRef = useRef(null);
 
   // Memoize fetchUserData with useCallback
   const fetchUserData = useCallback(async (userId, token) => {
     try {
       setIsFetchingUser(true);
+      console.log('Fetching user data with token:', token); // Debug token
       const response = await fetch(`http://localhost:5000/users/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -28,7 +29,7 @@ function Navbar() {
       const userData = await response.json();
       console.log('Fetched user data:', userData);
 
-      // Only update session if the data has changed
+      // Update session only if data has changed
       setSession((prevSession) => {
         if (JSON.stringify(prevSession) !== JSON.stringify(userData)) {
           return userData;
@@ -37,19 +38,21 @@ function Navbar() {
       });
     } catch (error) {
       console.error('Error fetching user data:', error);
-      toast.error('Failed to fetch user data.');
+      toast.error('Failed to fetch user data. Please try again.');
     } finally {
       setIsFetchingUser(false);
     }
-  }, [setSession]); // Add setSession as a dependency
+  }, [setSession]);
 
+  // Fetch user data when session changes
   useEffect(() => {
+    console.log('Session in useEffect:', session); // Debug session object
     if (session && session._id && session.token) {
       fetchUserData(session._id, session.token); // Fetch user data based on session info
     } else {
       setIsFetchingUser(false); // No session, just stop fetching user data
     }
-  }, [session, fetchUserData]); // Add fetchUserData to the dependency array
+  }, [session, fetchUserData]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -68,7 +71,7 @@ function Navbar() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [profileDropdown]); // Run effect when profileDropdown changes
+  }, [profileDropdown]);
 
   const handleLogout = () => {
     setSession(null); // Clear session atom

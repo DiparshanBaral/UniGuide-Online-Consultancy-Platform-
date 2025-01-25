@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'; // Added useNavigate for better redirection
 import API from '../api'; 
 import { toast } from 'sonner';
 
@@ -13,6 +13,9 @@ function Signup() {
     role: 'student', // Default role
   });
 
+  const [loading, setLoading] = useState(false); // Added loading state
+  const navigate = useNavigate(); // For programmatic navigation
+
   const handleChange = (e) => {
     const { id, value } = e.target;
     setFormData({ ...formData, [id]: value });
@@ -23,10 +26,19 @@ function Signup() {
 
     const { firstname, lastname, email, password, confirmPassword, role } = formData;
 
+    // Validate password match
     if (password !== confirmPassword) {
       toast.error("Passwords do not match!");
       return;
     }
+
+    // Validate required fields
+    if (!firstname || !lastname || !email || !password || !confirmPassword) {
+      toast.error("Please fill in all fields!");
+      return;
+    }
+
+    setLoading(true); // Start loading
 
     try {
       const response = await API.post('/users/signup', {
@@ -48,11 +60,14 @@ function Signup() {
           confirmPassword: '',
           role: 'student',
         });
-        // Redirect to homepage
-        window.location.href = '/';
+        // Redirect to login page after successful registration
+        navigate('/login');
       }
     } catch (error) {
+      // Handle error response
       toast.error(error.response?.data?.message || "Server error");
+    } finally {
+      setLoading(false); // Stop loading
     }
   };
 
@@ -74,6 +89,7 @@ function Signup() {
                 value={formData.firstname}
                 onChange={handleChange}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                required
               />
             </div>
             <div className="w-1/2">
@@ -85,6 +101,7 @@ function Signup() {
                 value={formData.lastname}
                 onChange={handleChange}
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                required
               />
             </div>
           </div>
@@ -97,6 +114,7 @@ function Signup() {
               value={formData.email}
               onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              required
             />
           </div>
           <div className="mb-4">
@@ -108,6 +126,7 @@ function Signup() {
               value={formData.password}
               onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              required
             />
           </div>
           <div className="mb-4">
@@ -119,6 +138,7 @@ function Signup() {
               value={formData.confirmPassword}
               onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              required
             />
           </div>
           <div className="mb-6">
@@ -128,6 +148,7 @@ function Signup() {
               value={formData.role}
               onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              required
             >
               <option value="student">Student</option>
               <option value="mentor">Mentor</option>
@@ -135,9 +156,10 @@ function Signup() {
           </div>
           <button
             type="submit"
-            className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition duration-300"
+            className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition duration-300 disabled:bg-green-300"
+            disabled={loading} // Disable button during loading
           >
-            Sign Up
+            {loading ? 'Signing Up...' : 'Sign Up'}
           </button>
         </form>
         <div className="mt-4 text-center">
