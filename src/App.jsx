@@ -1,6 +1,6 @@
 import './App.css';
-import Signup from './Components/signup';
-import Login from './Components/login';
+import Signup from './Components/Signup';
+import Login from './Components/Login';
 import HomePage from './Components/HomePage';
 import Footer from './Components/Footer';
 import Navbar from './Components/Navbar';
