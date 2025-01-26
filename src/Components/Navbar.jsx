@@ -15,20 +15,34 @@ function Navbar() {
   const fetchUserData = useCallback(async (userId, token) => {
     try {
       setIsFetchingUser(true);
-      console.log('Fetching user data with token:', token); // Debug token
+  
+      // Debugging: Log the token and userId
+      console.log('Fetching user data with userId:', userId);
+      console.log('Using token:', token);
+  
       const response = await fetch(`http://localhost:5000/users/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
+  
+      // Debugging: Log the response status
+      console.log('Response status:', response.status);
+  
       if (!response.ok) {
-        throw new Error(`Error ${response.status}: ${response.statusText}`);
+        // Handle specific error statuses
+        if (response.status === 401) {
+          throw new Error('Unauthorized: Please log in again.');
+        } else if (response.status === 404) {
+          throw new Error('User not found.');
+        } else {
+          throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
       }
-
+  
       const userData = await response.json();
       console.log('Fetched user data:', userData);
-
+  
       // Update session only if data has changed
       setSession((prevSession) => {
         if (JSON.stringify(prevSession) !== JSON.stringify(userData)) {
@@ -38,7 +52,7 @@ function Navbar() {
       });
     } catch (error) {
       console.error('Error fetching user data:', error);
-      toast.error('Failed to fetch user data. Please try again.');
+      toast.error(error.message || 'Failed to fetch user data. Please try again.');
     } finally {
       setIsFetchingUser(false);
     }
@@ -46,7 +60,6 @@ function Navbar() {
 
   // Fetch user data when session changes
   useEffect(() => {
-    console.log('Session in useEffect:', session); // Debug session object
     if (session && session._id && session.token) {
       fetchUserData(session._id, session.token); // Fetch user data based on session info
     } else {
@@ -85,7 +98,6 @@ function Navbar() {
     return <div>Loading...</div>;
   }
 
-  console.log('session:', session);
 
   return (
     <header className="bg-[rgba(209,213,219,0.6)] backdrop-blur-2xl fixed w-full border-b shadow-sm z-50">
