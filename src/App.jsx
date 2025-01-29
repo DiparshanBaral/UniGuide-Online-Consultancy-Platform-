@@ -5,6 +5,7 @@ import HomePage from './Components/HomePage';
 import Footer from './Components/Footer';
 import Navbar from './Components/Navbar';
 import Profile from './Components/Profile';
+import MentorProfile from './Components/Mentorprofile';
 import Aboutus from './Components/Aboutus';
 import DiscussionRooms from './Components/DiscussionRooms';
 import VisaSection from './Components/VisaSection';
@@ -22,12 +23,13 @@ function App() {
           <Navbar />
 
           {/* Main Content */}
-          <div className="flex-grow">
+          <div className="flex-grow pt-[90px]">
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/login" element={<Login />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/mentorprofile" element={<MentorProfile />} />
               <Route path="/universities" element={<Universities />} />
               <Route path="/discussionrooms" element={<DiscussionRooms />} />
               <Route path="/visasection" element={<VisaSection />} />

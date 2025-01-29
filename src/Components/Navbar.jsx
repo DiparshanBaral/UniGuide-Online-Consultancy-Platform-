@@ -12,51 +12,54 @@ function Navbar() {
   const dropdownRef = useRef(null);
 
   // Memoize fetchUserData with useCallback
-  const fetchUserData = useCallback(async (userId, token) => {
-    try {
-      setIsFetchingUser(true);
-  
-      // Debugging: Log the token and userId
-      console.log('Fetching user data with userId:', userId);
-      console.log('Using token:', token);
-  
-      const response = await fetch(`http://localhost:5000/users/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-  
-      // Debugging: Log the response status
-      console.log('Response status:', response.status);
-  
-      if (!response.ok) {
-        // Handle specific error statuses
-        if (response.status === 401) {
-          throw new Error('Unauthorized: Please log in again.');
-        } else if (response.status === 404) {
-          throw new Error('User not found.');
-        } else {
-          throw new Error(`Error ${response.status}: ${response.statusText}`);
+  const fetchUserData = useCallback(
+    async (userId, token) => {
+      try {
+        setIsFetchingUser(true);
+
+        // Debugging: Log the token and userId
+        console.log('Fetching user data with userId:', userId);
+        console.log('Using token:', token);
+
+        const response = await fetch(`http://localhost:5000/users/${userId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        // Debugging: Log the response status
+        console.log('Response status:', response.status);
+
+        if (!response.ok) {
+          // Handle specific error statuses
+          if (response.status === 401) {
+            throw new Error('Unauthorized: Please log in again.');
+          } else if (response.status === 404) {
+            throw new Error('User not found.');
+          } else {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+          }
         }
+
+        const userData = await response.json();
+        console.log('Fetched user data:', userData);
+
+        // Update session only if data has changed
+        setSession((prevSession) => {
+          if (JSON.stringify(prevSession) !== JSON.stringify(userData)) {
+            return userData;
+          }
+          return prevSession; // No change, return previous session
+        });
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        toast.error(error.message || 'Failed to fetch user data. Please try again.');
+      } finally {
+        setIsFetchingUser(false);
       }
-  
-      const userData = await response.json();
-      console.log('Fetched user data:', userData);
-  
-      // Update session only if data has changed
-      setSession((prevSession) => {
-        if (JSON.stringify(prevSession) !== JSON.stringify(userData)) {
-          return userData;
-        }
-        return prevSession; // No change, return previous session
-      });
-    } catch (error) {
-      console.error('Error fetching user data:', error);
-      toast.error(error.message || 'Failed to fetch user data. Please try again.');
-    } finally {
-      setIsFetchingUser(false);
-    }
-  }, [setSession]);
+    },
+    [setSession],
+  );
 
   // Fetch user data when session changes
   useEffect(() => {
@@ -97,7 +100,6 @@ function Navbar() {
   if (isFetchingUser) {
     return <div>Loading...</div>;
   }
-
 
   return (
     <header className="bg-[rgba(209,213,219,0.6)] backdrop-blur-2xl fixed w-full border-b shadow-sm z-50">
@@ -157,7 +159,7 @@ function Navbar() {
                 <div className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-md py-2">
                   {/* User Info Section (Clickable Link) */}
                   <Link
-                    to="/profile"
+                    to={session?.role === 'mentor' ? '/mentorprofile' : '/profile'}
                     className="block px-4 py-3 border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200"
                     onClick={() => setProfileDropdown(false)} // Close dropdown on click
                   >
