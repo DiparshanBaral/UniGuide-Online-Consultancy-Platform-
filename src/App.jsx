@@ -10,6 +10,8 @@ import Aboutus from './Components/Aboutus';
 import DiscussionRooms from './Components/DiscussionRooms';
 import VisaSection from './Components/VisaSection';
 import Universities from './Components/Universities';
+import MentorDashboard from './Components/MentorDashboard'; 
+import StudentDashboard from './Components/StudentDashboard';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 
@@ -23,7 +25,7 @@ function App() {
           <Navbar />
 
           {/* Main Content */}
-          <div className="flex-grow pt-[90px]">
+          <div className="flex-grow pt-[10px]">
             <Routes>
               <Route path="/" element={<HomePage />} />
               <Route path="/signup" element={<Signup />} />
@@ -34,6 +36,8 @@ function App() {
               <Route path="/discussionrooms" element={<DiscussionRooms />} />
               <Route path="/visasection" element={<VisaSection />} />
               <Route path="/aboutus" element={<Aboutus />} />
+              <Route path="/mentordashboard" element={<MentorDashboard />} />
+              <Route path="/studentdashboard" element={<StudentDashboard />} />
             </Routes>
           </div>
 

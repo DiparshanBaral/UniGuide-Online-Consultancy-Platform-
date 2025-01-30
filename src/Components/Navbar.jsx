@@ -171,6 +171,15 @@ function Navbar() {
                     </p>
                   </Link>
 
+                  {/* Dashboard Link */}
+                  <Link
+                    to={session?.role === 'mentor' ? '/mentordashboard' : '/studentdashboard'}
+                    className="block px-4 py-3 border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200"
+                    onClick={() => setProfileDropdown(false)}
+                  >
+                    <p className="text-gray-800 font-medium">Dashboard</p>
+                  </Link>
+
                   {/* Logout Button */}
                   <button
                     className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-gray-50 transition-colors duration-200"

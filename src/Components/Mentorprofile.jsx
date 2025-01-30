@@ -104,7 +104,7 @@ function Mentorprofile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-8">
+    <div className="mt-[60px] min-h-screen bg-gray-100 py-8">
       {/* Container with consistent spacing */}
       <div className="container mx-auto px-4 max-w-7xl">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
