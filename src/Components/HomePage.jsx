@@ -1,69 +1,88 @@
+import PropTypes from 'prop-types';
 import HomeBanner from '../img/HomePageBanner.jpeg';
+import { Globe2, Users, MessageCircle, Stamp } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
-import { useRef } from 'react';
 
 function HomePage() {
   const navigate = useNavigate();
-  const scrollContainerRef = useRef(null);
 
-  // Scroll function for horizontal scrolling
-  const scrollHorizontally = (distance) => {
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollBy({
-        left: distance,
-        behavior: 'smooth',
-      });
-    }
+  // Button Component
+  const Button = ({ className, children, onClick }) => (
+    <button
+      onClick={onClick}
+      className={`bg-gray-900 text-white hover:bg-gray-600 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center transition-all duration-300 ${className}`}
+    >
+      {children}
+    </button>
+  );
+
+  // Prop Types for Button
+  Button.propTypes = {
+    className: PropTypes.string,
+    children: PropTypes.node.isRequired,
+    onClick: PropTypes.func.isRequired
   };
 
-  // Placeholder data for universities (replace this with fetched data later)
-  const universities = [
-    {
-      id: 1,
-      name: 'University of Example 1',
-      description: 'A world-class institution offering diverse programs.',
-      image: 'https://via.placeholder.com/250x150',
-      link: '/universities/example1',
-    },
-    {
-      id: 2,
-      name: 'University of Example 2',
-      description: 'Leading research institution known for innovation.',
-      image: 'https://via.placeholder.com/250x150',
-      link: '/universities/example2',
-    },
-    {
-      id: 3,
-      name: 'University of Example 3',
-      description: 'Renowned for academic excellence and student support.',
-      image: 'https://via.placeholder.com/250x150',
-      link: '/universities/example3',
-    },
-    {
-      id: 4,
-      name: 'University of Example 4',
-      description: 'Global leader in technology and research.',
-      image: 'https://via.placeholder.com/250x150',
-      link: '/universities/example4',
-    },
-    {
-      id: 5,
-      name: 'University of Example 5',
-      description: 'Top-ranked for business and entrepreneurship.',
-      image: 'https://via.placeholder.com/250x150',
-      link: '/universities/example5',
-    },
-    {
-      id: 6,
-      name: 'University of Example 6',
-      description: 'Innovative programs tailored to student success.',
-      image: 'https://via.placeholder.com/250x150',
-      link: '/universities/example6',
-    },
-  ];
+  // Input Component
+  const Input = ({ className, ...props }) => (
+    <input
+      className={`border-gray-300 focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 text-gray-800 p-4 rounded-lg shadow-sm transition-all duration-300 ${className}`}
+      {...props}
+    />
+  );
+
+  // Prop Types for Input
+  Input.propTypes = {
+    className: PropTypes.string,
+  };
+
+  // Card Component
+  const Card = ({ className, children }) => (
+    <div className={`bg-white shadow-lg rounded-lg overflow-hidden transition-all duration-300 hover:shadow-xl ${className}`}>
+      {children}
+    </div>
+  );
+
+  // Prop Types for Card
+  Card.propTypes = {
+    className: PropTypes.string,
+    children: PropTypes.node.isRequired
+  };
+
+  // CardHeader, CardTitle, CardContent Components
+  const CardHeader = ({ children }) => (
+    <div className="bg-gray-100 p-4">
+      {children}
+    </div>
+  );
+
+  // Prop Types for CardHeader
+  CardHeader.propTypes = {
+    children: PropTypes.node.isRequired
+  };
+
+  const CardTitle = ({ children }) => (
+    <h3 className="text-xl font-semibold text-foreground mb-4">{children}</h3>
+  );
+
+  // Prop Types for CardTitle
+  CardTitle.propTypes = {
+    children: PropTypes.node.isRequired
+  };
+
+  const CardContent = ({ children }) => (
+    <div className="p-4">
+      {children}
+    </div>
+  );
+
+  // Prop Types for CardContent
+  CardContent.propTypes = {
+    children: PropTypes.node.isRequired
+  };
 
   return (
-    <div className="pt-[90px] px-6 sm:px-16 md:px-24 lg:px-32 py-10 bg-gray-50 text-gray-800">
+    <div className="pt-[90px] px-6 sm:px-16 md:px-24 lg:px-32 py-10 bg-background text-foreground">
       <div className="max-w-7xl mx-auto">
         {/* Hero Section */}
         <section
@@ -80,12 +99,12 @@ function HomePage() {
                 Empowering students to achieve academic excellence with personalized guidance.
               </p>
               <div className="flex justify-center">
-                <button
-                  className="bg-gray-900 text-white py-3 px-8 rounded-lg font-medium hover:bg-gray-700 transition duration-300"
+                <Button
+                  className="py-3 px-8 rounded-lg font-medium hover:bg-gray-700 transition duration-300"
                   onClick={() => navigate('/universities')}
                 >
                   Get Started
-                </button>
+                </Button>
               </div>
             </div>
           </div>
@@ -94,10 +113,10 @@ function HomePage() {
         {/* Search Section */}
         <section className="mb-16">
           <div className="text-center mb-8">
-            <h2 className="text-3xl sm:text-4xl font-semibold text-gray-800 mb-4">
+            <h2 className="text-3xl sm:text-4xl font-semibold text-foreground mb-4">
               Find Your Ideal University, Mentor, or Course
             </h2>
-            <p className="text-lg text-gray-600">
+            <p className="text-lg text-muted-foreground">
               Use our search tool to easily find universities, mentors, and courses tailored to your
               academic goals.
             </p>
@@ -105,108 +124,95 @@ function HomePage() {
 
           <div className="flex justify-center items-center">
             <div className="relative w-full sm:w-2/3 md:w-1/2 flex">
-              <input
+              <Input
                 type="text"
                 placeholder="Search for Universities, Mentors, or Courses"
                 className="w-full p-4 pl-12 pr-4 border border-gray-300 rounded-l-lg shadow-lg focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition duration-300"
               />
-              <button className="bg-gray-800 text-white py-4 px-6 rounded-r-lg font-medium hover:bg-gray-700 transition duration-300">
+              <Button className="py-4 px-6 rounded-r-lg font-medium hover:bg-gray-700 transition duration-300">
                 Search
-              </button>
+              </Button>
             </div>
-          </div>
-        </section>
-
-        {/* Top Universities Section */}
-        <section className="mb-16">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Top Universities</h2>
-          <div className="relative">
-            <div
-              ref={scrollContainerRef}
-              className="flex space-x-6 overflow-x-auto no-scrollbar scroll-smooth py-4"
-            >
-              {universities.map((university) => (
-                <div
-                  key={university.id}
-                  className="flex-shrink-0 w-60 bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300 scroll-snap-center"
-                >
-                  <img
-                    src={university.image}
-                    alt={university.name}
-                    className="w-full h-40 object-cover rounded-lg mb-4"
-                  />
-                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                    {university.name}
-                  </h3>
-                  <p className="text-gray-600 mb-4">{university.description}</p>
-                  <a
-                    href={university.link}
-                    className="text-blue-600 font-medium hover:underline"
-                  >
-                    View University
-                  </a>
-                </div>
-              ))}
-            </div>
-            {/* Navigation Buttons */}
-            <button
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-gray-800 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:bg-gray-700 transition duration-300"
-              onClick={() => scrollHorizontally(-300)}
-            >
-              &#8249;
-            </button>
-            <button
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-gray-800 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-lg hover:bg-gray-700 transition duration-300"
-              onClick={() => scrollHorizontally(300)}
-            >
-              &#8250;
-            </button>
           </div>
         </section>
 
         {/* Explore More Section */}
         <section className="mb-16">
-          <h2 className="text-3xl font-semibold text-gray-800 mb-8">Discover More Resources</h2>
+          <h2 className="text-3xl font-semibold text-foreground mb-8">Discover More Resources</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Discussion Rooms Link */}
-            <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Join Discussion Rooms</h3>
-              <p className="text-gray-600 mb-4">
-                Engage with peers, mentors, and experts in various academic discussion rooms.
-              </p>
-              <a className="text-blue-600 font-medium hover:underline"
-              onClick={() => navigate('/discussionrooms')}
-              >
-                Explore Now
-              </a>
-            </div>
+            <Card className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition duration-300">
+              <CardHeader>
+                <CardTitle className="text-xl font-semibold text-foreground mb-4">Join Discussion Rooms</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Engage with peers, mentors, and experts in various academic discussion rooms.
+                </p>
+                <Button variant="link" onClick={() => navigate('/discussionrooms')}>
+                  Explore Now
+                </Button>
+              </CardContent>
+            </Card>
 
             {/* Visa Information Link */}
-            <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Visa Information</h3>
-              <p className="text-gray-600 mb-4">
-                Access visa-related resources, experiences, and country-specific details to plan
-                your journey.
-              </p>
-              <a className="text-blue-600 font-medium hover:underline"
-              onClick={() => navigate('/visasection')}
-              >
-                Explore Now
-              </a>
-            </div>
+            <Card className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition duration-300">
+              <CardHeader>
+                <CardTitle className="text-xl font-semibold text-foreground mb-4">Visa Information</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Access visa-related resources, experiences, and country-specific details to plan
+                  your journey.
+                </p>
+                <Button variant="link" onClick={() => navigate('/visasection')}>
+                  Explore Now
+                </Button>
+              </CardContent>
+            </Card>
 
             {/* About Us Link */}
-            <div className="bg-white p-6 rounded-lg shadow-md hover:shadow-xl transition duration-300">
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Learn More About Us</h3>
-              <p className="text-gray-600 mb-4">
-                Discover who we are, our mission, and how we can help you achieve your academic
-                goals.
-              </p>
-              <a className="text-blue-600 font-medium hover:underline"
-              onClick={() => navigate('/aboutus')}
-              >
-                Read More
-              </a>
+            <Card className="p-6 bg-white rounded-lg shadow-md hover:shadow-xl transition duration-300">
+              <CardHeader>
+                <CardTitle className="text-xl font-semibold text-foreground mb-4">Learn More About Us</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">
+                  Discover who we are, our mission, and how we can help you achieve your academic
+                  goals.
+                </p>
+                <Button variant="link" onClick={() => navigate('/aboutus')}>
+                  Read More
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="w-full py-12 md:py-24 lg:py-32">
+          <div className="container px-4 md:px-6">
+            <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4 justify-items-center">
+              <div className="flex flex-col items-center">
+                <Globe2 className="text-4xl mb-2 text-blue-600" />
+                <h4 className="text-xl font-semibold">Countries Supported</h4>
+                <p className="text-2xl font-semibold text-gray-900">50+</p>
+              </div>
+              <div className="flex flex-col items-center">
+                <Users className="text-4xl mb-2 text-green-600" />
+                <h4 className="text-xl font-semibold">Mentors</h4>
+                <p className="text-2xl font-semibold text-gray-900">100+</p>
+              </div>
+              <div className="flex flex-col items-center">
+                <MessageCircle className="text-4xl mb-2 text-yellow-600" />
+                <h4 className="text-xl font-semibold">Discussion Rooms</h4>
+                <p className="text-2xl font-semibold text-gray-900">20+</p>
+              </div>
+              <div className="flex flex-col items-center">
+                <Stamp className="text-4xl mb-2 text-purple-600" />
+                <h4 className="text-xl font-semibold">Success Stories</h4>
+                <p className="text-2xl font-semibold text-gray-900">300+</p>
+              </div>
             </div>
           </div>
         </section>
