@@ -1,0 +1,8 @@
+{
+    "compilerOptions": {
+      "baseUrl": ".", // Base directory for imports
+      "paths": {
+        "@/*": ["./src/*"] // Map @/ to the /src directory
+      }
+    }
+  }
