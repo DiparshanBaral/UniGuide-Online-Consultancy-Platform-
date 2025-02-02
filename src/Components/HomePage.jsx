@@ -1,4 +1,4 @@
-// import PropTypes from 'prop-types';
+import { useEffect, useState } from 'react';
 import HomeBanner from '../img/HomePageBanner.jpeg';
 import { Globe2, Users, MessageCircle, Stamp, Search, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -14,9 +14,35 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import API from "../api";
 
 function HomePage() {
   const navigate = useNavigate();
+
+  const [mentors, setMentors] = useState([]);
+  const mentorIds = [
+    '6794c071c5dc46b9a39d3abb',
+    '679f2f17d87bd45d7aa40f46',
+    '679f2f3bd87bd45d7aa40f4f',
+  ];
+
+  useEffect(() => {
+    const fetchMentors = async () => {
+      try {
+        const mentorData = await Promise.all(
+          mentorIds.map(id =>
+            API.get(`/users/mentor/${id}`).then(response => response.data)
+          )
+        );
+        setMentors(mentorData);
+      } catch (error) {
+        console.error("Error fetching mentors:", error);
+      }
+    };
+
+    fetchMentors();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="pt-[90px] px-6 sm:px-16 md:px-24 lg:px-32 py-10 bg-background text-foreground">
@@ -122,18 +148,18 @@ function HomePage() {
               </div>
             </div>
             <div className="grid gap-6 mt-8 md:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3].map((mentor) => (
-                <Card key={mentor}>
+              {mentors.map((mentor) => (
+                <Card key={mentor._id}>
                   <CardHeader className="flex flex-row items-center gap-4">
                     <Avatar className="h-12 w-12">
                       <AvatarImage
-                        src={`/placeholder.svg?height=40&width=40`}
+                        src={`/placeholder.svg?height=40&width=40`} // You can replace this with an actual image URL if available
                         alt="Mentor avatar"
                       />
                       <AvatarFallback>MN</AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
-                      <CardTitle>Sarah Johnson</CardTitle>
+                      <CardTitle>{`${mentor.firstname} ${mentor.lastname}`}</CardTitle>
                       <CardDescription>Harvard University, Class of 2022</CardDescription>
                     </div>
                   </CardHeader>
