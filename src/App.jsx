@@ -12,6 +12,7 @@ import VisaSection from './Components/VisaSection';
 import Universities from './Components/Universities';
 import MentorDashboard from './Components/MentorDashboard'; 
 import StudentDashboard from './Components/StudentDashboard';
+import AdminDashboard from './Components/adminDashboard';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 
@@ -38,6 +39,7 @@ function App() {
               <Route path="/aboutus" element={<Aboutus />} />
               <Route path="/mentordashboard" element={<MentorDashboard />} />
               <Route path="/studentdashboard" element={<StudentDashboard />} />
+              <Route path="/admindashboard" element={<AdminDashboard />} />
             </Routes>
           </div>
 

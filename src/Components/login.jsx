@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import API from "../api"; 
+import API from "../api";
 import { useAtom } from "jotai";
 import { sessionAtom } from "@/atoms/session";
 
@@ -10,57 +10,110 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const [, setSession] = useAtom(sessionAtom); // Accessing the atom state
+  const [, setSession] = useAtom(sessionAtom);
 
   const handleLogin = async (e) => {
     e.preventDefault();
-    setError(""); // Clear previous errors
+    setError("");
   
     try {
-      const response = await API.post("/users/login", { email, password });
+      let response = await attemptAdminLogin(email, password);
   
-      // Log the response for debugging purposes
-      console.log(response);
-  
-      // Assuming response contains the user data directly
-      const user = response.data;
-  
-      if (!user || !user.role) {
-        throw new Error("Invalid response from server. User data is missing.");
+      if (response?.data?.token) {
+        // Pass isAdmin = true for admin logins
+        handleSuccessfulLogin(response.data, true);
+        return;
       }
   
-      // Save session data to localStorage
-      localStorage.setItem("session", JSON.stringify({
+      response = await attemptUserLogin(email, password);
+  
+      if (response?.data?.token) {
+        handleSuccessfulLogin(response.data, false);
+        return;
+      }
+  
+      throw new Error("Invalid credentials. Please try again.");
+    } catch (err) {
+      setError(err.message || "Invalid credentials. Please try again.");
+      console.error("Login error:", err);
+    }
+  };
+  
+
+  const attemptAdminLogin = async (email, password) => {
+    try {
+      console.log("Attempting admin login...");
+      const response = await API.post("/admin/login", { email, password }, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      return response;
+    } catch (adminError) {
+      console.log("Admin login failed:", adminError.message);
+      return null; // Return null to indicate failure
+    }
+  };
+
+  const attemptUserLogin = async (email, password) => {
+    try {
+      console.log("Attempting user login...");
+      const response = await API.post("/users/login", { email, password }, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log("Admin login response:", response.data);
+      return response;
+    } catch (userError) {
+      console.log("User login failed:", userError.message);
+      return null; // Return null to indicate failure
+    }
+  };
+
+  const handleSuccessfulLogin = (user, isAdmin = false) => {
+    if (!user || !user.token) {
+      console.error("Invalid response from server:", user);
+      throw new Error("Invalid response from server. User data is missing.");
+    }
+  
+    let sessionData;
+  
+    if (isAdmin) {
+      console.log("Admin login detected."); // Debugging
+      sessionData = {
+        role: "admin",
+        token: user.token,
+      };
+    } else {
+      if (!user._id || !user.email || !user.firstname || !user.lastname || !user.role) {
+        console.error("Incomplete user data:", user);
+        throw new Error("Invalid response from server. User data is incomplete.");
+      }
+  
+      sessionData = {
         _id: user._id,
         firstname: user.firstname,
         lastname: user.lastname,
         email: user.email,
         role: user.role,
-        token: user.token, // Ensure the token is saved
-      }));
-  
-      setSession(user); // Update global state (if using Jotai or similar)
-      toast.success(`Welcome back, ${user.firstname} ${user.lastname}`);
-  
-      // Redirect based on user role
-      switch (user.role) {
-        case "admin":
-          navigate("/adminDashboard");
-          break;
-        case "mentor":
-          navigate("/");
-          break;
-        case "student":
-          navigate("/");
-          break;
-        default:
-          toast.error("Unknown role. Please contact support.");
-      }
-    } catch (err) {
-      setError("Invalid credentials. Please try again.");
-      console.error(err.message || err);
+        token: user.token,
+      };
     }
+  
+    // Save session data to localStorage
+    localStorage.setItem("session", JSON.stringify(sessionData));
+  
+    // Update session state
+    setSession(sessionData);
+    toast.success(isAdmin ? "Welcome, Admin" : `Welcome back, ${user.firstname} ${user.lastname}`);
+  
+    // Redirect based on role
+    navigate(isAdmin ? "/adminDashboard" : "/");
   };
+  
+  
+  
 
   return (
     <div
