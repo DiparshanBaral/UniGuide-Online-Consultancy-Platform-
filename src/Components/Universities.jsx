@@ -1,6 +1,16 @@
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ClipboardList, ArrowRight } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import {
+  Search,
+  ClipboardList,
+  ArrowRight,
+  Globe2,
+  MapPin,
+  Users,
+  GraduationCap,
+} from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -10,8 +20,33 @@ import {
 } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
+import API from '../api';
 
 function Universities() {
+  const [universities, setUniversities] = useState([]);
+
+  useEffect(() => {
+    async function fetchUniversities() {
+      try {
+        const universityIds = [
+          '679f24ec433497bd80eba141',
+          '679f29fad87bd45d7aa40f3a',
+          '679f2a47d87bd45d7aa40f3c',
+          '679f2a92d87bd45d7aa40f3e'
+        ];
+
+        const requests = universityIds.map((id) => API.get(`/universities/us/${id}`));
+        const responses = await Promise.all(requests);
+        const data = responses.map((res) => res.data);
+
+        setUniversities(data);
+      } catch (error) {
+        console.error('Error fetching universities:', error);
+      }
+    }
+    fetchUniversities();
+  }, []);
+
   return (
     <div className="pt-[90px] px-6 sm:px-16 md:px-24 lg:px-32 py-10 bg-gray-50 text-gray-800">
       <div className="max-w-7xl mx-auto">
@@ -108,52 +143,85 @@ function Universities() {
           </Card>
         </motion.div>
 
-
         {/* Top Universities Section */}
         <section className="mb-12">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">Top Universities</h2>
-          <div className="flex overflow-x-auto space-x-6">
-            {/* University 1 */}
-            <div className="flex-shrink-0 w-60 bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300">
-              <img
-                src="https://via.placeholder.com/250x150"
-                alt="University 1"
-                className="w-full h-40 object-cover rounded-lg mb-4"
-              />
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">University of Example 1</h3>
-              <p className="text-gray-600 mb-4">
-                A world-class institution offering diverse programs.
-              </p>
-              <a
-                href="/universities/example1"
-                className="text-blue-600 font-medium hover:underline"
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {universities.map((university, index) => (
+              <motion.div
+                key={university._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                className="h-full"
               >
-                View University
-              </a>
-            </div>
+                <Card className="h-full hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
+                  {/* Gradient Overlay on Hover */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
 
-            {/* Additional Universities */}
-            {[...Array(6)].map((_, index) => (
-              <div
-                key={index + 2}
-                className="flex-shrink-0 w-60 bg-white p-6 rounded-lg shadow-lg hover:shadow-xl transition duration-300"
-              >
-                <img
-                  src="https://via.placeholder.com/250x150"
-                  alt={`University ${index + 2}`}
-                  className="w-full h-40 object-cover rounded-lg mb-4"
-                />
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  University of Example {index + 2}
-                </h3>
-                <p className="text-gray-600 mb-4">Description for university {index + 2}.</p>
-                <a
-                  href={`/universities/example${index + 2}`}
-                  className="text-blue-600 font-medium hover:underline"
-                >
-                  View University
-                </a>
-              </div>
+                  <CardHeader className="space-y-4 pb-4">
+                    <div className="flex items-start gap-4">
+                      <div className="relative h-16 w-16 flex-shrink-0">
+                        <img
+                          src={university.image || 'https://via.placeholder.com/150'}
+                          alt={`${university.name} logo`}
+                          className="h-full w-full rounded-lg object-contain border p-2"
+                        />
+                        <Badge variant="secondary" className="absolute -top-2 -right-2">
+                          #{university.ranking || 'N/A'}
+                        </Badge>
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="font-semibold text-lg leading-tight">{university.name}</h3>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Globe2 className="h-4 w-4" />
+                          {university.country}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <MapPin className="h-4 w-4" />
+                          {university.location}
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground line-clamp-3">
+                      {university.description}
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <Users className="h-4 w-4 text-primary" />
+                          <span className="font-medium">Acceptance Rate</span>
+                        </div>
+                        <Badge variant="secondary" className="w-full justify-center">
+                          {university.acceptanceRate}%
+                        </Badge>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 text-sm">
+                          <GraduationCap className="h-4 w-4 text-primary" />
+                          <span className="font-medium">Graduation Rate</span>
+                        </div>
+                        <Badge variant="secondary" className="w-full justify-center">
+                          {university.graduationRate}%
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="pt-4">
+                      <Button
+                        className="w-full group-hover:bg-primary/90 transition-colors"
+                        asChild
+                      >
+                        <a href={`/universities/${university._id}`}>View Details</a>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
           </div>
         </section>
