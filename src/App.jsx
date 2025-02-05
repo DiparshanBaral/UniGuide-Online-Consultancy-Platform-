@@ -16,6 +16,7 @@ import AdminDashboard from './Components/adminDashboard';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import UniversitiesList from './Components/UniversitiesList';
+import UniversityProfile from './Components/UniversityProfile';
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
               <Route path="/studentdashboard" element={<StudentDashboard />} />
               <Route path="/admindashboard" element={<AdminDashboard />} />
               <Route path="/universitieslist" element={<UniversitiesList />} />
+              <Route path="/universityprofile/:country/:universityId" element={<UniversityProfile />} />
             </Routes>
           </div>
 

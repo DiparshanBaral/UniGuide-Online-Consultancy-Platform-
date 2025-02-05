@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import API from '../api';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/Components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Globe2, MapPin, Users, GraduationCap } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useNavigate } from 'react-router-dom';
 
 const UniversitiesList = () => {
+  const navigate = useNavigate();
   // Initial state with country keys
   const [universities, setUniversities] = useState({
     US: [],
@@ -67,7 +69,7 @@ const UniversitiesList = () => {
                   >
                     <Card className="h-full hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
                       {/* Gradient overlay on hover */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
                       <CardHeader className="space-y-4 pb-4">
                         <div className="flex items-start gap-4">
@@ -125,10 +127,14 @@ const UniversitiesList = () => {
 
                         <div className="pt-4">
                           <Button
-                            className="w-full group-hover:bg-primary/90 transition-colors"
-                            asChild
+                            className="w-full text-white"
+                            onClick={() =>
+                              navigate(
+                                `/universityprofile/${country.toLowerCase()}/${university._id}`,
+                              )
+                            }
                           >
-                            <a href={`/universities/${university._id}`}>View Details</a>
+                            View Details
                           </Button>
                         </div>
                       </CardContent>
