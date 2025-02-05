@@ -102,7 +102,7 @@ function Navbar() {
   }
 
   return (
-    <header className="bg-[rgba(209,213,219,0.6)] backdrop-blur-2xl fixed w-full border-b shadow-sm z-50">
+    <header className="bg-[rgba(230,233,238,0.6)] backdrop-blur-2xl fixed w-full border-b shadow-sm z-50">
       <div className="container mx-auto flex justify-between items-center px-4">
         {/* Logo */}
         <div className="flex items-center ml-10">

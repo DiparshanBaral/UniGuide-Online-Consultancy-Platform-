@@ -32,7 +32,7 @@ function Universities() {
           '679f24ec433497bd80eba141',
           '679f29fad87bd45d7aa40f3a',
           '679f2a47d87bd45d7aa40f3c',
-          '679f2a92d87bd45d7aa40f3e'
+          '679f2a92d87bd45d7aa40f3e',
         ];
 
         const requests = universityIds.map((id) => API.get(`/universities/us/${id}`));
@@ -228,9 +228,11 @@ function Universities() {
 
         {/* Scroll or Button to See More */}
         <div className="text-center">
-          <button className="bg-gray-800 text-white py-2 px-6 rounded-lg font-medium hover:bg-gray-700 transition duration-300">
-            See More Universities
-          </button>
+          <a href="/universitieslist">
+            <button className="bg-gray-800 text-white py-2 px-6 rounded-lg font-medium hover:bg-gray-700 transition duration-300">
+              See More Universities
+            </button>
+          </a>
         </div>
       </div>
     </div>

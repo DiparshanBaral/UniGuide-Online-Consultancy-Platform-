@@ -15,6 +15,7 @@ import StudentDashboard from './Components/StudentDashboard';
 import AdminDashboard from './Components/adminDashboard';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import UniversitiesList from './Components/UniversitiesList';
 
 function App() {
   return (
@@ -40,6 +41,7 @@ function App() {
               <Route path="/mentordashboard" element={<MentorDashboard />} />
               <Route path="/studentdashboard" element={<StudentDashboard />} />
               <Route path="/admindashboard" element={<AdminDashboard />} />
+              <Route path="/universitieslist" element={<UniversitiesList />} />
             </Routes>
           </div>
 
