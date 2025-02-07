@@ -14,7 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import API from "../api";
+import API from '../api';
+import { motion } from 'framer-motion';
 
 function HomePage() {
   const navigate = useNavigate();
@@ -30,18 +31,16 @@ function HomePage() {
     const fetchMentors = async () => {
       try {
         const mentorData = await Promise.all(
-          mentorIds.map(id =>
-            API.get(`/users/mentor/${id}`).then(response => response.data)
-          )
+          mentorIds.map((id) => API.get(`/users/mentor/${id}`).then((response) => response.data)),
         );
         setMentors(mentorData);
       } catch (error) {
-        console.error("Error fetching mentors:", error);
+        console.error('Error fetching mentors:', error);
       }
     };
 
     fetchMentors();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -54,22 +53,32 @@ function HomePage() {
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black via-black to-black opacity-60 rounded-lg"></div>
           <div className="relative z-10 flex justify-center items-center h-full">
-            <div className="text-center text-white">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+              className="text-center text-white"
+            >
               <h2 className="text-4xl sm:text-5xl font-semibold mb-4 text-cyan-50">
                 Find the Right University, Mentor &amp; Resources
               </h2>
               <p className="text-lg mb-6 text-cyan-50">
                 Empowering students to achieve academic excellence with personalized guidance.
               </p>
-              <div className="flex justify-center">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+                className="flex justify-center"
+              >
                 <Button
                   className="py-3 px-8 rounded-lg font-medium hover:bg-gray-700 transition duration-300"
                   onClick={() => navigate('/universities')}
                 >
                   Get Started
                 </Button>
-              </div>
-            </div>
+              </motion.div>
+            </motion.div>
           </div>
         </section>
 
