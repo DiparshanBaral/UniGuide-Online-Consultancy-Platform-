@@ -21,8 +21,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import API from '../api';
+import { useNavigate } from 'react-router-dom';
+
 
 function Universities() {
+  const navigate = useNavigate();
   const [universities, setUniversities] = useState([]);
 
   useEffect(() => {
@@ -157,7 +160,7 @@ function Universities() {
               >
                 <Card className="h-full hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
                   {/* Gradient Overlay on Hover */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
                   <CardHeader className="space-y-4 pb-4">
                     <div className="flex items-start gap-4">
@@ -212,12 +215,16 @@ function Universities() {
                     </div>
 
                     <div className="pt-4">
-                      <Button
-                        className="w-full group-hover:bg-primary/90 transition-colors"
-                        asChild
-                      >
-                        <a href={`/universities/${university._id}`}>View Details</a>
-                      </Button>
+                    <Button
+                            className="w-full text-white"
+                            onClick={() =>
+                              navigate(
+                                `/universityprofile/us/${university._id}`,
+                              )
+                            }
+                          >
+                            View Details
+                          </Button>
                     </div>
                   </CardContent>
                 </Card>
