@@ -1,16 +1,17 @@
-import { useState, useEffect } from "react";
-import { toast } from "sonner"; // For showing success/error messages
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner'; // For showing success/error messages
 
 function Profile() {
   const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [updatedUser, setUpdatedUser] = useState({});
   const [isLoading, setIsLoading] = useState(true);
+  const [profilePic, setProfilePic] = useState(""); // Store uploaded profile pic URL
 
   useEffect(() => {
     const fetchUserData = async () => {
-      const session = JSON.parse(localStorage.getItem("session"));
-      console.log("Session Data:", session); // Debugging
+      const session = JSON.parse(localStorage.getItem('session'));
+      console.log('Session Data:', session); // Debugging
 
       if (session && session._id && session.token) {
         try {
@@ -19,26 +20,26 @@ function Profile() {
               Authorization: `Bearer ${session.token}`, // Include the token
             },
           });
-          console.log("API Response:", response); // Debugging
+          console.log('API Response:', response); // Debugging
 
           if (response.ok) {
             const userData = await response.json();
-            console.log("Fetched User Data:", userData); // Debugging
+            console.log('Fetched User Data:', userData); // Debugging
             setUser(userData);
             setUpdatedUser(userData);
           } else {
-            console.error("Failed to fetch user data:", response.statusText);
-            toast.error("Failed to fetch user data. Please log in again.");
+            console.error('Failed to fetch user data:', response.statusText);
+            toast.error('Failed to fetch user data. Please log in again.');
           }
         } catch (error) {
-          console.error("Error fetching user data:", error);
-          toast.error("An error occurred while fetching user data.");
+          console.error('Error fetching user data:', error);
+          toast.error('An error occurred while fetching user data.');
         } finally {
           setIsLoading(false); // Stop loading
         }
       } else {
-        console.error("No valid session found in localStorage");
-        toast.error("No valid session found. Please log in again.");
+        console.error('No valid session found in localStorage');
+        toast.error('No valid session found. Please log in again.');
         setIsLoading(false); // Stop loading
       }
     };
@@ -55,35 +56,64 @@ function Profile() {
   };
 
   const handleUpdateProfile = async () => {
-    // Validate required fields
     if (!updatedUser.firstname || !updatedUser.lastname || !updatedUser.email) {
-      toast.error("Please fill in all fields.");
+      toast.error('Please fill in all fields.');
       return;
     }
 
     try {
-      const session = JSON.parse(localStorage.getItem("session"));
+      const session = JSON.parse(localStorage.getItem('session'));
+      const updatedData = { ...updatedUser, profilePic }; // Include the profile picture
+
       const response = await fetch(`http://localhost:5000/users/${user._id}`, {
-        method: "PUT",
+        method: 'PUT',
         headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.token}`, // Include the token
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${session.token}`,
         },
-        body: JSON.stringify(updatedUser),
+        body: JSON.stringify(updatedData),
       });
 
       if (response.ok) {
-        const updatedData = await response.json();
-        setUser(updatedData); // Update local state with the new data
-        setIsEditing(false); // Exit edit mode
-        toast.success("Profile updated successfully!");
+        const updatedUserData = await response.json();
+        setUser(updatedUserData);
+        setUpdatedUser(updatedUserData);
+        setIsEditing(false);
+        toast.success('Profile updated successfully!');
       } else {
         const errorData = await response.json();
         toast.error(`Failed to update profile: ${errorData.message || response.statusText}`);
       }
     } catch (error) {
-      console.error("Error updating profile:", error);
-      toast.error("An error occurred while updating the profile.");
+      toast.error('An error occurred while updating the profile. ' + error);
+    }
+  };
+  const handleFileChange = async (e) => {
+    const userProfilePic = e.target.files[0];
+    if (!userProfilePic) {
+      toast.error('Please upload a profile picture');
+      return;
+    }
+
+    const data = new FormData();
+    data.append('file', userProfilePic);
+    data.append('upload_preset', 'freelansters');
+    data.append('cloud_name', 'dijuifjai');
+
+    try {
+      const res = await fetch('https://api.cloudinary.com/v1_1/dijuifjai/image /upload', {
+        method: 'POST',
+        body: data,
+      });
+
+      const uploadImageUrl = await res.json();
+      setProfilePic(uploadImageUrl.url);
+      setUpdatedUser((prev) => ({ ...prev, profilePic: uploadImageUrl.url }));
+
+      toast.success('Profile picture uploaded successfully!');
+    } catch (error) {
+      toast.error('Error uploading profile picture');
+      console.error(error);
     }
   };
 
@@ -119,17 +149,19 @@ function Profile() {
               {/* Profile Picture */}
               <div className="flex-shrink-0">
                 <img
-                  src="https://github.com/shadcn.png"
+                  src={user.profilePic}
                   alt="Profile"
                   className="h-32 w-32 rounded-full border-4 border-white shadow-lg"
                 />
                 {isEditing && (
-                  <button
-                    className="mt-2 w-full bg-slate-800 text-white py-1 px-4 rounded-md hover:bg-slate-600 transition-colors duration-200 text-sm"
-                    onClick={() => alert("Feature coming soon!")}
-                  >
-                    Change Photo
-                  </button>
+                  <>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="mt-2 w-full"
+                      onChange={handleFileChange}
+                    />
+                  </>
                 )}
               </div>
 
