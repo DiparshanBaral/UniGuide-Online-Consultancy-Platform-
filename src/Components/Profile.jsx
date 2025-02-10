@@ -6,7 +6,6 @@ function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [updatedUser, setUpdatedUser] = useState({});
   const [isLoading, setIsLoading] = useState(true);
-  const [profilePic, setProfilePic] = useState(""); // Store uploaded profile pic URL
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -63,7 +62,7 @@ function Profile() {
 
     try {
       const session = JSON.parse(localStorage.getItem('session'));
-      const updatedData = { ...updatedUser, profilePic }; // Include the profile picture
+      const updatedData = { ...updatedUser };
 
       const response = await fetch(`http://localhost:5000/users/${user._id}`, {
         method: 'PUT',
@@ -88,35 +87,7 @@ function Profile() {
       toast.error('An error occurred while updating the profile. ' + error);
     }
   };
-  const handleFileChange = async (e) => {
-    const userProfilePic = e.target.files[0];
-    if (!userProfilePic) {
-      toast.error('Please upload a profile picture');
-      return;
-    }
-
-    const data = new FormData();
-    data.append('file', userProfilePic);
-    data.append('upload_preset', 'freelansters');
-    data.append('cloud_name', 'dijuifjai');
-
-    try {
-      const res = await fetch('https://api.cloudinary.com/v1_1/dijuifjai/image /upload', {
-        method: 'POST',
-        body: data,
-      });
-
-      const uploadImageUrl = await res.json();
-      setProfilePic(uploadImageUrl.url);
-      setUpdatedUser((prev) => ({ ...prev, profilePic: uploadImageUrl.url }));
-
-      toast.success('Profile picture uploaded successfully!');
-    } catch (error) {
-      toast.error('Error uploading profile picture');
-      console.error(error);
-    }
-  };
-
+  
   if (isLoading) {
     return (
       <div className="pt-[90px] min-h-screen bg-gray-100 flex justify-center items-center">
@@ -153,16 +124,6 @@ function Profile() {
                   alt="Profile"
                   className="h-32 w-32 rounded-full border-4 border-white shadow-lg"
                 />
-                {isEditing && (
-                  <>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="mt-2 w-full"
-                      onChange={handleFileChange}
-                    />
-                  </>
-                )}
               </div>
 
               {/* Profile Details */}
