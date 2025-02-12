@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // Added useNavigate for better redirection
-import API from '../api'; 
+import { Link, useNavigate } from 'react-router-dom';
+import API from '../api';
 import { toast } from 'sonner';
 
 function Signup() {
@@ -10,46 +10,50 @@ function Signup() {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'student', // Default role
+    role: 'student',
   });
 
-  const [loading, setLoading] = useState(false); // Added loading state
-  const navigate = useNavigate(); // For programmatic navigation
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setFormData({ ...formData, [id]: value });
+    setFormData((prevData) => ({
+      ...prevData,
+      [id]: value.trim(), // Trim input values to avoid whitespace issues
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log("Passwords:", formData.password, formData.confirmPassword);
+
     const { firstname, lastname, email, password, confirmPassword, role } = formData;
 
-    // Validate password match
-    if (password !== confirmPassword) {
+    // Ensure trimmed values
+    if (password.trim() !== confirmPassword.trim()) {
       toast.error("Passwords do not match!");
       return;
     }
 
-    // Validate required fields
     if (!firstname || !lastname || !email || !password || !confirmPassword) {
       toast.error("Please fill in all fields!");
       return;
     }
 
-    setLoading(true); // Start loading
+    setLoading(true);
 
     try {
-      const response = await API.post('/users/signup', {
+      const route = role === 'student' ? '/student/signup' : '/mentor/signup';
+
+      const response = await API.post(route, {
         firstname,
         lastname,
         email,
         password,
-        role,
       });
 
-      // On success
       if (response.status === 201) {
         toast.success("Registration successful!");
         setFormData({
@@ -60,14 +64,12 @@ function Signup() {
           confirmPassword: '',
           role: 'student',
         });
-        // Redirect to login page after successful registration
         navigate('/login');
       }
     } catch (error) {
-      // Handle error response
       toast.error(error.response?.data?.message || "Server error");
     } finally {
-      setLoading(false); // Stop loading
+      setLoading(false);
     }
   };
 
@@ -157,7 +159,7 @@ function Signup() {
           <button
             type="submit"
             className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition duration-300 disabled:bg-green-300"
-            disabled={loading} // Disable button during loading
+            disabled={loading}
           >
             {loading ? 'Signing Up...' : 'Sign Up'}
           </button>
