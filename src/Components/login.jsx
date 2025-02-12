@@ -9,111 +9,99 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const [, setSession] = useAtom(sessionAtom);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
-  
+    setLoading(true);
+
     try {
       let response = await attemptAdminLogin(email, password);
-  
+
       if (response?.data?.token) {
-        // Pass isAdmin = true for admin logins
-        handleSuccessfulLogin(response.data, true);
+        handleSuccessfulLogin(response.data, "admin");
         return;
       }
-  
+
       response = await attemptUserLogin(email, password);
-  
+
       if (response?.data?.token) {
-        handleSuccessfulLogin(response.data, false);
+        handleSuccessfulLogin(response.data, response.data.role);
         return;
       }
-  
+
       throw new Error("Invalid credentials. Please try again.");
     } catch (err) {
       setError(err.message || "Invalid credentials. Please try again.");
       console.error("Login error:", err);
+    } finally {
+      setLoading(false);
     }
   };
-  
 
   const attemptAdminLogin = async (email, password) => {
     try {
-      console.log("Attempting admin login...");
-      const response = await API.post("/admin/login", { email, password }, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await API.post("/admin/login", { email, password });
       return response;
+    // eslint-disable-next-line no-unused-vars
     } catch (adminError) {
-      console.log("Admin login failed:", adminError.message);
-      return null; // Return null to indicate failure
+      return null;
     }
   };
 
   const attemptUserLogin = async (email, password) => {
     try {
-      console.log("Attempting user login...");
-      const response = await API.post("/users/login", { email, password }, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      console.log("Admin login response:", response.data);
+      let response;
+
+      response = await API.post("/student/login", { email, password });
+      if (response?.data?.token) return response;
+
+      response = await API.post("/mentor/login", { email, password });
       return response;
     } catch (userError) {
       console.log("User login failed:", userError.message);
-      return null; // Return null to indicate failure
+      return null;
     }
   };
 
-  const handleSuccessfulLogin = (user, isAdmin = false) => {
+  const handleSuccessfulLogin = (user, role) => {
     if (!user || !user.token) {
       console.error("Invalid response from server:", user);
       throw new Error("Invalid response from server. User data is missing.");
     }
-  
-    let sessionData;
-  
-    if (isAdmin) {
-      console.log("Admin login detected."); // Debugging
-      sessionData = {
-        role: "admin",
-        token: user.token,
-      };
-    } else {
-      if (!user._id || !user.email || !user.firstname || !user.lastname || !user.role) {
-        console.error("Incomplete user data:", user);
-        throw new Error("Invalid response from server. User data is incomplete.");
-      }
-  
-      sessionData = {
-        _id: user._id,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        email: user.email,
-        role: user.role,
-        token: user.token,
-      };
+
+    let sessionData = {
+      _id: user._id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      role: role,
+      token: user.token,
+    };
+
+    if (role === "admin") {
+      console.log("Admin login detected.");
+      sessionData = { role: "admin", token: user.token };
     }
-  
-    // Save session data to localStorage
+
+    // Save session data
     localStorage.setItem("session", JSON.stringify(sessionData));
-  
+
     // Update session state
     setSession(sessionData);
-    toast.success(isAdmin ? "Welcome, Admin" : `Welcome back, ${user.firstname} ${user.lastname}`);
-  
+    toast.success(
+      role === "admin"
+        ? "Welcome, Admin"
+        : `Welcome back, ${user.firstname} ${user.lastname}`
+    );
+
     // Redirect based on role
-    navigate(isAdmin ? "/adminDashboard" : "/");
+    if (role === "admin") navigate("/adminDashboard");
+    else navigate("/");
   };
-  
-  
-  
 
   return (
     <div
@@ -154,9 +142,10 @@ export default function Login() {
           </div>
           <button
             type="submit"
-            className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition duration-300"
+            className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition duration-300 disabled:opacity-50"
+            disabled={loading}
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
           <div className="mt-4 text-center">
             <p className="text-sm text-gray-500">

@@ -20,7 +20,7 @@ function Signup() {
     const { id, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
-      [id]: value.trim(), // Trim input values to avoid whitespace issues
+      [id]: value, // No trim here to preserve user input
     }));
   };
 
@@ -31,12 +31,13 @@ function Signup() {
 
     const { firstname, lastname, email, password, confirmPassword, role } = formData;
 
-    // Ensure trimmed values
+    // Ensure passwords match
     if (password.trim() !== confirmPassword.trim()) {
       toast.error("Passwords do not match!");
       return;
     }
 
+    // Check for empty fields
     if (!firstname || !lastname || !email || !password || !confirmPassword) {
       toast.error("Please fill in all fields!");
       return;
@@ -52,6 +53,7 @@ function Signup() {
         lastname,
         email,
         password,
+        confirmPassword, // Include confirmPassword in request
       });
 
       if (response.status === 201) {
@@ -143,14 +145,13 @@ function Signup() {
               required
             />
           </div>
-          <div className="mb-6">
-            <label htmlFor="role" className="block text-sm font-medium text-gray-700">Select Role</label>
+          <div className="mb-4">
+            <label htmlFor="role" className="block text-sm font-medium text-gray-700">Role</label>
             <select
               id="role"
               value={formData.role}
               onChange={handleChange}
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              required
             >
               <option value="student">Student</option>
               <option value="mentor">Mentor</option>
@@ -158,20 +159,15 @@ function Signup() {
           </div>
           <button
             type="submit"
-            className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition duration-300 disabled:bg-green-300"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md shadow-md disabled:opacity-50"
             disabled={loading}
           >
-            {loading ? 'Signing Up...' : 'Sign Up'}
+            {loading ? "Signing Up..." : "Sign Up"}
           </button>
         </form>
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-500">
-            Already a user?{' '}
-            <Link to="/login" className="text-blue-500 hover:underline">
-              Login here
-            </Link>
-          </p>
-        </div>
+        <p className="mt-4 text-center text-sm text-gray-600">
+          Already have an account? <Link to="/login" className="text-indigo-600 hover:underline">Log in</Link>
+        </p>
       </div>
     </div>
   );

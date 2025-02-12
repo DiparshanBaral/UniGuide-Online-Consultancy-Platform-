@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { useAtom } from 'jotai';
 import { sessionAtom } from '@/atoms/session';
+import API from "../api";
 
 function Navbar() {
   const [profileDropdown, setProfileDropdown] = useState(false);
@@ -13,53 +14,37 @@ function Navbar() {
 
   // Memoize fetchUserData with useCallback
   const fetchUserData = useCallback(
-    async (userId, token) => {
+    async (userId, token, role) => {
       try {
         setIsFetchingUser(true);
-
-        // Debugging: Log the token and userId
-        console.log('Fetching user data with userId:', userId);
-        console.log('Using token:', token);
-
-        const response = await fetch(`http://localhost:5000/users/${userId}`, {
+  
+        // Determine the API endpoint based on user role
+        const endpoint = role === 'mentor' ? `/mentor/${userId}` : `/student/${userId}`;
+  
+        // Use API.get instead of fetch
+        const response = await API.get(endpoint, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-
-        // Debugging: Log the response status
-        console.log('Response status:', response.status);
-
-        if (!response.ok) {
-          // Handle specific error statuses
-          if (response.status === 401) {
-            throw new Error('Unauthorized: Please log in again.');
-          } else if (response.status === 404) {
-            throw new Error('User not found.');
-          } else {
-            throw new Error(`Error ${response.status}: ${response.statusText}`);
-          }
-        }
-
-        const userData = await response.json();
-        console.log('Fetched user data:', userData);
-
+  
         // Update session only if data has changed
         setSession((prevSession) => {
-          if (JSON.stringify(prevSession) !== JSON.stringify(userData)) {
-            return userData;
+          if (JSON.stringify(prevSession) !== JSON.stringify(response.data)) {
+            return response.data;
           }
-          return prevSession; // No change, return previous session
+          return prevSession;
         });
       } catch (error) {
         console.error('Error fetching user data:', error);
-        toast.error(error.message || 'Failed to fetch user data. Please try again.');
+        toast.error(error.response?.data?.message || 'Failed to fetch user data. Please try again.');
       } finally {
         setIsFetchingUser(false);
       }
     },
-    [setSession],
+    [setSession]
   );
+  
 
   // Fetch user data when session changes
   useEffect(() => {

@@ -22,26 +22,31 @@ function HomePage() {
 
   const [mentors, setMentors] = useState([]);
   const mentorIds = [
-    '6794c071c5dc46b9a39d3abb',
-    '679f2f17d87bd45d7aa40f46',
-    '679f2f3bd87bd45d7aa40f4f',
+    '67a9fb9e902708715f3a8be5',
+    '67ac86f352cbc8fa8017f6b9',
+    '67ac871452cbc8fa8017f6bc',
   ];
 
   useEffect(() => {
     const fetchMentors = async () => {
       try {
         const mentorData = await Promise.all(
-          mentorIds.map((id) => API.get(`/users/mentor/${id}`).then((response) => response.data)),
+          mentorIds.map((id) =>
+            API.get(`/mentor/${id}`)  // No Authorization header needed
+              .then((response) => response.data)
+          )
         );
         setMentors(mentorData);
       } catch (error) {
         console.error('Error fetching mentors:', error);
       }
-    };
-
+    };    
+  
     fetchMentors();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  
+  
 
   return (
     <div className="pt-[90px] px-6 sm:px-16 md:px-24 lg:px-32 py-10 bg-background text-foreground">
