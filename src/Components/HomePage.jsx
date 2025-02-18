@@ -32,7 +32,7 @@ function HomePage() {
       try {
         const mentorData = await Promise.all(
           mentorIds.map((id) =>
-            API.get(`/mentor/${id}`)  // No Authorization header needed
+            API.get(`/mentor/${id}`)  
               .then((response) => response.data)
           )
         );
