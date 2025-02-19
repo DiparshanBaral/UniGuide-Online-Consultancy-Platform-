@@ -6,6 +6,7 @@ function Profile() {
   const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [updatedUser, setUpdatedUser] = useState({});
+  const [profilePic, setProfilePic] = useState(null); // State for profile picture
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -20,9 +21,8 @@ function Profile() {
             },
           });
   
-          // Access the user data from the response
-          if (response.status === 200) { // Changed from response.ok to response.status
-            const userData = response.data; // Accessing user data directly
+          if (response.status === 200) {
+            const userData = response.data;
             setUser(userData);
             setUpdatedUser(userData);
           } else {
@@ -44,7 +44,6 @@ function Profile() {
   
     fetchUserData();
   }, []);
-  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -52,6 +51,10 @@ function Profile() {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleFileChange = (e) => {
+    setProfilePic(e.target.files[0]); // Set the selected file
   };
 
   const handleUpdateProfile = async () => {
@@ -62,32 +65,34 @@ function Profile() {
   
     try {
       const session = JSON.parse(localStorage.getItem('session'));
-      const updatedData = { ...updatedUser };
-  
-      // Send the update request
-      const response = await API.put(`/student/${user._id}`, updatedData, {
+      const formData = new FormData();
+      formData.append('firstname', updatedUser.firstname);
+      formData.append('lastname', updatedUser.lastname);
+      formData.append('email', updatedUser.email);
+      if (profilePic) {
+        formData.append('profilePic', profilePic); // Append the profile picture
+      }
+
+      const response = await API.put(`/student/${user._id}`, formData, {
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data', // Set content type for FormData
           Authorization: `Bearer ${session.token}`,
         },
       });
   
-      // Check for successful response
       if (response.status === 200) {
-        // Update the user state with the new data
         setUser(response.data);
         setUpdatedUser(response.data);
+        setProfilePic(null); // Reset profilePic state
         setIsEditing(false);
         toast.success('Profile updated successfully!');
       } else {
-        // Handle error if the response status is not 200
         toast.error(`Failed to update profile: ${response.data.message || response.statusText}`);
       }
     } catch (error) {
       toast.error('An error occurred while updating the profile. ' + error.message);
     }
   };
-  
 
   if (isLoading) {
     return (
@@ -181,6 +186,14 @@ function Profile() {
                           onChange={handleInputChange}
                           className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
                           placeholder="Email"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Profile Picture</label>
+                        <input
+                          type="file"
+                          onChange={handleFileChange}
+                          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
                         />
                       </div>
                     </div>

@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import API from "../api";
+import API from '../api';
 
 function MentorProfilePersonal() {
   const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [updatedUser, setUpdatedUser] = useState({});
+  const [profilePic, setProfilePic] = useState(null); // State for profile picture
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -52,28 +53,40 @@ function MentorProfilePersonal() {
     }));
   };
 
+  const handleFileChange = (e) => {
+    setProfilePic(e.target.files[0]); // Set the selected file
+  };
+
   const handleUpdateProfile = async () => {
     if (!updatedUser.firstname || !updatedUser.lastname || !updatedUser.email) {
       toast.error('Please fill in all fields.');
       return;
     }
-  
+
+    setIsLoading(true); // Set loading state to true while updating
+
     try {
       const session = JSON.parse(localStorage.getItem('session'));
-      const updatedData = { ...updatedUser };
-  
-      const response = await API.put(`/mentor/${user._id}`, updatedData, {
+      const formData = new FormData();
+      formData.append('firstname', updatedUser.firstname);
+      formData.append('lastname', updatedUser.lastname);
+      formData.append('email', updatedUser.email);
+      if (profilePic) {
+        formData.append('profilePic', profilePic); // Append the profile picture
+      }
+
+      const response = await API.put(`/mentor/${user._id}`, formData, {
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'multipart/form-data', // Set content type for FormData
           Authorization: `Bearer ${session.token}`,
         },
       });
-  
-      // Check for response status 200 (OK)
+
       if (response.status === 200) {
-        const updatedUserData = response.data; // No need to await this, as you already have it
+        const updatedUserData = response.data;
         setUser(updatedUserData);
         setUpdatedUser(updatedUserData);
+        setProfilePic(null); // Reset profilePic state
         setIsEditing(false);
         toast.success('Profile updated successfully!');
       } else {
@@ -81,9 +94,10 @@ function MentorProfilePersonal() {
       }
     } catch (error) {
       toast.error('An error occurred while updating the profile. ' + error.message);
+    } finally {
+      setIsLoading(false); // Reset loading state
     }
   };
-  
 
   if (isLoading) {
     return (
@@ -127,6 +141,38 @@ function MentorProfilePersonal() {
                       <div>
                         <label className="text-sm font-medium text-gray-500">Role</label>
                         <p className="text-lg font-semibold text-gray-800">{user.role}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Profile Picture</label>
+                        {user.profilePic && (
+                          <img
+                            src={user.profilePic}
+                            alt="Profile"
+                            className="w-32 h-32 rounded-full"
+                          />
+                        )}
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Bio</label>
+                        <p className="text-lg font-semibold text-gray-800">{user.bio}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Expertise</label>
+                        <p className="text-lg font-semibold text-gray-800">
+                          {user.expertise.join(', ')}
+                        </p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Degree</label>
+                        <p className="text-lg font-semibold text-gray-800">{user.degree}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">
+                          Years of Experience
+                        </label>
+                        <p className="text-lg font-semibold text-gray-800">
+                          {user.yearsOfExperience}
+                        </p>
                       </div>
                     </div>
                     <button
@@ -172,19 +218,83 @@ function MentorProfilePersonal() {
                           placeholder="Email"
                         />
                       </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Profile Picture</label>
+                        <input
+                          type="file"
+                          onChange={handleFileChange}
+                          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Bio</label>
+                        <textarea
+                          name="bio"
+                          value={updatedUser.bio}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
+                          placeholder="Bio"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Expertise</label>
+                        <input
+                          type="text"
+                          name="expertise"
+                          value={
+                            Array.isArray(updatedUser.expertise)
+                              ? updatedUser.expertise.join(', ')
+                              : ''
+                          }
+                          onChange={(e) =>
+                            setUpdatedUser((prev) => ({
+                              ...prev,
+                              expertise: e.target.value
+                                ? e.target.value.split(',').map((item) => item.trim())
+                                : [],
+                            }))
+                          }
+                          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
+                          placeholder="Enter expertise (comma-separated)"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Degree</label>
+                        <input
+                          type="text"
+                          name="degree"
+                          value={updatedUser.degree}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
+                          placeholder="Degree"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">
+                          Years of Experience
+                        </label>
+                        <input
+                          type="number"
+                          name="yearsOfExperience"
+                          value={updatedUser.yearsOfExperience}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
+                          placeholder="Years of Experience"
+                        />
+                      </div>
                     </div>
-                    <div className="mt-6 flex space-x-4">
+                    <div className="flex justify-end mt-6 space-x-4">
                       <button
-                        className="w-full bg-green-500 text-white py-2 px-6 rounded-md hover:bg-green-600 transition-colors duration-200"
-                        onClick={handleUpdateProfile}
-                      >
-                        Save
-                      </button>
-                      <button
-                        className="w-full bg-gray-300 text-gray-700 py-2 px-6 rounded-md hover:bg-gray-400 transition-colors duration-200"
+                        className="bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition-colors duration-200"
                         onClick={() => setIsEditing(false)}
                       >
                         Cancel
+                      </button>
+                      <button
+                        className="bg-slate-800 text-white py-2 px-4 rounded-md hover:bg-slate-600 transition-colors duration-200"
+                        onClick={handleUpdateProfile}
+                      >
+                        Save Changes
                       </button>
                     </div>
                   </>
