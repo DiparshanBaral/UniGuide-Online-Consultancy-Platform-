@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import API from "../api";
 
-function Profile() {
+function MentorProfilePersonal() {
   const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [updatedUser, setUpdatedUser] = useState({});
@@ -11,18 +11,17 @@ function Profile() {
   useEffect(() => {
     const fetchUserData = async () => {
       const session = JSON.parse(localStorage.getItem('session'));
-  
+
       if (session && session._id && session.token) {
         try {
-          const response = await API.get(`/student/${session._id}`, {
+          const response = await API.get(`/mentor/${session._id}`, {
             headers: {
               Authorization: `Bearer ${session.token}`,
             },
           });
-  
-          // Access the user data from the response
-          if (response.status === 200) { // Changed from response.ok to response.status
-            const userData = response.data; // Accessing user data directly
+
+          if (response.status === 200) {
+            const userData = response.data;
             setUser(userData);
             setUpdatedUser(userData);
           } else {
@@ -41,10 +40,9 @@ function Profile() {
         setIsLoading(false);
       }
     };
-  
+
     fetchUserData();
   }, []);
-  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -64,24 +62,22 @@ function Profile() {
       const session = JSON.parse(localStorage.getItem('session'));
       const updatedData = { ...updatedUser };
   
-      // Send the update request
-      const response = await API.put(`/student/${user._id}`, updatedData, {
+      const response = await API.put(`/mentor/${user._id}`, updatedData, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${session.token}`,
         },
       });
   
-      // Check for successful response
+      // Check for response status 200 (OK)
       if (response.status === 200) {
-        // Update the user state with the new data
-        setUser(response.data);
-        setUpdatedUser(response.data);
+        const updatedUserData = response.data; // No need to await this, as you already have it
+        setUser(updatedUserData);
+        setUpdatedUser(updatedUserData);
         setIsEditing(false);
         toast.success('Profile updated successfully!');
       } else {
-        // Handle error if the response status is not 200
-        toast.error(`Failed to update profile: ${response.data.message || response.statusText}`);
+        toast.error(`Failed to update profile: ${response.statusText}`);
       }
     } catch (error) {
       toast.error('An error occurred while updating the profile. ' + error.message);
@@ -114,13 +110,6 @@ function Profile() {
           </div>
           <div className="p-8">
             <div className="flex flex-col md:flex-row items-center md:items-start space-y-8 md:space-y-0 md:space-x-8">
-              <div className="flex-shrink-0">
-                <img
-                  src={user.profilePic}
-                  alt="Profile"
-                  className="h-32 w-32 rounded-full border-4 border-white shadow-lg"
-                />
-              </div>
               <div className="flex-grow">
                 {!isEditing ? (
                   <>
@@ -209,4 +198,4 @@ function Profile() {
   );
 }
 
-export default Profile;
+export default MentorProfilePersonal;

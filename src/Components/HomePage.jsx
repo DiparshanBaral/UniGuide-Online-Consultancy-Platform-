@@ -23,8 +23,8 @@ function HomePage() {
   const [mentors, setMentors] = useState([]);
   const mentorIds = [
     '67a9fb9e902708715f3a8be5',
-    '67ac86f352cbc8fa8017f6b9',
-    '67ac871452cbc8fa8017f6bc',
+    '67b5889c669063e3459a69d0',
+    '67b588b2669063e3459a69d3',
   ];
 
   useEffect(() => {

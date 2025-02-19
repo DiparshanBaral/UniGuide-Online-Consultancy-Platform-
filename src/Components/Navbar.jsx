@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
 import { useAtom } from 'jotai';
 import { sessionAtom } from '@/atoms/session';
-import API from "../api";
+import API from '../api';
 
 function Navbar() {
   const [profileDropdown, setProfileDropdown] = useState(false);
@@ -12,23 +12,26 @@ function Navbar() {
   const navigate = useNavigate();
   const dropdownRef = useRef(null);
 
+  // Fetch session data from localStorage on initial render
+  useEffect(() => {
+    const savedSession = localStorage.getItem('session');
+    if (savedSession) {
+      setSession(JSON.parse(savedSession)); // Set session from localStorage if it exists
+    }
+  }, [setSession]);
+
   // Memoize fetchUserData with useCallback
   const fetchUserData = useCallback(
     async (userId, token, role) => {
       try {
         setIsFetchingUser(true);
-  
-        // Determine the API endpoint based on user role
         const endpoint = role === 'mentor' ? `/mentor/${userId}` : `/student/${userId}`;
-  
-        // Use API.get instead of fetch
         const response = await API.get(endpoint, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-  
-        // Update session only if data has changed
+
         setSession((prevSession) => {
           if (JSON.stringify(prevSession) !== JSON.stringify(response.data)) {
             return response.data;
@@ -37,19 +40,20 @@ function Navbar() {
         });
       } catch (error) {
         console.error('Error fetching user data:', error);
-        toast.error(error.response?.data?.message || 'Failed to fetch user data. Please try again.');
+        toast.error(
+          error.response?.data?.message || 'Failed to fetch user data. Please try again.'
+        );
       } finally {
         setIsFetchingUser(false);
       }
     },
     [setSession]
   );
-  
 
   // Fetch user data when session changes
   useEffect(() => {
     if (session && session._id && session.token) {
-      fetchUserData(session._id, session.token); // Fetch user data based on session info
+      fetchUserData(session._id, session.token, session.role); // Pass role to fetchUserData
     } else {
       setIsFetchingUser(false); // No session, just stop fetching user data
     }
@@ -63,12 +67,10 @@ function Navbar() {
       }
     };
 
-    // Add event listener when the dropdown is open
     if (profileDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
-    // Cleanup the event listener
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
@@ -144,7 +146,7 @@ function Navbar() {
                 <div className="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-md py-2">
                   {/* User Info Section (Clickable Link) */}
                   <Link
-                    to={session?.role === 'mentor' ? '/mentorprofile' : '/profile'}
+                    to={session?.role === 'mentor' ? '/mentorprofilepersonal' : '/profile'}
                     className="block px-4 py-3 border-b border-gray-200 hover:bg-gray-50 transition-colors duration-200"
                     onClick={() => setProfileDropdown(false)} // Close dropdown on click
                   >

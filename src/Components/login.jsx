@@ -17,22 +17,33 @@ export default function Login() {
     e.preventDefault();
     setError("");
     setLoading(true);
-
+  
     try {
       let response = await attemptAdminLogin(email, password);
-
+  
       if (response?.data?.token) {
         handleSuccessfulLogin(response.data, "admin");
         return;
       }
-
-      response = await attemptUserLogin(email, password);
-
+  
+      console.log("Admin login failed, attempting student login...");
+  
+      response = await attemptStudentLogin(email, password);
+  
       if (response?.data?.token) {
-        handleSuccessfulLogin(response.data, response.data.role);
+        handleSuccessfulLogin(response.data, "student");
         return;
       }
-
+  
+      console.log("Student login failed, attempting mentor login...");
+  
+      response = await attemptMentorLogin(email, password);
+  
+      if (response?.data?.token) {
+        handleSuccessfulLogin(response.data, "mentor");
+        return;
+      }
+  
       throw new Error("Invalid credentials. Please try again.");
     } catch (err) {
       setError(err.message || "Invalid credentials. Please try again.");
@@ -41,7 +52,7 @@ export default function Login() {
       setLoading(false);
     }
   };
-
+  
   const attemptAdminLogin = async (email, password) => {
     try {
       const response = await API.post("/admin/login", { email, password });
@@ -51,28 +62,33 @@ export default function Login() {
       return null;
     }
   };
-
-  const attemptUserLogin = async (email, password) => {
+  
+  const attemptStudentLogin = async (email, password) => {
     try {
-      let response;
-
-      response = await API.post("/student/login", { email, password });
-      if (response?.data?.token) return response;
-
-      response = await API.post("/mentor/login", { email, password });
+      const response = await API.post("/student/login", { email, password });
       return response;
-    } catch (userError) {
-      console.log("User login failed:", userError.message);
-      return null;
+    // eslint-disable-next-line no-unused-vars
+    } catch (studentError) {
+      return null; // Return null on error
     }
   };
-
+  
+  const attemptMentorLogin = async (email, password) => {
+    try {
+      const response = await API.post("/mentor/login", { email, password });
+      return response;
+    // eslint-disable-next-line no-unused-vars
+    } catch (mentorError) {
+      return null; // Return null on error
+    }
+  };
+  
   const handleSuccessfulLogin = (user, role) => {
     if (!user || !user.token) {
       console.error("Invalid response from server:", user);
       throw new Error("Invalid response from server. User data is missing.");
     }
-
+  
     let sessionData = {
       _id: user._id,
       firstname: user.firstname,
@@ -81,15 +97,15 @@ export default function Login() {
       role: role,
       token: user.token,
     };
-
+  
     if (role === "admin") {
       console.log("Admin login detected.");
       sessionData = { role: "admin", token: user.token };
     }
-
+  
     // Save session data
     localStorage.setItem("session", JSON.stringify(sessionData));
-
+  
     // Update session state
     setSession(sessionData);
     toast.success(
@@ -97,11 +113,12 @@ export default function Login() {
         ? "Welcome, Admin"
         : `Welcome back, ${user.firstname} ${user.lastname}`
     );
-
+  
     // Redirect based on role
     if (role === "admin") navigate("/adminDashboard");
     else navigate("/");
   };
+  
 
   return (
     <div
