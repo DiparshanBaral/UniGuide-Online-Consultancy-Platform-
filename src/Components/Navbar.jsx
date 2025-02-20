@@ -41,13 +41,13 @@ function Navbar() {
       } catch (error) {
         console.error('Error fetching user data:', error);
         toast.error(
-          error.response?.data?.message || 'Failed to fetch user data. Please try again.'
+          error.response?.data?.message || 'Failed to fetch user data. Please try again.',
         );
       } finally {
         setIsFetchingUser(false);
       }
     },
-    [setSession]
+    [setSession],
   );
 
   // Fetch user data when session changes
@@ -137,7 +137,7 @@ function Navbar() {
                 onClick={() => setProfileDropdown(!profileDropdown)}
               >
                 <img
-                  src={'./src/Img/profile.png'}
+                  src={session?.profilePic || './src/Img/profile.png'} // Use the profile picture or a placeholder
                   alt="Profile"
                   className="h-10 w-10 rounded-full border border-gray-300 object-cover"
                 />

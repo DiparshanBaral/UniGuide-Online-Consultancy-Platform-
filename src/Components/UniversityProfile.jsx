@@ -5,6 +5,7 @@ import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { StatCard } from '@/components/ui/stat-card';
 import { InfoSection } from '@/components/ui/info-section';
+import { Card } from '@/components/ui/card';
 import {
   GraduationCap,
   MapPin,
@@ -31,6 +32,7 @@ const UniversityProfile = () => {
   const [document, setDocument] = useState(null);
   const [description, setDescription] = useState('');
   const [session, setSession] = useState(null);
+  const [mentors, setMentors] = useState([]);
 
   // Fetch session data from localStorage
   useEffect(() => {
@@ -41,6 +43,27 @@ const UniversityProfile = () => {
       setIsMentor(parsedSession.role === 'mentor');
     }
   }, []);
+
+  //fetch mentors through mentorid
+  useEffect(() => {
+    const fetchMentors = async () => {
+      if (university && university.affiliatedMentors && university.affiliatedMentors.length > 0) {
+        try {
+          const mentorPromises = university.affiliatedMentors.map(mentorId =>
+            API.get(`/mentor/${mentorId}`)
+          );
+
+          const mentorResponses = await Promise.all(mentorPromises);
+          const fetchedMentors = mentorResponses.map(response => response.data);
+          setMentors(fetchedMentors);
+        } catch (error) {
+          console.error('Error fetching mentor information:', error);
+        }
+      }
+    };
+
+    fetchMentors();
+  }, [university]);
 
   // Format currency helper
   const formatCurrency = (amount) =>
@@ -111,7 +134,7 @@ const UniversityProfile = () => {
       <div className="container">
         {/* Header */}
         {/* University Image Section */}
-        <InfoSection >
+        <InfoSection>
           {' '}
           {/* Add margin bottom */}
           <img
@@ -296,29 +319,43 @@ const UniversityProfile = () => {
 
         {/* Affiliated Mentors Section */}
         <InfoSection title="Affiliated Mentors" className="mt-8" delay={1.2}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {university.affiliatedMentors && university.affiliatedMentors.length > 0 ? (
-              university.affiliatedMentors.map((mentor) => (
-                <div key={mentor._id} className="flex items-center gap-4 p-4 rounded-lg bg-muted">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {mentors.length > 0 ? (
+          mentors.map((mentor, index) => (
+            <motion.div
+              key={mentor._id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="h-full"
+            >
+              <Card className="h-full hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
+                {/* Gradient overlay on hover */}
+                <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+                <div className="flex items-center gap-4 p-4">
                   <img
-                    src={mentor.profilePicture} // Assuming you have a profilePicture field in your mentor object
-                    alt={`${mentor.name} Profile`}
-                    className="h-12 w-12 rounded-full"
+                    src={mentor.profilePic || 'https://via.placeholder.com/150'}
+                    alt={`${mentor.firstname} ${mentor.lastname} Profile`}
+                    className="h-16 w-16 rounded-full border-2 border-white shadow-md"
                   />
                   <div className="flex-1">
-                    <h3 className="font-semibold">{mentor.name}</h3>
-                    <p className="text-muted-foreground">{mentor.bio}</p>
+                    <h3 className="font-semibold text-lg">{mentor.firstname} {mentor.lastname}</h3>
+                    <p className="text-muted-foreground text-sm">{mentor.bio}</p>
+                    <p className="text-muted-foreground text-sm">Years of Experience: {mentor.yearsOfExperience}</p>
                   </div>
                   <Link to={`/mentorprofile/${mentor._id}`}>
                     <Button variant="outline">Visit Profile</Button>
                   </Link>
                 </div>
-              ))
-            ) : (
-              <p className="text-muted-foreground">No affiliated mentors available.</p>
-            )}
-          </div>
-        </InfoSection>
+              </Card>
+            </motion.div>
+          ))
+        ) : (
+          <p className="text-muted-foreground">No affiliated mentors available.</p>
+        )}
+      </div>
+    </InfoSection>
 
         {/* Back Button */}
         <motion.div

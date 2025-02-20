@@ -96,6 +96,7 @@ export default function Login() {
       email: user.email,
       role: role,
       token: user.token,
+      profilePic: user.profilePic || '',
     };
   
     if (role === "admin") {

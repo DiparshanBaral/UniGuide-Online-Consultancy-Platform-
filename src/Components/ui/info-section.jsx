@@ -21,7 +21,7 @@ export function InfoSection({ title, children, delay = 0, className = '' }) {
 }
 
 InfoSection.propTypes = {
-  title: PropTypes.string.isRequired,
+  title: PropTypes.string,
   children: PropTypes.node.isRequired,
   delay: PropTypes.number,
   className: PropTypes.string, // Add this line for prop types
