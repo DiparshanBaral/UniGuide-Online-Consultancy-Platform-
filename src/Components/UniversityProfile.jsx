@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { StatCard } from '@/components/ui/stat-card';
@@ -108,54 +107,64 @@ const UniversityProfile = () => {
   if (!university) return <div className="p-6">University not found</div>;
 
   return (
-    <div className="min-h-screen bg-background py-12 md:py-24 px-20">
-      <div className="container px-4 md:px-6">
+    <div className="mt-[30px] min-h-screen bg-background px-20">
+      <div className="container">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div>
-              <motion.h1
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl"
-              >
-                {university.name}
-              </motion.h1>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-                className="flex items-center gap-2 text-muted-foreground mt-2"
-              >
-                <MapPin className="h-4 w-4" />
-                <span>{university.location}</span>
-                <Badge variant="secondary">{university.country}</Badge>
-              </motion.div>
-            </div>
-            <div className="flex gap-2">
-              {' '}
-              {/* Flex container for buttons */}
-              {isMentor && (
-                <Button onClick={() => setShowModal(true)}>Apply for Affiliation</Button>
-              )}
-              <motion.div
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <a href={university.website} target="_blank" rel="noopener noreferrer">
-                  <Button className="gap-2">
-                    Visit Website
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                </a>
-              </motion.div>
+        {/* University Image Section */}
+        <InfoSection >
+          {' '}
+          {/* Add margin bottom */}
+          <img
+            src={university.image}
+            alt={`${university.name} Image`}
+            className="w-full rounded-lg shadow-md"
+            style={{ height: '450px' }}
+          />
+          <div className="mb-0">
+            {' '}
+            {/* Remove margin below the content */}
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <motion.h1
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl"
+                >
+                  {university.name}
+                </motion.h1>
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 }}
+                  className="flex items-center gap-2 text-muted-foreground mt-2"
+                >
+                  <MapPin className="h-4 w-4" />
+                  <span>{university.location}</span>
+                </motion.div>
+              </div>
+              <div className="flex gap-2">
+                {isMentor && (
+                  <Button onClick={() => setShowModal(true)}>Apply for Affiliation</Button>
+                )}
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <a href={university.website} target="_blank" rel="noopener noreferrer">
+                    <Button className="gap-2">
+                      Visit Website
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </a>
+                </motion.div>
+              </div>
             </div>
           </div>
-        </div>
+        </InfoSection>
 
         {/* Key Stats */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
+        <div className="grid gap-6  mt-8 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <StatCard
             title="World Ranking"
             value={`#${university.ranking}`}
@@ -285,12 +294,38 @@ const UniversityProfile = () => {
           </DialogContent>
         </Dialog>
 
+        {/* Affiliated Mentors Section */}
+        <InfoSection title="Affiliated Mentors" className="mt-8" delay={1.2}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {university.affiliatedMentors && university.affiliatedMentors.length > 0 ? (
+              university.affiliatedMentors.map((mentor) => (
+                <div key={mentor._id} className="flex items-center gap-4 p-4 rounded-lg bg-muted">
+                  <img
+                    src={mentor.profilePicture} // Assuming you have a profilePicture field in your mentor object
+                    alt={`${mentor.name} Profile`}
+                    className="h-12 w-12 rounded-full"
+                  />
+                  <div className="flex-1">
+                    <h3 className="font-semibold">{mentor.name}</h3>
+                    <p className="text-muted-foreground">{mentor.bio}</p>
+                  </div>
+                  <Link to={`/mentorprofile/${mentor._id}`}>
+                    <Button variant="outline">Visit Profile</Button>
+                  </Link>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted-foreground">No affiliated mentors available.</p>
+            )}
+          </div>
+        </InfoSection>
+
         {/* Back Button */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.1 }}
-          className="mt-8"
+          className="my-8"
         >
           <Link to="/universitieslist">
             <Button variant="outline">Back to Universities</Button>
