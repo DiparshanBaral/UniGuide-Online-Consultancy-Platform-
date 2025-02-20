@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/Components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { StatCard } from '@/components/ui/stat-card';
 import { InfoSection } from '@/components/ui/info-section';
 import {
@@ -17,12 +18,30 @@ import {
   BookOpen,
   DollarSign,
 } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import API from '../api';
+import { toast } from 'sonner';
 
 const UniversityProfile = () => {
   const { country, universityId } = useParams();
-
   const [university, setUniversity] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isMentor, setIsMentor] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [document, setDocument] = useState(null);
+  const [description, setDescription] = useState('');
+  const [session, setSession] = useState(null);
+
+  // Fetch session data from localStorage
+  useEffect(() => {
+    const savedSession = localStorage.getItem('session');
+    if (savedSession) {
+      const parsedSession = JSON.parse(savedSession);
+      setSession(parsedSession);
+      setIsMentor(parsedSession.role === 'mentor');
+    }
+  }, []);
 
   // Format currency helper
   const formatCurrency = (amount) =>
@@ -34,17 +53,56 @@ const UniversityProfile = () => {
 
   // Fetch university data from the backend
   useEffect(() => {
-    fetch(`http://localhost:5000/universities/${country}/${universityId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setUniversity(data);
-        setLoading(false);
-      })
-      .catch((error) => {
+    const fetchUniversity = async () => {
+      try {
+        const response = await API.get(`/universities/${country}/${universityId}`);
+        setUniversity(response.data);
+      } catch (error) {
         console.error('Error fetching university data:', error);
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchUniversity();
   }, [country, universityId]);
+
+  const handleFileChange = (e) => {
+    setDocument(e.target.files[0]);
+  };
+
+  const handleApply = async () => {
+    if (!document || !description) {
+      toast.error('Please upload a document and provide a description.');
+      return;
+    }
+
+    if (!session || !session._id || !session.token) {
+      toast.error('You must be logged in as a mentor to apply.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('document', document);
+    formData.append('mentorId', session._id);
+    formData.append('universityId', university._id);
+    formData.append('universityLocation', university.country);
+    formData.append('description', description);
+
+    try {
+      const config = {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${session.token}`,
+        },
+      };
+      const response = await API.post('/affiliations/apply', formData, config);
+      toast.success(response.data.message);
+      setShowModal(false);
+    } catch (error) {
+      toast.error(error.response?.data?.error || 'An error occurred');
+    }
+  };
 
   if (loading) return <div className="p-6">Loading...</div>;
   if (!university) return <div className="p-6">University not found</div>;
@@ -74,18 +132,25 @@ const UniversityProfile = () => {
                 <Badge variant="secondary">{university.country}</Badge>
               </motion.div>
             </div>
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <a href={university.website} target="_blank" rel="noopener noreferrer">
-                <Button className="gap-2">
-                  Visit Website
-                  <ExternalLink className="h-4 w-4" />
-                </Button>
-              </a>
-            </motion.div>
+            <div className="flex gap-2">
+              {' '}
+              {/* Flex container for buttons */}
+              {isMentor && (
+                <Button onClick={() => setShowModal(true)}>Apply for Affiliation</Button>
+              )}
+              <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <a href={university.website} target="_blank" rel="noopener noreferrer">
+                  <Button className="gap-2">
+                    Visit Website
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                </a>
+              </motion.div>
+            </div>
           </div>
         </div>
 
@@ -193,6 +258,32 @@ const UniversityProfile = () => {
             </div>
           </InfoSection>
         </div>
+
+        {/* Dialog for Apply for Affiliation */}
+        <Dialog open={showModal} onOpenChange={setShowModal}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Apply for Affiliation</DialogTitle>
+            </DialogHeader>
+            <p className="mb-4 text-muted-foreground">
+              Please upload your graduate certificate or relevant credentials that demonstrate your
+              qualifications. This may include transcripts, certifications, or other professional
+              documents.
+            </p>
+            <Input type="file" onChange={handleFileChange} />
+            <Textarea
+              placeholder="Briefly describe your qualifications and reasons for applying."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            <div className="flex justify-end mt-4">
+              <Button onClick={handleApply}>Submit</Button>
+              <Button variant="outline" onClick={() => setShowModal(false)} className="ml-2">
+                Cancel
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Back Button */}
         <motion.div
