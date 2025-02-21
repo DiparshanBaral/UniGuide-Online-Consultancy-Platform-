@@ -18,6 +18,7 @@ import { Toaster } from 'sonner';
 import UniversitiesList from './Components/UniversitiesList';
 import UniversityProfile from './Components/UniversityProfile';
 import MentorProfilePersonal from './Components/Mentorprofilepersonal';
+import PublicStudentProfile from './Components/PublicStudentProfile';
 
 function App() {
   return (
@@ -35,6 +36,7 @@ function App() {
               <Route path="/signup" element={<Signup />} />
               <Route path="/login" element={<Login />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/publicstudentprofile" element={<PublicStudentProfile />} />
               <Route path="/mentorprofilepersonal" element={<MentorProfilePersonal />} />
               <Route path="/mentorprofile" element={<MentorProfile />} />
               <Route path="/universities" element={<Universities />} />

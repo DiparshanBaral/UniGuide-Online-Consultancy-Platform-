@@ -69,6 +69,8 @@ function Profile() {
       formData.append('firstname', updatedUser.firstname);
       formData.append('lastname', updatedUser.lastname);
       formData.append('email', updatedUser.email);
+      formData.append('bio', updatedUser.bio || ''); // Include bio if available
+      formData.append('major', updatedUser.major || ''); // Include major if available
       if (profilePic) {
         formData.append('profilePic', profilePic); // Append the profile picture
       }
@@ -141,8 +143,12 @@ function Profile() {
                         <p className="text-lg font-semibold text-gray-800">{user.email}</p>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-500">Role</label>
-                        <p className="text-lg font-semibold text-gray-800">{user.role}</p>
+                        <label className="text-sm font-medium text-gray-500">Bio</label>
+                        <p className="text-lg font-semibold text-gray-800">{user.bio}</p>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Major</label>
+                        <p className="text-lg font-semibold text-gray-800">{user.major}</p>
                       </div>
                     </div>
                     <button
@@ -186,6 +192,27 @@ function Profile() {
                           onChange={handleInputChange}
                           className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
                           placeholder="Email"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Bio</label>
+                        <textarea
+                          name="bio"
+                          value={updatedUser.bio || ''}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
+                          placeholder="Tell us about yourself"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium text-gray-500">Major</label>
+                        <input
+                          type="text"
+                          name="major"
+                          value={updatedUser.major || ''}
+                          onChange={handleInputChange}
+                          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
+                          placeholder="Major"
                         />
                       </div>
                       <div>

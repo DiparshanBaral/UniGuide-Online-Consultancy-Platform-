@@ -49,12 +49,12 @@ const UniversityProfile = () => {
     const fetchMentors = async () => {
       if (university && university.affiliatedMentors && university.affiliatedMentors.length > 0) {
         try {
-          const mentorPromises = university.affiliatedMentors.map(mentorId =>
-            API.get(`/mentor/${mentorId}`)
+          const mentorPromises = university.affiliatedMentors.map((mentorId) =>
+            API.get(`/mentor/${mentorId}`),
           );
 
           const mentorResponses = await Promise.all(mentorPromises);
-          const fetchedMentors = mentorResponses.map(response => response.data);
+          const fetchedMentors = mentorResponses.map((response) => response.data);
           setMentors(fetchedMentors);
         } catch (error) {
           console.error('Error fetching mentor information:', error);
@@ -126,6 +126,31 @@ const UniversityProfile = () => {
     }
   };
 
+  const handleAddToWishlist = async () => {
+    if (!session || !session.token) {
+        toast.error('You must be logged in to add to wishlist.');
+        return;
+    }
+
+    console.log('universityId:', universityId); // Check if this value is valid
+    console.log('country:', country); // Check if this value is valid
+
+    try {
+        // Use the correct route for the backend
+        const response = await API.post(
+            '/student/wishlist',  // Correct route
+            { universityId, country: country.toUpperCase() }, // Uppercase country
+            { headers: { Authorization: `Bearer ${session.token}` } },
+        );
+
+        toast.success(response.data.message);
+    } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to add to wishlist');
+    }
+};
+  
+  
+
   if (loading) return <div className="p-6">Loading...</div>;
   if (!university) return <div className="p-6">University not found</div>;
 
@@ -166,8 +191,12 @@ const UniversityProfile = () => {
                 </motion.div>
               </div>
               <div className="flex gap-2">
-                {isMentor && (
+                {isMentor ? (
                   <Button onClick={() => setShowModal(true)}>Apply for Affiliation</Button>
+                ) : (
+                  <Button onClick={handleAddToWishlist} >
+                    Add to Wishlist
+                  </Button>
                 )}
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
@@ -319,43 +348,47 @@ const UniversityProfile = () => {
 
         {/* Affiliated Mentors Section */}
         <InfoSection title="Affiliated Mentors" className="mt-8" delay={1.2}>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {mentors.length > 0 ? (
-          mentors.map((mentor, index) => (
-            <motion.div
-              key={mentor._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="h-full"
-            >
-              <Card className="h-full hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
-                {/* Gradient overlay on hover */}
-                <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {mentors.length > 0 ? (
+              mentors.map((mentor, index) => (
+                <motion.div
+                  key={mentor._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="h-full"
+                >
+                  <Card className="h-full hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
+                    {/* Gradient overlay on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
 
-                <div className="flex items-center gap-4 p-4">
-                  <img
-                    src={mentor.profilePic || 'https://via.placeholder.com/150'}
-                    alt={`${mentor.firstname} ${mentor.lastname} Profile`}
-                    className="h-16 w-16 rounded-full border-2 border-white shadow-md"
-                  />
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-lg">{mentor.firstname} {mentor.lastname}</h3>
-                    <p className="text-muted-foreground text-sm">{mentor.bio}</p>
-                    <p className="text-muted-foreground text-sm">Years of Experience: {mentor.yearsOfExperience}</p>
-                  </div>
-                  <Link to={`/mentorprofile/${mentor._id}`}>
-                    <Button variant="outline">Visit Profile</Button>
-                  </Link>
-                </div>
-              </Card>
-            </motion.div>
-          ))
-        ) : (
-          <p className="text-muted-foreground">No affiliated mentors available.</p>
-        )}
-      </div>
-    </InfoSection>
+                    <div className="flex items-center gap-4 p-4">
+                      <img
+                        src={mentor.profilePic || 'https://via.placeholder.com/150'}
+                        alt={`${mentor.firstname} ${mentor.lastname} Profile`}
+                        className="h-16 w-16 rounded-full border-2 border-white shadow-md"
+                      />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-lg">
+                          {mentor.firstname} {mentor.lastname}
+                        </h3>
+                        <p className="text-muted-foreground text-sm">{mentor.bio}</p>
+                        <p className="text-muted-foreground text-sm">
+                          Years of Experience: {mentor.yearsOfExperience}
+                        </p>
+                      </div>
+                      <Link to={`/mentorprofile/${mentor._id}`}>
+                        <Button variant="outline">Visit Profile</Button>
+                      </Link>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))
+            ) : (
+              <p className="text-muted-foreground">No affiliated mentors available.</p>
+            )}
+          </div>
+        </InfoSection>
 
         {/* Back Button */}
         <motion.div
