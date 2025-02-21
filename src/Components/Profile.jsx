@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import API from "../api";
-import { motion } from 'framer-motion';
+// import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { AvatarUpload } from './ui/avatarupload';
 
@@ -15,15 +15,13 @@ function Profile() {
   useEffect(() => {
     const fetchUserData = async () => {
       const session = JSON.parse(localStorage.getItem('session'));
-  
+
       if (session && session._id && session.token) {
         try {
           const response = await API.get(`/student/${session._id}`, {
-            headers: {
-              Authorization: `Bearer ${session.token}`,
-            },
+            headers: { Authorization: `Bearer ${session.token}` },
           });
-  
+
           if (response.status === 200) {
             const userData = response.data;
             setUser(userData);
@@ -44,21 +42,18 @@ function Profile() {
         setIsLoading(false);
       }
     };
-  
+
     fetchUserData();
   }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setUpdatedUser((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setUpdatedUser((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleUpdateProfile = async () => {
     if (!updatedUser.firstname || !updatedUser.lastname || !updatedUser.email) {
-      toast.error('Please fill in all fields.');
+      toast.error('Please fill in all required fields.');
       return;
     }
 
@@ -97,150 +92,116 @@ function Profile() {
 
   if (isLoading) {
     return (
-      <div className="pt-[90px] min-h-screen bg-gray-100 flex justify-center items-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-slate-800"></div>
+      <div className="flex justify-center items-center h-screen">
+        <span className="loading loading-spinner text-primary"></span>
       </div>
     );
   }
 
   if (!user) {
     return (
-      <div className="pt-[90px] min-h-screen bg-gray-100 flex justify-center items-center">
-        <p className="text-gray-800">No user data found.</p>
+      <div className="flex justify-center items-center h-screen">
+        <p className="text-lg text-gray-500">No user data found.</p>
       </div>
     );
   }
 
   return (
-    <div className="pt-[90px] min-h-screen bg-gray-100 py-8">
-      <div className="container mx-auto px-4 max-w-7xl">
-        <motion.div 
-          className="bg-white rounded-lg shadow-lg overflow-hidden"
-          initial={{ opacity: 0 }} 
-          animate={{ opacity: 1 }} 
-          transition={{ duration: 0.5 }}
-        >
-          <div className="bg-slate-800 p-6">
-            <h1 className="text-2xl font-bold text-white">Your Profile</h1>
+    <div className="container mx-auto p-6 pt-20"> {/* Added pt-20 for navbar spacing */}
+      <div className="max-w-3xl mx-auto bg-white shadow-lg rounded-lg overflow-hidden">
+        {/* Header Section */}
+        <div className="bg-gray-100 p-6 text-center">
+          {/* Profile Picture */}
+          <div className="relative w-40 h-40 mx-auto mb-4">
+            <AvatarUpload
+              currentAvatar={user.profilePic}
+              onImageSelect={(file) => setProfilePic(file)}
+              onRemove={() => setProfilePic(null)}
+              isEditing={isEditing}
+            />
           </div>
-          <div className="p-8">
-            <div className="flex flex-col md:flex-row items-center md:items-start space-y-8 md:space-y-0 md:space-x-8">
-              <div className="flex-shrink-0">
-                <AvatarUpload
-                  currentAvatar={user.profilePic}
-                  onImageSelect={setProfilePic}
-                  onRemove={() => setProfilePic(null)}
-                  isEditing={isEditing}
+          <h1 className="text-2xl font-bold mt-2">{`${user.firstname} ${user.lastname}`}</h1>
+          <p className="text-gray-600">{user.email}</p>
+        </div>
+
+        {/* Profile Content */}
+        <div className="p-6">
+          {!isEditing ? (
+            <>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">Bio</label>
+                  <p className="text-gray-800">{user.bio || 'No bio available.'}</p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-600">Major</label>
+                  <p className="text-gray-800">{user.major || 'Not specified.'}</p>
+                </div>
+              </div>
+              <Button onClick={() => setIsEditing(true)} className="mt-6 w-full">
+                Edit Profile
+              </Button>
+            </>
+          ) : (
+            <form className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600">First Name</label>
+                <input
+                  type="text"
+                  name="firstname"
+                  value={updatedUser.firstname}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 />
               </div>
-              <div className="flex-grow">
-                {!isEditing ? (
-                  <>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">Full Name</label>
-                        <p className="text-lg font-semibold text-gray-800">
-                          {user.firstname} {user.lastname}
-                        </p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">Email</label>
-                        <p className="text-lg font-semibold text-gray-800">{user.email}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">Bio</label>
-                        <p className="text-lg font-semibold text-gray-800">{user.bio}</p>
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">Major</label>
-                        <p className="text-lg font-semibold text-gray-800">{user.major}</p>
-                      </div>
-                    </div>
-                    <Button
-                      className="mt-6 w-full md:w-auto bg-slate-800 text-white py-2 px-6 rounded-md hover:bg-slate-600 transition-colors duration-200"
-                      onClick={() => setIsEditing(true)}
-                    >
-                      Edit Profile
-                    </Button>
-                  </>
-                ) : (
-                  <>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">First Name</label>
-                        <input
-                          type="text"
-                          name="firstname"
-                          value={updatedUser.firstname}
-                          onChange={handleInputChange}
-                          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
-                          placeholder="First Name"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">Last Name</label>
-                        <input
-                          type="text"
-                          name="lastname"
-                          value={updatedUser.lastname}
-                          onChange={handleInputChange}
-                          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
-                          placeholder="Last Name"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">Email</label>
-                        <input
-                          type="email"
-                          name="email"
-                          value={updatedUser.email}
-                          onChange={handleInputChange}
-                          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
-                          placeholder="Email"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">Bio</label>
-                        <textarea
-                          name="bio"
-                          value={updatedUser.bio || ''}
-                          onChange={handleInputChange}
-                          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
-                          placeholder="Tell us about yourself"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">Major</label>
-                        <input
-                          type="text"
-                          name="major"
-                          value={updatedUser.major || ''}
-                          onChange={handleInputChange}
-                          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
-                          placeholder="Major"
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-6 flex space-x-4">
-                      <Button
-                        className="w-full bg-green-500 text-white py-2 px-6 rounded-md hover:bg-green-600 transition-colors duration-200"
-                        onClick={handleUpdateProfile}
-                      >
-                        Save
-                      </Button>
-                      <Button
-                        className="w-full bg-gray-300 text-gray-700 py-2 px-6 rounded-md hover:bg-gray-400 transition-colors duration-200"
-                        onClick={() => setIsEditing(false)}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </>
-                )}
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Last Name</label>
+                <input
+                  type="text"
+                  name="lastname"
+                  value={updatedUser.lastname}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
               </div>
-            </div>
-          </div>
-        </motion.div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={updatedUser.email}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Bio</label>
+                <textarea
+                  name="bio"
+                  value={updatedUser.bio}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                ></textarea>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600">Major</label>
+                <input
+                  type="text"
+                  name="major"
+                  value={updatedUser.major}
+                  onChange={handleInputChange}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
+              <div className="flex justify-end space-x-4">
+                <Button onClick={() => setIsEditing(false)} variant="outline">
+                  Cancel
+                </Button>
+                <Button onClick={handleUpdateProfile}>Save</Button>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );
