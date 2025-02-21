@@ -15,7 +15,7 @@ function MentorProfilePersonal() {
 
       if (session && session._id && session.token) {
         try {
-          const response = await API.get(`/mentor/${session._id}`, {
+          const response = await API.get(`/mentor/profile/${session._id}`, {
             headers: {
               Authorization: `Bearer ${session.token}`,
             },

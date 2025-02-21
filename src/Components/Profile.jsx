@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import API from "../api";
+import { motion } from 'framer-motion';
+import { Button } from "@/components/ui/button";
+import { AvatarUpload } from './ui/avatarupload';
 
 function Profile() {
   const [user, setUser] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [updatedUser, setUpdatedUser] = useState({});
-  const [profilePic, setProfilePic] = useState(null); // State for profile picture
+  const [profilePic, setProfilePic] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -53,39 +56,35 @@ function Profile() {
     }));
   };
 
-  const handleFileChange = (e) => {
-    setProfilePic(e.target.files[0]); // Set the selected file
-  };
-
   const handleUpdateProfile = async () => {
     if (!updatedUser.firstname || !updatedUser.lastname || !updatedUser.email) {
       toast.error('Please fill in all fields.');
       return;
     }
-  
+
     try {
       const session = JSON.parse(localStorage.getItem('session'));
       const formData = new FormData();
       formData.append('firstname', updatedUser.firstname);
       formData.append('lastname', updatedUser.lastname);
       formData.append('email', updatedUser.email);
-      formData.append('bio', updatedUser.bio || ''); // Include bio if available
-      formData.append('major', updatedUser.major || ''); // Include major if available
+      formData.append('bio', updatedUser.bio || '');
+      formData.append('major', updatedUser.major || '');
       if (profilePic) {
-        formData.append('profilePic', profilePic); // Append the profile picture
+        formData.append('profilePic', profilePic);
       }
 
       const response = await API.put(`/student/${user._id}`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data', // Set content type for FormData
+          'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${session.token}`,
         },
       });
-  
+
       if (response.status === 200) {
         setUser(response.data);
         setUpdatedUser(response.data);
-        setProfilePic(null); // Reset profilePic state
+        setProfilePic(null);
         setIsEditing(false);
         toast.success('Profile updated successfully!');
       } else {
@@ -115,17 +114,23 @@ function Profile() {
   return (
     <div className="pt-[90px] min-h-screen bg-gray-100 py-8">
       <div className="container mx-auto px-4 max-w-7xl">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <motion.div 
+          className="bg-white rounded-lg shadow-lg overflow-hidden"
+          initial={{ opacity: 0 }} 
+          animate={{ opacity: 1 }} 
+          transition={{ duration: 0.5 }}
+        >
           <div className="bg-slate-800 p-6">
             <h1 className="text-2xl font-bold text-white">Your Profile</h1>
           </div>
           <div className="p-8">
             <div className="flex flex-col md:flex-row items-center md:items-start space-y-8 md:space-y-0 md:space-x-8">
               <div className="flex-shrink-0">
-                <img
-                  src={user.profilePic}
-                  alt="Profile"
-                  className="h-32 w-32 rounded-full border-4 border-white shadow-lg"
+                <AvatarUpload
+                  currentAvatar={user.profilePic}
+                  onImageSelect={setProfilePic}
+                  onRemove={() => setProfilePic(null)}
+                  isEditing={isEditing}
                 />
               </div>
               <div className="flex-grow">
@@ -151,12 +156,12 @@ function Profile() {
                         <p className="text-lg font-semibold text-gray-800">{user.major}</p>
                       </div>
                     </div>
-                    <button
+                    <Button
                       className="mt-6 w-full md:w-auto bg-slate-800 text-white py-2 px-6 rounded-md hover:bg-slate-600 transition-colors duration-200"
                       onClick={() => setIsEditing(true)}
                     >
                       Edit Profile
-                    </button>
+                    </Button>
                   </>
                 ) : (
                   <>
@@ -215,35 +220,27 @@ function Profile() {
                           placeholder="Major"
                         />
                       </div>
-                      <div>
-                        <label className="text-sm font-medium text-gray-500">Profile Picture</label>
-                        <input
-                          type="file"
-                          onChange={handleFileChange}
-                          className="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-800 focus:border-slate-800"
-                        />
-                      </div>
                     </div>
                     <div className="mt-6 flex space-x-4">
-                      <button
+                      <Button
                         className="w-full bg-green-500 text-white py-2 px-6 rounded-md hover:bg-green-600 transition-colors duration-200"
                         onClick={handleUpdateProfile}
                       >
                         Save
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         className="w-full bg-gray-300 text-gray-700 py-2 px-6 rounded-md hover:bg-gray-400 transition-colors duration-200"
                         onClick={() => setIsEditing(false)}
                       >
                         Cancel
-                      </button>
+                      </Button>
                     </div>
                   </>
                 )}
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

@@ -38,7 +38,7 @@ function App() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/publicstudentprofile" element={<PublicStudentProfile />} />
               <Route path="/mentorprofilepersonal" element={<MentorProfilePersonal />} />
-              <Route path="/mentorprofile" element={<MentorProfile />} />
+              <Route path="/mentorprofile/:id" element={<MentorProfile />} />
               <Route path="/universities" element={<Universities />} />
               <Route path="/discussionrooms" element={<DiscussionRooms />} />
               <Route path="/visasection" element={<VisaSection />} />
