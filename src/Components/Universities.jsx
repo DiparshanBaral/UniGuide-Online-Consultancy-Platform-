@@ -168,7 +168,7 @@ function Universities() {
                         <img
                           src={university.image || 'https://via.placeholder.com/150'}
                           alt={`${university.name} logo`}
-                          className="h-full w-full rounded-lg object-contain border p-2"
+                          className="h-full w-full rounded-lg object-cover"
                         />
                         <Badge variant="secondary" className="absolute -top-2 -right-2">
                           #{university.ranking || 'N/A'}
