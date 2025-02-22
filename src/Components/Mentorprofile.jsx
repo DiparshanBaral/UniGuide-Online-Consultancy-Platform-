@@ -3,25 +3,36 @@ import { toast } from 'sonner';
 import API from '../api';
 import { useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 import RatingStars from '@/components/ui/rating-stars';
-import { BookOpen, Globe, MessageSquare, Briefcase } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { MessageSquare, Briefcase, Globe, BookOpen } from 'lucide-react';
 
 const containerVariants = {
   hidden: { opacity: 0, y: 50 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, staggerChildren: 0.2 } },
 };
-
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
 };
 
-function Mentorprofile() {
+function MentorProfile() {
   const { id } = useParams();
   const [mentor, setMentor] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [description, setDescription] = useState('');
+  const session = JSON.parse(localStorage.getItem('session'));
 
   useEffect(() => {
     const fetchMentorData = async () => {
@@ -36,9 +47,47 @@ function Mentorprofile() {
         setIsLoading(false);
       }
     };
-
     fetchMentorData();
   }, [id]);
+
+  // Handle connection request submission
+  const handleApplyForConnection = async () => {
+    if (!description.trim()) {
+      toast.error('Please provide a description for your connection request.');
+      return;
+    }
+
+    try {
+      const session = JSON.parse(localStorage.getItem('session'));
+      if (!session || !session.token) {
+        toast.error('You must be logged in to apply for a connection.');
+        return;
+      }
+
+      const response = await API.post(
+        '/connections/apply',
+        {
+          studentId: session._id,
+          mentorId: id,
+          description,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${session.token}`, // Ensure the token is included in the request
+          },
+        },
+      );
+
+      if (response.status === 201) {
+        toast.success('Connection request submitted successfully!');
+        setIsDialogOpen(false); // Close the dialog after successful submission
+        setDescription(''); // Reset the description field
+      }
+    } catch (error) {
+      console.error('Error submitting connection request:', error);
+      toast.error(error.response?.data?.error || 'An error occurred while submitting the request.');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -78,7 +127,6 @@ function Mentorprofile() {
                   className="w-full h-full rounded-full object-cover border-4 border-background shadow-xl"
                 />
               </div>
-
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
                   {mentor.firstname} {mentor.lastname}
@@ -94,6 +142,35 @@ function Mentorprofile() {
                     ({mentor.totalReviews || 0} reviews)
                   </span>
                 </div>
+                {/* Connect with Mentor Button */}
+                {session && session.role === 'student' && (
+                  <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="default" className="mt-4">
+                        Connect with Mentor
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Request Connection</DialogTitle>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <Textarea
+                          placeholder="Describe why you want to connect with this mentor..."
+                          value={description}
+                          onChange={(e) => setDescription(e.target.value)}
+                          className="resize-none"
+                        />
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                          Cancel
+                        </Button>
+                        <Button onClick={handleApplyForConnection}>Submit</Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
               </div>
             </motion.div>
           </motion.div>
@@ -219,4 +296,4 @@ function Mentorprofile() {
   );
 }
 
-export default Mentorprofile;
+export default MentorProfile;
