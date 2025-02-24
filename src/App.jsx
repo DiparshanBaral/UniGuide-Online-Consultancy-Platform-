@@ -19,6 +19,8 @@ import UniversitiesList from './Components/UniversitiesList';
 import UniversityProfile from './Components/UniversityProfile';
 import MentorProfilePersonal from './Components/Mentorprofilepersonal';
 import PublicStudentProfile from './Components/PublicStudentProfile';
+import StudentPortal from './Components/StudentPortal';
+import MentorPortal from './Components/MentorPortal';
 
 function App() {
   return (
@@ -48,6 +50,8 @@ function App() {
               <Route path="/admindashboard" element={<AdminDashboard />} />
               <Route path="/universitieslist" element={<UniversitiesList />} />
               <Route path="/universityprofile/:country/:universityId" element={<UniversityProfile />} />
+              <Route path="/studentportal" element={<StudentPortal />} />
+              <Route path="/mentorportal" element={<MentorPortal />} />
             </Routes>
           </div>
 
