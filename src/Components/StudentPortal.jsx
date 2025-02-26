@@ -1,150 +1,129 @@
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
-import API from "../api";
-import { useParams } from "react-router-dom";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { useEffect, useState, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { Toaster, toast } from 'sonner';
+import { motion } from 'framer-motion';
+import { CheckCircle, AlertCircle } from 'lucide-react';
+import API from '../api';
 
-function StudentPortal() {
-  const { id } = useParams(); // Mentor ID
-  const [portal, setPortal] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+const StudentPortal = () => {
+  const { portalid } = useParams();
   const [tasks, setTasks] = useState([]);
-  const [documents, setDocuments] = useState([]);
 
+  // Fetch all tasks for the portal
+  const fetchTasks = useCallback(async () => {
+    try {
+      const response = await API.get(`/portal/tasks?portalId=${portalid}`);
+      setTasks(response.data.tasks);
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      toast.error('Failed to fetch tasks. Please try again.', {
+        description: 'An unexpected error occurred.',
+      });
+    }
+  }, [portalid]);
+
+  // Fetch tasks when the component mounts or when portalid changes
   useEffect(() => {
-    const fetchPortalData = async () => {
-      setIsLoading(true);
-      try {
-        const session = JSON.parse(localStorage.getItem("session"));
-        if (!session || !session.token) {
-          toast.error("You must be logged in to view the portal.");
-          return;
-        }
+    fetchTasks();
+  }, [fetchTasks]);
 
-        const response = await API.get(`/portals/student/${id}`, {
-          headers: { Authorization: `Bearer ${session.token}` },
-        });
-
-        if (response.status === 200) {
-          const portalData = response.data;
-          setPortal(portalData);
-          setTasks(portalData.tasks || []);
-          setDocuments(portalData.documents || []);
-        } else {
-          toast.error("Failed to fetch portal data.");
-        }
-      } catch (error) {
-        console.error("Error fetching portal data:", error);
-        toast.error("An error occurred while fetching the portal data.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPortalData();
-  }, [id]);
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (!portal) {
-    return <div>No portal data found.</div>;
-  }
+  // Update task status (Completed/Pending)
+  const handleUpdateTaskStatus = async (taskId, newStatus) => {
+    try {
+      await API.put('/portal/task/status', {
+        portalId: portalid,
+        taskId,
+        taskStatus: newStatus,
+      });
+      fetchTasks(); // Refetch tasks to reflect the updated status
+      toast.success(`Task marked as ${newStatus.toLowerCase()} successfully!`);
+    } catch (error) {
+      console.error('Error updating task status:', error);
+      toast.error('Failed to update task status. Please try again.', {
+        description: 'An unexpected error occurred.',
+      });
+    }
+  };
 
   return (
-    <div className="p-6">
-      <h1 className="text-3xl font-bold mb-6">Student Portal</h1>
-
-      {/* Portal Header */}
-      <Card className="mb-6">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="min-h-screen bg-gray-50 p-8"
+    >
+      {/* Toaster for notifications */}
+      <Toaster position="top-center" richColors />
+      {/* Main Card */}
+      <Card className="mt-[50px] max-w-4xl mx-auto shadow-lg">
         <CardHeader>
-          <CardTitle>Application Status</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <CheckCircle className="h-6 w-6 text-primary" />
+            Student Portal
+          </CardTitle>
+          <CardDescription>View and manage your tasks for this mentorship.</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-lg">
-            <strong>Status:</strong> {portal.applicationStatus}
-          </p>
-          <p className="text-lg">
-            <strong>Country:</strong> {portal.country}
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Tasks Section */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Tasks</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {tasks.length > 0 ? (
-            <ul className="space-y-4">
-              {tasks.map((task) => (
-                <li key={task.taskId} className="flex justify-between items-center">
+          {/* Task List */}
+          <Separator className="my-6" />
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <AlertCircle className="h-5 w-5 text-primary" />
+            Tasks
+          </h3>
+          <div className="mt-4 space-y-4">
+            {tasks.length > 0 ? (
+              tasks.map((task) => (
+                <motion.div
+                  key={task._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="bg-white p-4 rounded-lg shadow-sm flex justify-between items-center"
+                >
                   <div>
-                    <h3 className="font-semibold">{task.title}</h3>
-                    <p>{task.description}</p>
-                    <p className="text-sm text-gray-500">
-                      Due: {new Date(task.dueDate).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm ${
-                      task.status === "Completed"
-                        ? "bg-green-200 text-green-800"
-                        : "bg-yellow-200 text-yellow-800"
-                    }`}
-                  >
-                    {task.status}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No tasks available.</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Documents Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Uploaded Documents</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {documents.length > 0 ? (
-            <ul className="space-y-4">
-              {documents.map((doc) => (
-                <li key={doc._id} className="flex justify-between items-center">
-                  <div>
-                    <h3 className="font-semibold">{doc.title}</h3>
-                    <a
-                      href={doc.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 hover:underline"
+                    <h4 className="font-medium">{task.title}</h4>
+                    <p className="text-sm text-gray-500">{task.description}</p>
+                    <Badge
+                      variant={task.taskStatus === 'Completed' ? 'success' : 'secondary'}
+                      className="mt-2"
                     >
-                      View Document
-                    </a>
+                      {task.taskStatus}
+                    </Badge>
                   </div>
-                  <p className="text-sm text-gray-500">
-                    Uploaded by: {doc.uploadedBy}
-                  </p>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>No documents uploaded yet.</p>
-          )}
+                  <div className="flex gap-2">
+                    {task.taskStatus === 'Pending' && (
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => handleUpdateTaskStatus(task._id, 'Completed')}
+                      >
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                      </Button>
+                    )}
+                    {task.taskStatus === 'Completed' && (
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        onClick={() => handleUpdateTaskStatus(task._id, 'Pending')}
+                      >
+                        <AlertCircle className="h-4 w-4 text-yellow-500" />
+                      </Button>
+                    )}
+                  </div>
+                </motion.div>
+              ))
+            ) : (
+              <p className="text-gray-500">No tasks available.</p>
+            )}
+          </div>
         </CardContent>
       </Card>
-    </div>
+    </motion.div>
   );
-}
+};
 
 export default StudentPortal;

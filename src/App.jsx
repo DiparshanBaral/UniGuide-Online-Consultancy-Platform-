@@ -50,8 +50,8 @@ function App() {
               <Route path="/admindashboard" element={<AdminDashboard />} />
               <Route path="/universitieslist" element={<UniversitiesList />} />
               <Route path="/universityprofile/:country/:universityId" element={<UniversityProfile />} />
-              <Route path="/studentportal" element={<StudentPortal />} />
-              <Route path="/mentorportal" element={<MentorPortal />} />
+              <Route path="/studentportal/:portalid" element={<StudentPortal />} />
+              <Route path="/mentorportal/:portalid" element={<MentorPortal />} />
             </Routes>
           </div>
 

@@ -102,7 +102,7 @@ export default function StudentDashboard() {
                       connectedMentors.map((connection) => (
                         <a
                           key={connection._id}
-                          href={`/studentportal`} // Link to mentor profile (future implementation)
+                          href={`/studentportal/${connection.portalId}`}
                           className="block bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-200 hover:scale-[1.02]"
                         >
                           <div className="p-4">
