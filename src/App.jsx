@@ -1,26 +1,26 @@
-import './App.css';
-import Signup from './Components/Signup';
-import Login from './Components/Login';
-import HomePage from './Components/HomePage';
-import Footer from './Components/Footer';
-import Navbar from './Components/Navbar';
-import Profile from './Components/Profile';
-import MentorProfile from './Components/Mentorprofile';
-import Aboutus from './Components/Aboutus';
-import DiscussionRooms from './Components/DiscussionRooms';
-import VisaSection from './Components/VisaSection';
-import Universities from './Components/Universities';
-import MentorDashboard from './Components/MentorDashboard'; 
-import StudentDashboard from './Components/StudentDashboard';
-import AdminDashboard from './Components/adminDashboard';
+import '@/App.css';
+import Signup from '@/App/Signup';
+import Login from '@/App/Login';
+import HomePage from '@/App/HomePage';
+import Footer from '@/Components/Footer';
+import Navbar from '@/Components/Navbar';
+import Profile from '@/App/Profile';
+import MentorProfile from '@/App/Mentorprofile';
+import Aboutus from '@/App/Aboutus';
+import DiscussionRooms from '@/App/DiscussionRooms';
+import VisaSection from '@/App/VisaSection';
+import Universities from '@/App/Universities';
+import MentorDashboard from '@/App/MentorDashboard'; 
+import StudentDashboard from '@/App/StudentDashboard';
+import AdminDashboard from '@/App/AdminDashboard';
+import UniversitiesList from '@/App/UniversitiesList';
+import UniversityProfile from '@/App/UniversityProfile';
+import MentorProfilePersonal from '@/App/Mentorprofilepersonal';
+import PublicStudentProfile from '@/App/PublicStudentProfile';
+import StudentPortal from '@/App/StudentPortal';
+import MentorPortal from '@/App/MentorPortal';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import UniversitiesList from './Components/UniversitiesList';
-import UniversityProfile from './Components/UniversityProfile';
-import MentorProfilePersonal from './Components/Mentorprofilepersonal';
-import PublicStudentProfile from './Components/PublicStudentProfile';
-import StudentPortal from './Components/StudentPortal';
-import MentorPortal from './Components/MentorPortal';
 
 function App() {
   return (

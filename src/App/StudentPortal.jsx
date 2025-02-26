@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Toaster, toast } from 'sonner';
 import { motion } from 'framer-motion';
-import { CheckCircle, AlertCircle } from 'lucide-react';
+import { CheckCircle, Undo2 } from 'lucide-react';
 import API from '../api';
 
 const StudentPortal = () => {
@@ -40,7 +40,16 @@ const StudentPortal = () => {
         taskStatus: newStatus,
       });
       fetchTasks(); // Refetch tasks to reflect the updated status
-      toast.success(`Task marked as ${newStatus.toLowerCase()} successfully!`);
+
+      if (newStatus === 'Completed') {
+        toast.success('🎉 Task completed successfully!', {
+          description: 'Great job! Keep up the good work.',
+        });
+      } else {
+        toast.info('Task reverted to pending.', {
+          description: 'You can complete it anytime!',
+        });
+      }
     } catch (error) {
       console.error('Error updating task status:', error);
       toast.error('Failed to update task status. Please try again.', {
@@ -62,7 +71,7 @@ const StudentPortal = () => {
       <Card className="mt-[50px] max-w-4xl mx-auto shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <CheckCircle className="h-6 w-6 text-primary" />
+            <CheckCircle className="h-6 w-6 text-green-500" />
             Student Portal
           </CardTitle>
           <CardDescription>View and manage your tasks for this mentorship.</CardDescription>
@@ -71,7 +80,7 @@ const StudentPortal = () => {
           {/* Task List */}
           <Separator className="my-6" />
           <h3 className="text-lg font-semibold flex items-center gap-2">
-            <AlertCircle className="h-5 w-5 text-primary" />
+            <CheckCircle className="h-5 w-5 text-green-500" />
             Tasks
           </h3>
           <div className="mt-4 space-y-4">
@@ -98,19 +107,21 @@ const StudentPortal = () => {
                     {task.taskStatus === 'Pending' && (
                       <Button
                         size="icon"
-                        variant="outline"
+                        variant="default"
+                        className="bg-gradient-to-r from-green-400 to-green-500 hover:from-green-500 hover:to-green-700 text-white shadow-md"
                         onClick={() => handleUpdateTaskStatus(task._id, 'Completed')}
                       >
-                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <CheckCircle className="h-5 w-5 text-white" />
                       </Button>
                     )}
                     {task.taskStatus === 'Completed' && (
                       <Button
                         size="icon"
                         variant="outline"
+                        className="border-gray-300 text-gray-700 hover:bg-gray-100 shadow-sm"
                         onClick={() => handleUpdateTaskStatus(task._id, 'Pending')}
                       >
-                        <AlertCircle className="h-4 w-4 text-yellow-500" />
+                        <Undo2 className="h-5 w-5" />
                       </Button>
                     )}
                   </div>

@@ -6,7 +6,7 @@ function Footer() {
           {/* About Section with Logo */}
           <div className="w-1/4 mb-6 ml-12 sm:mb-0 flex flex-col items-start">
             <div className="flex items-center mb-4">
-              <img src="./src/Img/logo.png" alt="UniGuide Logo" className="h-[75px] mr-2" />
+              <img src="./src/assets/logo.png" alt="UniGuide Logo" className="h-[75px] mr-2" />
               <h1 className="text-lg font-bold">UniGuide</h1>
             </div>
             <p className="text-sm text-gray-400 ml-5">

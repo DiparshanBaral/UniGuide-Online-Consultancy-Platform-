@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import API from "../api";
 // import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { AvatarUpload } from "./ui/avatarupload";
+import { AvatarUpload } from "@/components/ui/avatarupload";
 
 function MentorProfilePersonal() {
   const [user, setUser] = useState(null);

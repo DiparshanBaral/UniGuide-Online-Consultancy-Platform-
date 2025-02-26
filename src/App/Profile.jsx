@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import API from "../api";
 import { Button } from "@/components/ui/button";
-import { AvatarUpload } from "./ui/avatarupload";
+import { AvatarUpload } from "@/components/ui/avatarupload";
 
 function Profile() {
   const [user, setUser] = useState(null);

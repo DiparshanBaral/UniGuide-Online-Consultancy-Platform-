@@ -93,7 +93,7 @@ function Navbar() {
       <div className="container mx-auto flex justify-between items-center px-4">
         {/* Logo */}
         <div className="flex items-center ml-10">
-          <img src="./src/Img/logo.png" alt="UniGuide Logo" className="h-[75px] mr-2" />
+          <img src="./src/assets/logo.png" alt="UniGuide Logo" className="h-[75px] mr-2" />
           <h1 className="text-xl font-bold">UniGuide</h1>
         </div>
 
@@ -137,7 +137,7 @@ function Navbar() {
                 onClick={() => setProfileDropdown(!profileDropdown)}
               >
                 <img
-                  src={session?.profilePic || './src/Img/profile.png'} // Use the profile picture or a placeholder
+                  src={session?.profilePic || './src/assets/profile.png'} // Use the profile picture or a placeholder
                   alt="Profile"
                   className="h-10 w-10 rounded-full border border-gray-300 object-cover"
                 />

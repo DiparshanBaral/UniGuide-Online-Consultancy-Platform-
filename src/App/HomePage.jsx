@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import HomeBanner from '../img/HomePageBanner.jpeg';
+import HomeBanner from '@/assets/HomePageBanner.jpeg';
 import { Globe2, Users, MessageCircle, Stamp, Search, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
