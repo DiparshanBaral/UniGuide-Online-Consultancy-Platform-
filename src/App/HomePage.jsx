@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import HomeBanner from '@/assets/HomePageBanner.jpeg';
 import { Globe2, Users, MessageCircle, Stamp, Search, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -54,7 +53,7 @@ function HomePage() {
         {/* Hero Section */}
         <section
           className="relative mb-16 h-[450px] bg-cover bg-center rounded-lg"
-          style={{ backgroundImage: `url(${HomeBanner})` }}
+          style={{ backgroundImage: `url('./src/assets/HomePageBanner.jpeg')` }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black via-black to-black opacity-60 rounded-lg"></div>
           <div className="relative z-10 flex justify-center items-center h-full">

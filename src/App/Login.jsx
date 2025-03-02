@@ -124,7 +124,7 @@ export default function Login() {
   return (
     <div
       className="h-screen w-full bg-cover bg-center flex items-center justify-center"
-      style={{ backgroundImage: "url('./src/Img/authentication_background.png')" }}
+      style={{ backgroundImage: "url('./src/assets/authentication_background.png')" }}
     >
       <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-8 w-full max-w-md">
         <h2 className="text-2xl font-semibold text-center mb-6">Login</h2>
