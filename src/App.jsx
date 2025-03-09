@@ -19,46 +19,51 @@ import MentorProfilePersonal from '@/App/Mentorprofilepersonal';
 import PublicStudentProfile from '@/App/PublicStudentProfile';
 import StudentPortal from '@/App/StudentPortal';
 import MentorPortal from '@/App/MentorPortal';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
 
 function App() {
+  const location = useLocation();
+
+  // Check if the current route is a portal route
+  const isPortalRoute = 
+    location.pathname.startsWith('/studentportal') || 
+    location.pathname.startsWith('/mentorportal');
+
   return (
     <>
-      <Router>
-        <Toaster position="top-center" richColors />
-        <div className="flex flex-col min-h-screen">
-          {/* Navbar */}
-          <Navbar />
+      <Toaster position="top-center" richColors />
+      <div className="flex flex-col min-h-screen">
+        {/* Conditionally render Navbar */}
+        {!isPortalRoute && <Navbar />}
 
-          {/* Main Content */}
-          <div className="flex-grow pt-[10px]">
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/publicstudentprofile" element={<PublicStudentProfile />} />
-              <Route path="/mentorprofilepersonal" element={<MentorProfilePersonal />} />
-              <Route path="/mentorprofile/:id" element={<MentorProfile />} />
-              <Route path="/universities" element={<Universities />} />
-              <Route path="/discussionrooms" element={<DiscussionRooms />} />
-              <Route path="/visasection" element={<VisaSection />} />
-              <Route path="/aboutus" element={<Aboutus />} />
-              <Route path="/mentordashboard" element={<MentorDashboard />} />
-              <Route path="/studentdashboard" element={<StudentDashboard />} />
-              <Route path="/admindashboard" element={<AdminDashboard />} />
-              <Route path="/universitieslist" element={<UniversitiesList />} />
-              <Route path="/universityprofile/:country/:universityId" element={<UniversityProfile />} />
-              <Route path="/studentportal/:portalid" element={<StudentPortal />} />
-              <Route path="/mentorportal/:portalid" element={<MentorPortal />} />
-            </Routes>
-          </div>
-
-          {/* Footer */}
-          <Footer />
+        {/* Main Content */}
+        <div className="flex-grow pt-[10px]">
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/publicstudentprofile" element={<PublicStudentProfile />} />
+            <Route path="/mentorprofilepersonal" element={<MentorProfilePersonal />} />
+            <Route path="/mentorprofile/:id" element={<MentorProfile />} />
+            <Route path="/universities" element={<Universities />} />
+            <Route path="/discussionrooms" element={<DiscussionRooms />} />
+            <Route path="/visasection" element={<VisaSection />} />
+            <Route path="/aboutus" element={<Aboutus />} />
+            <Route path="/mentordashboard" element={<MentorDashboard />} />
+            <Route path="/studentdashboard" element={<StudentDashboard />} />
+            <Route path="/admindashboard" element={<AdminDashboard />} />
+            <Route path="/universitieslist" element={<UniversitiesList />} />
+            <Route path="/universityprofile/:country/:universityId" element={<UniversityProfile />} />
+            <Route path="/studentportal/:portalid" element={<StudentPortal />} />
+            <Route path="/mentorportal/:portalid" element={<MentorPortal />} />
+          </Routes>
         </div>
-      </Router>
+
+        {/* Conditionally render Footer */}
+        {!isPortalRoute && <Footer />}
+      </div>
     </>
   );
 }

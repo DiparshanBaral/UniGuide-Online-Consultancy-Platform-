@@ -1,35 +1,111 @@
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, FileText, MessageCircle } from 'lucide-react';
+import { CheckCircle, FileText, MessageCircle, ArrowLeft } from 'lucide-react';
+import { Link, useParams } from 'react-router-dom';
+import API from '../api'; // Import your API utility
+import logo from '@/assets/logo.png';
 
 const PortalNavigation = ({ activeTab, setActiveTab }) => {
   const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true); // Track loading state
+  const { portalid } = useParams(); // Get portalId from URL params
 
-  // Fetch session data from localStorage on initial render
+  // Fetch session data (portal details and associated user details)
   useEffect(() => {
-    const savedSession = localStorage.getItem('session');
-    if (savedSession) {
-      setSession(JSON.parse(savedSession)); // Set session from localStorage if it exists
-    }
-  }, []);
+    const fetchPortalData = async () => {
+      try {
+        // Step 1: Fetch session from localStorage
+        const savedSession = localStorage.getItem('session');
+        if (!savedSession) {
+          throw new Error('No session found');
+        }
+        const parsedSession = JSON.parse(savedSession);
+        const token = parsedSession.token; // Extract token from session
 
-  // Determine the portal title based on the session role
+        // Step 2: Fetch portal data using portalId
+        const portalResponse = await API.get(`/portal/${portalid}`, {
+          headers: { Authorization: `Bearer ${token}` }, // Include token for authentication
+        });
+        const portalData = portalResponse.data;
+
+        // Step 3: Determine the role and fetch user details
+        let userDetails;
+        if (parsedSession.role === 'mentor') {
+          const mentorResponse = await API.get(`/mentor/${portalData.mentorId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          userDetails = mentorResponse.data;
+        } else if (parsedSession.role === 'student') {
+          const studentResponse = await API.get(`/student/public/${portalData.studentId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          userDetails = studentResponse.data;
+        }
+
+        // Combine portal data and user details into session
+        setSession({
+          ...parsedSession,
+          ...portalData,
+          ...userDetails,
+        });
+
+        console.log('Fetched Session Details:', { portalData, userDetails });
+      } catch (error) {
+        console.error('Error fetching portal or user details:', error);
+      } finally {
+        setLoading(false); // Stop loading
+      }
+    };
+
+    fetchPortalData();
+  }, [portalid]);
+
+  // If still loading, show a placeholder
+  if (loading) {
+    return <div className="text-center">Loading...</div>;
+  }
+
+  // Determine the portal title and profile link based on the session role
   const portalTitle = session?.role === 'mentor' ? 'Mentor Portal' : 'Student Portal';
+  const profileLink = session?.role === 'mentor' ? `/mentorprofile/${session._id}` : `/publicstudentprofile/${session._id}`;
 
   return (
-    <aside className="sticky top-[80px] left-0 w-64 bg-white shadow-lg rounded-lg p-4 h-[calc(100vh-80px)] overflow-y-auto">
-      {/* Portal Title */}
-      <div className="text-center mb-6">
-        <h2 className="text-xl font-bold text-primary flex items-center justify-center gap-2">
-          {session?.role === 'mentor' ? (
-            <CheckCircle className="h-6 w-6 text-gray-700" />
-          ) : (
-            <FileText className="h-6 w-6 text-blue-500" />
-          )}
-          {portalTitle}
-        </h2>
+    <aside className="sticky top-0 left-0 w-64 bg-white shadow-lg rounded-lg p-4 h-screen overflow-y-auto">
+      {/* Logo and Portal Title */}
+      <div className="flex items-center justify-center mb-6 space-x-4">
+        {/* UniGuide Logo */}
+        <img
+          src={logo}
+          alt="UniGuide Logo"
+          className="h-24 w-auto" // Make the logo twice its current size
+        />
+        {/* Portal Title */}
+        <h2 className="text-xl font-bold text-primary">{portalTitle}</h2>
       </div>
+
+      {/* Profile Card */}
+      {session && (
+        <Link
+          to={profileLink} // Dynamically set the profile link based on the role
+          className="block bg-gray-100 rounded-lg p-4 mb-6 hover:bg-gray-200 transition-colors"
+        >
+          <div className="flex items-center space-x-4">
+            {/* Profile Picture */}
+            <img
+              src={session?.profilePicture || '/default-avatar.png'} // Replace with a default avatar if no picture exists
+              alt={`${session?.name}'s profile`}
+              className="h-12 w-12 rounded-full object-cover"
+            />
+            <div>
+              {/* Name */}
+              <p className="font-semibold text-gray-800">{session?.name}</p>
+              {/* University */}
+              <p className="text-sm text-gray-600">{session?.university}</p>
+            </div>
+          </div>
+        </Link>
+      )}
 
       {/* Navigation Buttons */}
       <nav className="space-y-4">
@@ -55,6 +131,17 @@ const PortalNavigation = ({ activeTab, setActiveTab }) => {
           <MessageCircle className="mr-2 h-5 w-5" /> Chat
         </Button>
       </nav>
+
+      {/* Back Button */}
+      <div className="mt-8">
+        <Button
+          variant="secondary"
+          className="w-full justify-center flex items-center gap-2"
+          onClick={() => window.history.back()} // Go back to the previous page
+        >
+          <ArrowLeft className="h-4 w-4" /> Back
+        </Button>
+      </div>
     </aside>
   );
 };
