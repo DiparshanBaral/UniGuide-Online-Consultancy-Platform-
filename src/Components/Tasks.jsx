@@ -158,7 +158,7 @@ const Tasks = () => {
       <CardContent>
         {/* Add Task Form (Mentor Only) */}
         {session.role === 'mentor' && (
-          <Card className="mt-[50px] max-w-7xl mx-auto shadow-lg">
+          <Card className="max-w-7xl mx-auto shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl font-semibold">
                 <PlusCircle className="h-8 w-8 text-primary" />

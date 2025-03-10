@@ -44,7 +44,7 @@ function App() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/publicstudentprofile" element={<PublicStudentProfile />} />
+            <Route path="/publicstudentprofile/:id" element={<PublicStudentProfile />} />
             <Route path="/mentorprofilepersonal" element={<MentorProfilePersonal />} />
             <Route path="/mentorprofile/:id" element={<MentorProfile />} />
             <Route path="/universities" element={<Universities />} />

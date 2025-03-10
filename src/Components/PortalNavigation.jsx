@@ -29,30 +29,34 @@ const PortalNavigation = ({ activeTab, setActiveTab }) => {
         });
         const portalData = portalResponse.data;
 
-        // Step 3: Determine the role and fetch user details
-        let userDetails;
+        // Step 3: Determine the role and extract user details
+        let userDetails, otherUserDetails;
         if (parsedSession.role === 'mentor') {
-          const mentorResponse = await API.get(`/mentor/${portalData.mentorId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          userDetails = mentorResponse.data;
+          userDetails = portalData.mentorId; // Mentor details are already populated
+          otherUserDetails = portalData.studentId; // Student details are the "other user"
         } else if (parsedSession.role === 'student') {
-          const studentResponse = await API.get(`/student/public/${portalData.studentId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          userDetails = studentResponse.data;
+          userDetails = portalData.studentId; // Student details are already populated
+          otherUserDetails = portalData.mentorId; // Mentor details are the "other user"
         }
 
-        // Combine portal data and user details into session
+        // Combine portal data, user details, and other user details into session
         setSession({
           ...parsedSession,
           ...portalData,
-          ...userDetails,
+          name: `${userDetails.firstname} ${userDetails.lastname}`, // Current user's name
+          profilePicture: userDetails.profilePic, // Current user's profile picture
+          university: userDetails.university || userDetails.major, // Current user's university/major
+          otherUser: {
+            name: `${otherUserDetails.firstname} ${otherUserDetails.lastname}`, // Other user's name
+            profilePicture: otherUserDetails.profilePic, // Other user's profile picture
+            university: otherUserDetails.university, // Other user's university (for mentors)
+            major: otherUserDetails.major, // Other user's major (for students)
+          },
         });
 
-        console.log('Fetched Session Details:', { portalData, userDetails });
+        console.log('Fetched Session Details:', { portalData, userDetails, otherUserDetails });
       } catch (error) {
-        console.error('Error fetching portal or user details:', error);
+        console.error('Error fetching portal or user details:', error.response?.data || error.message);
       } finally {
         setLoading(false); // Stop loading
       }
@@ -66,9 +70,16 @@ const PortalNavigation = ({ activeTab, setActiveTab }) => {
     return <div className="text-center">Loading...</div>;
   }
 
+  // If session is null, show an error message
+  if (!session) {
+    return <div className="text-center text-red-500">Failed to load session details.</div>;
+  }
+
   // Determine the portal title and profile link based on the session role
   const portalTitle = session?.role === 'mentor' ? 'Mentor Portal' : 'Student Portal';
-  const profileLink = session?.role === 'mentor' ? `/mentorprofile/${session._id}` : `/publicstudentprofile/${session._id}`;
+  const profileLink = session?.role === 'mentor'
+    ? `/publicstudentprofile/${session?.studentId?._id}` // Mentor sees student's public profile
+    : `/mentorprofile/${session?.mentorId?._id}`; // Student sees mentor's profile
 
   return (
     <aside className="sticky top-0 left-0 w-64 bg-white shadow-lg rounded-lg p-4 h-screen overflow-y-auto">
@@ -93,15 +104,19 @@ const PortalNavigation = ({ activeTab, setActiveTab }) => {
           <div className="flex items-center space-x-4">
             {/* Profile Picture */}
             <img
-              src={session?.profilePicture || '/default-avatar.png'} // Replace with a default avatar if no picture exists
-              alt={`${session?.name}'s profile`}
+              src={session?.otherUser?.profilePicture || '/default-avatar.png'} // Use the other user's profile picture or a default avatar
+              alt={`${session?.otherUser?.name}'s profile`}
               className="h-12 w-12 rounded-full object-cover"
             />
             <div>
               {/* Name */}
-              <p className="font-semibold text-gray-800">{session?.name}</p>
-              {/* University */}
-              <p className="text-sm text-gray-600">{session?.university}</p>
+              <p className="font-semibold text-gray-800">{session?.otherUser?.name}</p>
+              {/* University or Major */}
+              <p className="text-sm text-gray-600">
+                {session?.role === 'mentor'
+                  ? session?.otherUser?.major // Display major for students
+                  : session?.otherUser?.university}
+              </p>
             </div>
           </div>
         </Link>
