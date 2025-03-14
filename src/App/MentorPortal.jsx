@@ -5,7 +5,7 @@ import Chat from '@/components/Chat';
 import PortalDocuments from '@/components/PortalDocuments';
 
 const MentorPortal = () => {
-  const [activeTab, setActiveTab] = useState('tasks'); // Tracks the active tab
+  const [activeTab, setActiveTab] = useState('tasks');
 
   return (
     <div className="flex">

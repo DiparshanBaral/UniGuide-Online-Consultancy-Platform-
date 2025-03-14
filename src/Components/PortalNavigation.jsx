@@ -54,7 +54,6 @@ const PortalNavigation = ({ activeTab, setActiveTab }) => {
           },
         });
 
-        console.log('Fetched Session Details:', { portalData, userDetails, otherUserDetails });
       } catch (error) {
         console.error('Error fetching portal or user details:', error.response?.data || error.message);
       } finally {
@@ -132,18 +131,18 @@ const PortalNavigation = ({ activeTab, setActiveTab }) => {
           <CheckCircle className="mr-2 h-5 w-5" /> Tasks
         </Button>
         <Button
-          variant={activeTab === 'documents' ? 'default' : 'outline'}
-          className="w-full justify-start"
-          onClick={() => setActiveTab('documents')}
-        >
-          <FileText className="mr-2 h-5 w-5" /> Documents
-        </Button>
-        <Button
           variant={activeTab === 'chat' ? 'default' : 'outline'}
           className="w-full justify-start"
           onClick={() => setActiveTab('chat')}
         >
           <MessageCircle className="mr-2 h-5 w-5" /> Chat
+        </Button>
+        <Button
+          variant={activeTab === 'documents' ? 'default' : 'outline'}
+          className="w-full justify-start"
+          onClick={() => setActiveTab('documents')}
+        >
+          <FileText className="mr-2 h-5 w-5" /> Documents
         </Button>
       </nav>
 
