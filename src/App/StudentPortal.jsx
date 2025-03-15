@@ -13,7 +13,7 @@ const StudentPortal = () => {
       <PortalNavigation activeTab={activeTab} setActiveTab={setActiveTab} />
 
       {/* Main Content */}
-      <div className="flex-1 p-8">
+      <div className="flex-1 p-5">
         {/* Render content based on the active tab */}
         {activeTab === 'tasks' && <Tasks sessionRole="student" />}
         {activeTab === 'documents' && <PortalDocuments />}

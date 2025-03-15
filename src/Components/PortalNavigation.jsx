@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { CheckCircle, FileText, MessageCircle, ArrowLeft } from 'lucide-react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useLocation } from 'react-router-dom'; // Import useLocation
 import API from '../api'; // Import your API utility
 import logo from '@/assets/logo.png';
 
@@ -10,11 +10,14 @@ const PortalNavigation = ({ activeTab, setActiveTab }) => {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true); // Track loading state
   const { portalid } = useParams(); // Get portalId from URL params
+  const location = useLocation(); // Use useLocation to track route changes
 
   // Fetch session data (portal details and associated user details)
   useEffect(() => {
     const fetchPortalData = async () => {
       try {
+        setLoading(true); // Reset loading state when navigating
+
         // Step 1: Fetch session from localStorage
         const savedSession = localStorage.getItem('session');
         if (!savedSession) {
@@ -61,8 +64,9 @@ const PortalNavigation = ({ activeTab, setActiveTab }) => {
       }
     };
 
+    // Fetch portal data whenever the location changes (e.g., navigating back)
     fetchPortalData();
-  }, [portalid]);
+  }, [portalid, location]); // Add `location` to the dependency array
 
   // If still loading, show a placeholder
   if (loading) {

@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
 import { Toaster, toast } from 'sonner';
 import { motion } from 'framer-motion';
 import { Trash2, Edit, PlusCircle, CheckCircle, Undo2 } from 'lucide-react';
@@ -213,7 +212,6 @@ const Tasks = () => {
         )}
 
         {/* Task List */}
-        <Separator className="my-8" />
         <Card className="max-w-7xl mx-auto shadow-lg">
           <CardContent>
             <h3 className="pt-[20px] text-2xl font-semibold flex items-center gap-3 mb-6">
