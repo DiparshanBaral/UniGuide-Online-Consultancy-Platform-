@@ -15,6 +15,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import API from '../api';
 import { motion } from 'framer-motion';
+import { Separator } from "@/components/ui/separator"
+
 
 function HomePage() {
   const navigate = useNavigate();
@@ -52,7 +54,7 @@ function HomePage() {
       <div className="max-w-7xl mx-auto">
         {/* Hero Section */}
         <section
-          className="relative mb-16 h-[450px] bg-cover bg-center rounded-lg"
+          className="relative mb-5 h-[450px] bg-cover bg-center rounded-lg"
           style={{ backgroundImage: `url('./src/assets/HomePageBanner.jpeg')` }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black via-black to-black opacity-60 rounded-lg"></div>
@@ -87,7 +89,7 @@ function HomePage() {
         </section>
 
         {/* University Filter Section */}
-        <section className="w-full py-7 md:py-7 lg:py-7">
+        <section className="w-full py-9 md:py-7 lg:py-7">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
@@ -147,7 +149,7 @@ function HomePage() {
         </section>
 
         {/* Mentor Highlights */}
-        <section className="w-full py-12 md:py-12 lg:py-12 bg-muted">
+        <section className="w-full py-12 mt-5 md:py-12 lg:py-12 bg-muted">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
@@ -198,6 +200,9 @@ function HomePage() {
             </div>
           </div>
         </section>
+
+        <Separator />
+        <Separator />
 
         {/* Testimonials */}
         <section className="w-full py-12 md:py-12 lg:py-12 bg-muted">
@@ -304,6 +309,8 @@ function HomePage() {
             </Card>
           </div>
         </section>
+
+        <Separator />
 
         {/* Stats Section */}
         <section className="w-full py-12 md:py-12 lg:py-12">

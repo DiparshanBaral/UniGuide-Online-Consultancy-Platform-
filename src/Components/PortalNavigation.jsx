@@ -85,7 +85,7 @@ const PortalNavigation = ({ activeTab, setActiveTab }) => {
     : `/mentorprofile/${session?.mentorId?._id}`; // Student sees mentor's profile
 
   return (
-    <aside className="sticky top-0 left-0 w-64 bg-white shadow-lg rounded-lg p-4 h-screen overflow-y-auto">
+    <aside className="sticky top-0 left-0 w-65 bg-white shadow-lg rounded-lg p-4 h-screen overflow-y-auto">
       {/* Logo and Portal Title */}
       <div className="flex items-center justify-center mb-6 space-x-4">
         {/* UniGuide Logo */}
