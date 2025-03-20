@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -27,8 +27,13 @@ function Universities() {
   const navigate = useNavigate();
   const [universities, setUniversities] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [filteredUniversities, setFilteredUniversities] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false); // Track dropdown visibility
+  const dropdownRef = useRef(null); // Reference to the dropdown menu
+  const [selectedFieldOfStudy, setSelectedFieldOfStudy] = useState('');
+  const [selectedBudgetRange, setSelectedBudgetRange] = useState('');
 
   // Fetch top universities on initial render
   useEffect(() => {
@@ -54,28 +59,56 @@ function Universities() {
   // Real-time search suggestions
   useEffect(() => {
     if (searchQuery.length > 0) {
-      API.get('/universities/search', { params: { query: searchQuery } })
+      API.post('/universities/search', { query: searchQuery, country: selectedCountry }) // Send POST request
         .then((response) => {
           setSuggestions(response.data.slice(0, 5)); // Limit to 5 suggestions
+          setShowDropdown(true); // Show dropdown when suggestions are fetched
         })
         .catch((error) => {
           console.error('Error fetching suggestions:', error);
         });
     } else {
       setSuggestions([]);
+      setShowDropdown(false); // Hide dropdown if query is empty
     }
-  }, [searchQuery]);
+  }, [searchQuery, selectedCountry]);
 
-  // Full search when "Find Universities" button is clicked
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false); // Hide dropdown if clicked outside
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Full search when "Find Universities" button is clicked or "Enter" is pressed
   const handleSearch = () => {
     if (searchQuery.length > 0) {
-      API.get('/universities/find', { params: { query: searchQuery } })
+      API.post('/universities/find', {
+        query: searchQuery,
+        country: selectedCountry,
+        fieldOfStudy: selectedFieldOfStudy,
+        budgetRange: selectedBudgetRange,
+      })
         .then((response) => {
           setFilteredUniversities(response.data);
+          setShowDropdown(false); // Hide dropdown after search
         })
         .catch((error) => {
           console.error('Error finding universities:', error);
         });
+    }
+  };
+
+  // Handle "Enter" key press
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      handleSearch(); // Trigger search when "Enter" is pressed
     }
   };
 
@@ -98,29 +131,32 @@ function Universities() {
             </div>
             <div className="mx-auto max-w-3xl mt-8 grid gap-4">
               <div className="grid gap-4 md:grid-cols-3">
-                <Select>
+                <Select onValueChange={(value) => setSelectedCountry(value)}>
+                  {' '}
+                  {/* Update selected country */}
                   <SelectTrigger>
                     <SelectValue placeholder="Select Country" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="usa">United States</SelectItem>
+                    <SelectItem value="us">United States</SelectItem>
                     <SelectItem value="uk">United Kingdom</SelectItem>
                     <SelectItem value="canada">Canada</SelectItem>
                     <SelectItem value="australia">Australia</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select>
+                <Select onValueChange={(value) => setSelectedFieldOfStudy(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Field of Study" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="cs">Computer Science</SelectItem>
-                    <SelectItem value="business">Business</SelectItem>
-                    <SelectItem value="engineering">Engineering</SelectItem>
-                    <SelectItem value="arts">Arts & Design</SelectItem>
+                    <SelectItem value="Computer Science">Computer Science</SelectItem>
+                    <SelectItem value="Business">Business</SelectItem>
+                    <SelectItem value="Engineering">Engineering</SelectItem>
+                    <SelectItem value="Arts">Arts & Design</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select>
+
+                <Select onValueChange={(value) => setSelectedBudgetRange(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Budget Range" />
                   </SelectTrigger>
@@ -131,15 +167,17 @@ function Universities() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="relative">
+              <div className="relative" ref={dropdownRef}>
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search universities by name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleKeyDown} // Handle "Enter" key press
+                  onFocus={() => setShowDropdown(true)} // Show dropdown when focused
                   className="pl-8"
                 />
-                {suggestions.length > 0 && (
+                {showDropdown && suggestions.length > 0 && (
                   <ul className="absolute z-10 bg-white border rounded-md mt-1 w-full max-h-40 overflow-y-auto">
                     {suggestions.map((uni, index) => (
                       <li
@@ -148,6 +186,7 @@ function Universities() {
                         onClick={() => {
                           navigate(`/universityprofile/${uni.country.toLowerCase()}/${uni._id}`);
                           setSuggestions([]);
+                          setShowDropdown(false); // Hide dropdown after selection
                         }}
                       >
                         {uni.name} ({uni.country})
@@ -162,7 +201,6 @@ function Universities() {
             </div>
           </div>
         </section>
-
         {/* Display filtered universities */}
         {filteredUniversities.length > 0 && (
           <section className="mb-12 mt-12">
@@ -248,7 +286,6 @@ function Universities() {
             </div>
           </section>
         )}
-
         {/* University Survey Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -282,7 +319,6 @@ function Universities() {
             </CardContent>
           </Card>
         </motion.div>
-
         {/* Top Universities Section */}
         <section className="mb-12 mt-12">
           <h2 className="text-2xl font-semibold text-gray-800 mb-6">Top Universities</h2>
@@ -360,7 +396,6 @@ function Universities() {
             ))}
           </div>
         </section>
-
         {/* Scroll or Button to See More */}
         <div className="text-center">
           <a href="/universitieslist">

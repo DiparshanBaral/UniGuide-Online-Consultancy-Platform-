@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Globe2, Users, MessageCircle, Stamp, Search, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -15,39 +15,89 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import API from '../api';
 import { motion } from 'framer-motion';
-import { Separator } from "@/components/ui/separator"
-
+import { Separator } from "@/components/ui/separator";
 
 function HomePage() {
   const navigate = useNavigate();
-
   const [mentors, setMentors] = useState([]);
-  const mentorIds = [
-    '67a9fb9e902708715f3a8be5',
-    '67b5889c669063e3459a69d0',
-    '67b588b2669063e3459a69d3',
-  ];
+  const mentorIds = ['67a9fb9e902708715f3a8be5', '67b5889c669063e3459a69d0', '67b588b2669063e3459a69d3'];
 
+  // State for search functionality
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedFieldOfStudy, setSelectedFieldOfStudy] = useState('');
+  const [selectedBudgetRange, setSelectedBudgetRange] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [filteredUniversities, setFilteredUniversities] = useState([]); // Store filtered results
+  const dropdownRef = useRef(null);
+
+  // Fetch mentors on initial render
   useEffect(() => {
     const fetchMentors = async () => {
       try {
         const mentorData = await Promise.all(
           mentorIds.map((id) =>
-            API.get(`/mentor/${id}`)  
-              .then((response) => response.data)
+            API.get(`/mentor/${id}`).then((response) => response.data)
           )
         );
         setMentors(mentorData);
       } catch (error) {
         console.error('Error fetching mentors:', error);
       }
-    };    
-  
+    };
     fetchMentors();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
-  
+
+  // Real-time search suggestions
+  useEffect(() => {
+    if (searchQuery.length > 0) {
+      API.post('/universities/search', { query: searchQuery, country: selectedCountry })
+        .then((response) => {
+          setSuggestions(response.data.slice(0, 5)); // Limit to 5 suggestions
+          setShowDropdown(true); // Show dropdown when suggestions are fetched
+        })
+        .catch((error) => {
+          console.error('Error fetching suggestions:', error);
+        });
+    } else {
+      setSuggestions([]);
+      setShowDropdown(false); // Hide dropdown if query is empty
+    }
+  }, [searchQuery, selectedCountry]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false); // Hide dropdown if clicked outside
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  // Full search when "Find Universities" button is clicked
+  const handleSearch = () => {
+    if (searchQuery.length > 0) {
+      API.post('/universities/find', {
+        query: searchQuery,
+        country: selectedCountry,
+        fieldOfStudy: selectedFieldOfStudy,
+        budgetRange: selectedBudgetRange,
+      })
+        .then((response) => {
+          setFilteredUniversities(response.data); // Update filtered results
+          setShowDropdown(false); // Hide dropdown after search
+        })
+        .catch((error) => {
+          console.error('Error finding universities:', error);
+        });
+    }
+  };
 
   return (
     <div className="pt-[90px] px-6 sm:px-16 md:px-24 lg:px-32 py-10 bg-background text-foreground">
@@ -104,18 +154,21 @@ function HomePage() {
             </div>
             <div className="mx-auto max-w-3xl mt-8 grid gap-4">
               <div className="grid gap-4 md:grid-cols-3">
-                <Select>
+                {/* Country Dropdown */}
+                <Select onValueChange={(value) => setSelectedCountry(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select Country" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="usa">United States</SelectItem>
+                    <SelectItem value="us">United States</SelectItem>
                     <SelectItem value="uk">United Kingdom</SelectItem>
                     <SelectItem value="canada">Canada</SelectItem>
                     <SelectItem value="australia">Australia</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select>
+
+                {/* Field of Study Dropdown */}
+                <Select onValueChange={(value) => setSelectedFieldOfStudy(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Field of Study" />
                   </SelectTrigger>
@@ -126,7 +179,9 @@ function HomePage() {
                     <SelectItem value="arts">Arts & Design</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select>
+
+                {/* Budget Range Dropdown */}
+                <Select onValueChange={(value) => setSelectedBudgetRange(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Budget Range" />
                   </SelectTrigger>
@@ -137,16 +192,94 @@ function HomePage() {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="relative">
+
+              {/* Search Input */}
+              <div className="relative" ref={dropdownRef}>
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search universities by name..." className="pl-8" />
+                <Input
+                  placeholder="Search universities by name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onFocus={() => setShowDropdown(true)} // Show dropdown when focused
+                  className="pl-8"
+                />
+                {showDropdown && suggestions.length > 0 && (
+                  <ul className="absolute z-10 bg-white border rounded-md mt-1 w-full max-h-40 overflow-y-auto">
+                    {suggestions.map((uni, index) => (
+                      <li
+                        key={index}
+                        className="p-2 hover:bg-gray-100 cursor-pointer"
+                        onClick={() => {
+                          navigate(`/universityprofile/${uni.country.toLowerCase()}/${uni._id}`);
+                          setSuggestions([]);
+                          setShowDropdown(false); // Hide dropdown after selection
+                        }}
+                      >
+                        {uni.name} ({uni.country})
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
-              <Button className="w-full" size="lg">
+
+              {/* Find Universities Button */}
+              <Button className="w-full" size="lg" onClick={handleSearch}>
                 Find Universities
               </Button>
             </div>
           </div>
         </section>
+
+        {/* Display Filtered Universities */}
+        {filteredUniversities.length > 0 && (
+          <section className="mb-12 mt-12">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6">Matching Universities</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {filteredUniversities.map((university) => (
+                <Card key={university._id} className="hover:shadow-lg transition-all duration-300">
+                  <CardHeader className="space-y-4 pb-4">
+                    <div className="flex items-start gap-4">
+                      <div className="relative h-16 w-16 flex-shrink-0">
+                        <img
+                          src={university.image || 'https://via.placeholder.com/150'}
+                          alt={`${university.name} logo`}
+                          className="h-full w-full rounded-lg object-cover"
+                        />
+                        <Badge variant="secondary" className="absolute -top-2 -right-2">
+                          #{university.ranking || 'N/A'}
+                        </Badge>
+                      </div>
+                      <div className="space-y-1">
+                        <h3 className="font-semibold text-lg leading-tight">{university.name}</h3>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Globe2 className="h-4 w-4" />
+                          {university.country}
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Users className="h-4 w-4" />
+                          Acceptance Rate: {university.acceptanceRate}%
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground line-clamp-3">
+                      {university.description}
+                    </p>
+                    <Button
+                      className="w-full text-white"
+                      onClick={() =>
+                        navigate(`/universityprofile/${university.country.toLowerCase()}/${university._id}`)
+                      }
+                    >
+                      View Details
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </section>
+          )}
 
         {/* Mentor Highlights */}
         <section className="w-full py-12 mt-5 md:py-12 lg:py-12 bg-muted">
