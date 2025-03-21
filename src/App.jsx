@@ -8,6 +8,7 @@ import Profile from '@/App/Profile';
 import MentorProfile from '@/App/Mentorprofile';
 import Aboutus from '@/App/Aboutus';
 import DiscussionRooms from '@/App/DiscussionRooms';
+import DiscussionRoom from '@/App/DiscussionRoom';
 import VisaSection from '@/App/VisaSection';
 import Universities from '@/App/Universities';
 import MentorDashboard from '@/App/MentorDashboard'; 
@@ -49,6 +50,7 @@ function App() {
             <Route path="/mentorprofile/:id" element={<MentorProfile />} />
             <Route path="/universities" element={<Universities />} />
             <Route path="/discussionrooms" element={<DiscussionRooms />} />
+            <Route path="/discussionroom" element={<DiscussionRoom />} />
             <Route path="/visasection" element={<VisaSection />} />
             <Route path="/aboutus" element={<Aboutus />} />
             <Route path="/mentordashboard" element={<MentorDashboard />} />
