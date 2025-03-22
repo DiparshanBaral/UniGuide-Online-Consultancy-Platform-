@@ -1,62 +1,63 @@
-"use client"
-
-import { useState } from "react"
-import PropTypes from "prop-types"
-import { X, Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
+"use client";
+import { useState } from "react";
+import PropTypes from "prop-types";
+import { X, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 export function CreateRoom({ initialData = { title: "", description: "", tags: [] }, onClose, onSubmit, isLoading = false }) {
-  const [title, setTitle] = useState(initialData.title || "")
-  const [description, setDescription] = useState(initialData.description || "")
-  const [tags, setTags] = useState(initialData.tags || [])
-  const [tagInput, setTagInput] = useState("")
-  const [errors, setErrors] = useState({})
+  const [title, setTitle] = useState(initialData.title || "");
+  const [description, setDescription] = useState(initialData.description || "");
+  const [tags, setTags] = useState(initialData.tags || []);
+  const [tagInput, setTagInput] = useState("");
+  const [errors, setErrors] = useState({});
 
   const addTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      setTags([...tags, tagInput.trim()])
-      setTagInput("")
+      setTags([...tags, tagInput.trim()]);
+      setTagInput("");
     }
-  }
+  };
 
   const removeTag = (tagToRemove) => {
-    setTags(tags.filter((tag) => tag !== tagToRemove))
-  }
+    setTags(tags.filter((tag) => tag !== tagToRemove));
+  };
 
   const handleSubmit = () => {
-    const newErrors = {}
+    const newErrors = {};
 
     if (!title.trim()) {
-      newErrors.title = "Title is required"
+      newErrors.title = "Title is required";
     }
 
     if (!description.trim()) {
-      newErrors.description = "Description is required"
+      newErrors.description = "Description is required";
     }
 
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      return
+      setErrors(newErrors);
+      return;
     }
 
+    // Call the onSubmit function passed from the parent component
     onSubmit({
       title,
       description,
       tags,
-    })
-  }
+      category: "general", // Default category for now
+    });
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && tagInput) {
-      e.preventDefault()
-      addTag()
+      e.preventDefault();
+      addTag();
     }
-  }
+  };
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
@@ -72,8 +73,8 @@ export function CreateRoom({ initialData = { title: "", description: "", tags: [
               placeholder="Enter room title"
               value={title}
               onChange={(e) => {
-                setTitle(e.target.value)
-                if (errors.title) setErrors({ ...errors, title: undefined })
+                setTitle(e.target.value);
+                if (errors.title) setErrors({ ...errors, title: undefined });
               }}
               className={errors.title ? "border-red-500" : ""}
             />
@@ -87,8 +88,8 @@ export function CreateRoom({ initialData = { title: "", description: "", tags: [
               placeholder="Describe what this room is about"
               value={description}
               onChange={(e) => {
-                setDescription(e.target.value)
-                if (errors.description) setErrors({ ...errors, description: undefined })
+                setDescription(e.target.value);
+                if (errors.description) setErrors({ ...errors, description: undefined });
               }}
               className={errors.description ? "border-red-500" : ""}
               rows={3}
@@ -132,7 +133,7 @@ export function CreateRoom({ initialData = { title: "", description: "", tags: [
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 // Add PropTypes validation
@@ -145,9 +146,9 @@ CreateRoom.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
   isLoading: PropTypes.bool,
-}
+};
 
 CreateRoom.defaultProps = {
   initialData: { title: "", description: "", tags: [] },
   isLoading: false,
-}
+};
