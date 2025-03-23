@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import {
   Search,
   ClipboardList,
@@ -10,32 +10,32 @@ import {
   MapPin,
   Users,
   GraduationCap,
-} from "lucide-react";
+} from 'lucide-react';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { motion } from "framer-motion";
-import API from "../api";
-import { useNavigate } from "react-router-dom";
-import Survey from "@/Components/Survey"; // Import the Survey component
+} from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { motion } from 'framer-motion';
+import API from '../api';
+import { useNavigate } from 'react-router-dom';
+import Survey from '@/Components/Survey'; // Import the Survey component
 import {
   Dialog,
   DialogTrigger,
   DialogContent,
   DialogTitle,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
+} from '@/components/ui/dialog';
+import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
 function Universities() {
   const navigate = useNavigate();
   const [universities, setUniversities] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [filteredUniversities, setFilteredUniversities] = useState([]);
   const [surveyResults, setSurveyResults] = useState([]); // State to store survey results
@@ -46,19 +46,17 @@ function Universities() {
     async function fetchUniversities() {
       try {
         const universityIds = [
-          "679f24ec433497bd80eba141",
-          "679f29fad87bd45d7aa40f3a",
-          "679f2a47d87bd45d7aa40f3c",
-          "679f2a92d87bd45d7aa40f3e",
+          '679f24ec433497bd80eba141',
+          '679f29fad87bd45d7aa40f3a',
+          '679f2a47d87bd45d7aa40f3c',
+          '679f2a92d87bd45d7aa40f3e',
         ];
-        const requests = universityIds.map((id) =>
-          API.get(`/universities/us/${id}`)
-        );
+        const requests = universityIds.map((id) => API.get(`/universities/us/${id}`));
         const responses = await Promise.all(requests);
         const data = responses.map((res) => res.data);
         setUniversities(data);
       } catch (error) {
-        console.error("Error fetching universities:", error);
+        console.error('Error fetching universities:', error);
       }
     }
     fetchUniversities();
@@ -67,12 +65,12 @@ function Universities() {
   // Real-time search suggestions
   useEffect(() => {
     if (searchQuery.length > 0) {
-      API.get("/universities/search", { params: { query: searchQuery } })
+      API.post('/universities/search', { query: searchQuery }) // Send query in the body
         .then((response) => {
           setSuggestions(response.data.slice(0, 5)); // Limit to 5 suggestions
         })
         .catch((error) => {
-          console.error("Error fetching suggestions:", error);
+          console.error('Error fetching suggestions:', error);
         });
     } else {
       setSuggestions([]);
@@ -82,12 +80,12 @@ function Universities() {
   // Full search when "Find Universities" button is clicked
   const handleSearch = () => {
     if (searchQuery.length > 0) {
-      API.get("/universities/find", { params: { query: searchQuery } })
+      API.post('/universities/find', { query: searchQuery }) // Send query in the body
         .then((response) => {
           setFilteredUniversities(response.data);
         })
         .catch((error) => {
-          console.error("Error finding universities:", error);
+          console.error('Error finding universities:', error);
         });
     }
   };
@@ -95,27 +93,27 @@ function Universities() {
   // Handle survey submission
   const handleSurveySubmit = async (values) => {
     try {
-      console.log("Survey values submitted:", values);
+      console.log('Survey values submitted:', values);
 
       // Format the acceptance rate range and graduation rate range for the backend
       const formattedValues = {
         ...values,
-        acceptanceRateRange: values.acceptanceRate.join("-"),
-        graduationRateRange: values.graduationRate.join("-"),
+        acceptanceRateRange: values.acceptanceRate.join('-'),
+        graduationRateRange: values.graduationRate.join('-'),
       };
 
       // Send the survey data to the backend
-      const response = await API.post("/universities/survey", formattedValues);
+      const response = await API.post('/universities/survey', formattedValues);
 
       // Log the results from the backend
-      console.log("Survey results:", response.data);
+      console.log('Survey results:', response.data);
 
       // Update the state with the survey results
       setSurveyResults(response.data);
       setIsSurveyOpen(false); // Close the survey modal
     } catch (error) {
-      console.error("Error submitting survey:", error);
-      alert("An error occurred while submitting the survey. Please try again.");
+      console.error('Error submitting survey:', error);
+      alert('An error occurred while submitting the survey. Please try again.');
     }
   };
 
@@ -186,9 +184,7 @@ function Universities() {
                         key={index}
                         className="p-2 hover:bg-gray-100 cursor-pointer"
                         onClick={() => {
-                          navigate(
-                            `/universityprofile/${uni.country.toLowerCase()}/${uni._id}`
-                          );
+                          navigate(`/universityprofile/${uni.country.toLowerCase()}/${uni._id}`);
                           setSuggestions([]);
                         }}
                       >
@@ -224,12 +220,12 @@ function Universities() {
                       <div className="flex items-start gap-4">
                         <div className="relative h-16 w-16 flex-shrink-0">
                           <img
-                            src={university.image || "https://via.placeholder.com/150"}
+                            src={university.image || 'https://via.placeholder.com/150'}
                             alt={`${university.name} logo`}
                             className="h-full w-full rounded-lg object-cover"
                           />
                           <Badge variant="secondary" className="absolute -top-2 -right-2">
-                            #{university.ranking || "N/A"}
+                            #{university.ranking || 'N/A'}
                           </Badge>
                         </div>
                         <div className="space-y-1">
@@ -276,7 +272,7 @@ function Universities() {
                             navigate(
                               `/universityprofile/${university.country.toLowerCase()}/${
                                 university._id
-                              }`
+                              }`,
                             )
                           }
                         >
@@ -311,12 +307,12 @@ function Universities() {
                       <div className="flex items-start gap-4">
                         <div className="relative h-16 w-16 flex-shrink-0">
                           <img
-                            src={university.image || "https://via.placeholder.com/150"}
+                            src={university.image || 'https://via.placeholder.com/150'}
                             alt={`${university.name} logo`}
                             className="h-full w-full rounded-lg object-cover"
                           />
                           <Badge variant="secondary" className="absolute -top-2 -right-2">
-                            #{university.ranking || "N/A"}
+                            #{university.ranking || 'N/A'}
                           </Badge>
                         </div>
                         <div className="space-y-1">
@@ -363,7 +359,7 @@ function Universities() {
                             navigate(
                               `/universityprofile/${university.country.toLowerCase()}/${
                                 university._id
-                              }`
+                              }`,
                             )
                           }
                         >
@@ -378,62 +374,60 @@ function Universities() {
           </section>
         )}
 
-
         {/* University Survey Section */}
-      <Dialog open={isSurveyOpen} onOpenChange={setIsSurveyOpen}>
-        <DialogTrigger asChild>
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Card className="relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10" />
-              <CardHeader className="relative">
-                <CardTitle className="text-2xl md:text-3xl text-center">
-                  Find Your Perfect University Match
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="relative space-y-4 text-center">
-                <p className="text-muted-foreground">
-                  Take our quick survey to discover universities that align perfectly with your
-                  academic goals, interests, and preferences.
-                </p>
-                <div className="flex items-center justify-center gap-4">
-                  <ClipboardList className="h-12 w-12 text-primary" />
-                  <div className="text-left">
-                    <p className="font-medium">5-Minute Survey</p>
-                    <p className="text-sm text-muted-foreground">
-                      Get personalized university recommendations
-                    </p>
+        <Dialog open={isSurveyOpen} onOpenChange={setIsSurveyOpen}>
+          <DialogTrigger asChild>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <Card className="relative overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10" />
+                <CardHeader className="relative">
+                  <CardTitle className="text-2xl md:text-3xl text-center">
+                    Find Your Perfect University Match
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="relative space-y-4 text-center">
+                  <p className="text-muted-foreground">
+                    Take our quick survey to discover universities that align perfectly with your
+                    academic goals, interests, and preferences.
+                  </p>
+                  <div className="flex items-center justify-center gap-4">
+                    <ClipboardList className="h-12 w-12 text-primary" />
+                    <div className="text-left">
+                      <p className="font-medium">5-Minute Survey</p>
+                      <p className="text-sm text-muted-foreground">
+                        Get personalized university recommendations
+                      </p>
+                    </div>
                   </div>
-                </div>
-                <Button size="lg" className="mt-4">
-                  Take the Survey <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </CardContent>
-            </Card>
-          </motion.div>
-        </DialogTrigger>
-        <DialogContent className="max-w-2xl">
-          {/* Add a hidden DialogTitle for accessibility */}
-          <VisuallyHidden>
-            <DialogTitle>University Survey</DialogTitle>
-          </VisuallyHidden>
+                  <Button size="lg" className="mt-4">
+                    Take the Survey <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl">
+            {/* Add a hidden DialogTitle for accessibility */}
+            <VisuallyHidden>
+              <DialogTitle>University Survey</DialogTitle>
+            </VisuallyHidden>
 
-          <VisuallyHidden>
-          {/* Add a DialogDescription for accessibility */}
-          <DialogDescription>
-            Complete this survey to get personalized university recommendations based on your
-            preferences.
-          </DialogDescription>
-          </VisuallyHidden>
+            <VisuallyHidden>
+              {/* Add a DialogDescription for accessibility */}
+              <DialogDescription>
+                Complete this survey to get personalized university recommendations based on your
+                preferences.
+              </DialogDescription>
+            </VisuallyHidden>
 
-          {/* Pass the onSubmit handler to the Survey component */}
-          <Survey onSubmit={handleSurveySubmit} />
-        </DialogContent>
-      </Dialog>
-
+            {/* Pass the onSubmit handler to the Survey component */}
+            <Survey onSubmit={handleSurveySubmit} />
+          </DialogContent>
+        </Dialog>
 
         {/* Top Universities Section */}
         <section className="mb-12 mt-12">
