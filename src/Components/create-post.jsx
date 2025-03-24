@@ -1,73 +1,92 @@
-"use client"
-
-import { useState } from "react"
-import PropTypes from "prop-types"
-import { ImageIcon, X } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
+"use client";
+import { useState } from "react";
+import PropTypes from "prop-types";
+import { ImageIcon, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 
 export function CreatePost({ onClose, onSubmit }) {
-  const [title, setTitle] = useState("")
-  const [description, setDescription] = useState("")
-  const [images, setImages] = useState([])
-  const [imagePreview, setImagePreview] = useState(null)
-  const [errors, setErrors] = useState({})
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [images, setImages] = useState([]);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [errors, setErrors] = useState({});
 
   // Handle image upload
   const handleImageUpload = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onloadend = () => {
-        const imageUrl = reader.result
-        setImagePreview(imageUrl)
-        setImages([...images, imageUrl])
-      }
-      reader.readAsDataURL(file)
+        const imageUrl = reader.result;
+        setImagePreview(imageUrl);
+        setImages([...images, imageUrl]);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   // Remove an image
   const handleRemoveImage = (indexToRemove) => {
-    setImages(images.filter((_, index) => index !== indexToRemove))
+    setImages(images.filter((_, index) => index !== indexToRemove));
     if (images.length === 1) {
-      setImagePreview(null)
+      setImagePreview(null);
     } else if (imagePreview === images[indexToRemove]) {
-      setImagePreview(images[0])
+      setImagePreview(images[0]);
     }
-  }
+  };
 
   // Submit the post
-  const handleSubmit = () => {
-    const newErrors = {}
+  const handleSubmit = async () => {
+    const newErrors = {};
 
     if (!title.trim()) {
-      newErrors.title = "Title is required"
+      newErrors.title = "Title is required";
     }
 
     if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors)
-      return
+      setErrors(newErrors);
+      return;
     }
 
-    onSubmit({
-      title,
-      description,
-      images,
-    })
-  }
+    try {
+      const roomId = "67dfb2b99a39446d9a238050"; // Replace with actual room ID logic
+      const postData = {
+        roomId,
+        title,
+        description,
+        images,
+      };
+
+      onSubmit(postData); // Pass the created post back to the parent
+      onClose(); // Close the dialog after successful submission
+    } catch (error) {
+      console.error("Error creating post:", error);
+    }
+  };
 
   return (
     <Dialog open={true} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[550px]">
+      <DialogContent className="sm:max-w-[550px]" aria-describedby="dialog-description">
         <DialogHeader>
           <DialogTitle>Create a Post</DialogTitle>
+          <DialogDescription id="dialog-description">
+            Fill out the form below to create a new post.
+          </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
+          {/* Title Field */}
           <div className="grid gap-2">
             <Label htmlFor="title">Title *</Label>
             <Input
@@ -75,14 +94,15 @@ export function CreatePost({ onClose, onSubmit }) {
               placeholder="Enter post title"
               value={title}
               onChange={(e) => {
-                setTitle(e.target.value)
-                if (errors.title) setErrors({ ...errors, title: undefined })
+                setTitle(e.target.value);
+                if (errors.title) setErrors({ ...errors, title: undefined });
               }}
               className={errors.title ? "border-red-500" : ""}
             />
             {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
           </div>
 
+          {/* Description Field */}
           <div className="grid gap-2">
             <Label htmlFor="description">Description (optional)</Label>
             <Textarea
@@ -94,6 +114,7 @@ export function CreatePost({ onClose, onSubmit }) {
             />
           </div>
 
+          {/* Image Upload */}
           <div className="grid gap-2">
             <Label>Images (optional)</Label>
             <div className="flex items-center gap-2">
@@ -133,6 +154,7 @@ export function CreatePost({ onClose, onSubmit }) {
           </div>
         </div>
 
+        {/* Footer Buttons */}
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             Cancel
@@ -143,14 +165,11 @@ export function CreatePost({ onClose, onSubmit }) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 // Add PropTypes validation
 CreatePost.propTypes = {
   onClose: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
-}
-
-// Set default props (if needed)
-CreatePost.defaultProps = {}
+};
