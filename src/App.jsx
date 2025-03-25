@@ -50,7 +50,7 @@ function App() {
             <Route path="/mentorprofile/:id" element={<MentorProfile />} />
             <Route path="/universities" element={<Universities />} />
             <Route path="/discussionrooms" element={<DiscussionRooms />} />
-            <Route path="/discussionroom" element={<DiscussionRoom />} />
+            <Route path="/discussionroom/:roomId" element={<DiscussionRoom />} />
             <Route path="/visasection" element={<VisaSection />} />
             <Route path="/aboutus" element={<Aboutus />} />
             <Route path="/mentordashboard" element={<MentorDashboard />} />

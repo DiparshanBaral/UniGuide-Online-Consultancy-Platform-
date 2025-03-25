@@ -12,50 +12,29 @@ import {
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, MessageSquare, Plus, TrendingUp, Award } from 'lucide-react';
+import { Users, MessageSquare, Plus, TrendingUp } from 'lucide-react';
 import { CreateRoom } from '@/components/create-room';
 import API from '../api';
+import { toast } from 'sonner';
+import { useNavigate } from 'react-router-dom';
 
 export default function DiscussionRooms() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateRoom, setShowCreateRoom] = useState(false);
   const [rooms, setRooms] = useState([]); // State to store fetched rooms
+  const [joinedRooms, setJoinedRooms] = useState([]); // State to store joined rooms
   const [loading, setLoading] = useState(true); // Loading state for API call
   const [session, setSession] = useState(null);
+  const navigate = useNavigate();
 
   // Retrieve session from localStorage
   useEffect(() => {
-    const savedSession = localStorage.getItem("session");
+    const savedSession = localStorage.getItem('session');
     if (savedSession) {
       setSession(JSON.parse(savedSession)); // Set session from localStorage if it exists
+      console.log(savedSession);
     }
   }, []);
-
-  // Handle room creation
-  const handleCreateRoom = async (roomData) => {
-    try {
-      const response = await API.post(
-        "/discussion/create",
-        roomData,
-        {
-          headers: {
-            Authorization: `Bearer ${session?.token}`, // Add token to headers
-          },
-        }
-      );
-
-      if (!response.data.success) {
-        throw new Error("Failed to create room");
-      }
-
-      console.log("Room created:", response.data.data);
-      setShowCreateRoom(false); // Close the modal after successful creation
-    } catch (error) {
-      console.error("Error creating room:", error);
-      alert("Failed to create room. Please try again.");
-    }
-  };
-
   // Fetch all rooms from the backend API
   useEffect(() => {
     const fetchRooms = async () => {
@@ -71,9 +50,84 @@ export default function DiscussionRooms() {
         setLoading(false);
       }
     };
-
     fetchRooms();
   }, []);
+
+  // Fetch joined rooms for the logged-in user
+  useEffect(() => {
+    const fetchJoinedRooms = async () => {
+      try {
+        const response = await API.get(`/discussion/joined?userId=${session._id}`, {
+          headers: {
+            Authorization: `Bearer ${session?.token}`,
+          },
+        });
+
+        // Check if the response contains data
+        if (!response.data.success) {
+          console.error('API Error:', response.data.message || 'Failed to fetch joined rooms');
+          toast.error('Failed to fetch joined rooms. Please try again.');
+          return;
+        }
+        console.log(response);
+        // Update the state with the fetched rooms
+        setJoinedRooms(response.data.data);
+      } catch (error) {
+        console.error('Error fetching joined rooms:', error.message);
+        toast.error('An error occurred while fetching joined rooms.');
+      }
+    };
+    fetchJoinedRooms();
+  }, [session]);
+
+  // Handle room creation
+  const handleCreateRoom = async (roomData) => {
+    try {
+      const response = await API.post('/discussion/create', roomData, {
+        headers: {
+          Authorization: `Bearer ${session?.token}`, // Add token to headers
+        },
+      });
+      if (!response.data.success) {
+        throw new Error('Failed to create room');
+      }
+      console.log('Room created:', response.data.data);
+      setShowCreateRoom(false); // Close the modal after successful creation
+    } catch (error) {
+      console.error('Error creating room:', error);
+      alert('Failed to create room. Please try again.');
+    }
+  };
+
+  // Handle joining a room
+  const handleJoinRoom = async (roomId) => {
+    try {
+      const response = await API.post(
+        `/discussion/${roomId}/join`,
+        { userId: session?._id },
+        {
+          headers: {
+            Authorization: `Bearer ${session?.token}`, // Add token to headers
+          },
+        },
+      );
+      if (!response.data.success) {
+        throw new Error('Failed to join room');
+      }
+
+      // Show success toast notification
+      toast.success('Successfully joined the room!', {
+        description: 'You are now part of this discussion room.',
+        duration: 3000, // Duration in milliseconds
+      });
+
+      // Update the joinedRooms state
+      setJoinedRooms((prev) => [...prev, response.data.data]);
+    } catch (error) {
+      console.error('Error joining room:', error);
+      alert('Failed to join room. Please try again.');
+    }
+  };
 
   // Filter rooms based on search query
   const filteredRooms = rooms.filter(
@@ -97,12 +151,10 @@ export default function DiscussionRooms() {
     }
   };
 
-
   // Define categories dynamically based on room data
   const categories = [
     { id: 'general', name: 'General' },
     { id: 'joined', name: 'Joined Rooms' },
-    { id: 'your', name: 'Your Rooms' },
   ];
 
   return (
@@ -144,7 +196,7 @@ export default function DiscussionRooms() {
       <div className="max-w-7xl mx-auto px-6 py-12">
         {/* Rooms Grid with Tabs */}
         <Tabs defaultValue="general" className="w-full">
-          <TabsList className="grid grid-cols-3 w-full md:w-auto mb-6">
+          <TabsList className="grid grid-cols-2 w-full md:w-auto mb-6">
             {categories.map((category) => (
               <TabsTrigger key={category.id} value={category.id}>
                 {category.name}
@@ -187,7 +239,10 @@ export default function DiscussionRooms() {
                       </div>
                     </CardContent>
                     <CardFooter>
-                      <Button className="w-full">
+                      <Button
+                        className="w-full"
+                        onClick={() => handleJoinRoom(room._id)} // Join room button
+                      >
                         <MessageSquare className="mr-2 h-4 w-4" />
                         Join Room
                       </Button>
@@ -201,9 +256,8 @@ export default function DiscussionRooms() {
           </TabsContent>
           <TabsContent value="joined" className="mt-0">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredRooms
-                .filter((room) => room.joined)
-                .map((room, index) => (
+              {joinedRooms.length > 0 ? (
+                joinedRooms.map((room, index) => (
                   <Card
                     key={index}
                     className="overflow-hidden transition-all duration-300 hover:shadow-lg border-2 hover:border-primary/20"
@@ -234,57 +288,19 @@ export default function DiscussionRooms() {
                       </div>
                     </CardContent>
                     <CardFooter>
-                      <Button className="w-full">
+                      <Button
+                        className="w-full"
+                        onClick={() => navigate(`/discussionroom/${room._id}`)} // Navigate to room page
+                      >
                         <MessageSquare className="mr-2 h-4 w-4" />
                         Enter Room
                       </Button>
                     </CardFooter>
                   </Card>
-                ))}
-            </div>
-          </TabsContent>
-          <TabsContent value="your" className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredRooms
-                .filter((room) => room.owner)
-                .map((room, index) => (
-                  <Card
-                    key={index}
-                    className="overflow-hidden transition-all duration-300 hover:shadow-lg border-2 hover:border-primary/20"
-                  >
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <CardTitle className="text-xl">{room.title}</CardTitle>
-                        <div
-                          className={`w-3 h-3 rounded-full ${getActivityColor(room.activity)}`}
-                          title={`${room.activity} activity`}
-                        ></div>
-                      </div>
-                      <CardDescription>{room.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pb-3">
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {room.tags.map((tag, i) => (
-                          <Badge key={i} variant="secondary" className="text-xs">
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <div className="flex items-center">
-                          <Users className="mr-1 h-4 w-4" />
-                          <span>{room.participants} participants</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                    <CardFooter>
-                      <Button className="w-full">
-                        <MessageSquare className="mr-2 h-4 w-4" />
-                        Manage Room
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                ))}
+                ))
+              ) : (
+                <p>No joined rooms found.</p> // Display message if no joined rooms
+              )}
             </div>
           </TabsContent>
         </Tabs>
@@ -313,7 +329,7 @@ export default function DiscussionRooms() {
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm border border-slate-200">
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                <Award className="h-6 w-6 text-primary" />
+                <TrendingUp className="h-6 w-6 text-primary" />
               </div>
               <h3 className="text-lg font-semibold mb-2">Grow Together</h3>
               <p className="text-muted-foreground">
@@ -326,10 +342,7 @@ export default function DiscussionRooms() {
       </div>
       {/* Create Room Dialog */}
       {showCreateRoom && (
-        <CreateRoom
-          onClose={() => setShowCreateRoom(false)}
-          onSubmit={handleCreateRoom}
-        />
+        <CreateRoom onClose={() => setShowCreateRoom(false)} onSubmit={handleCreateRoom} />
       )}
     </div>
   );
