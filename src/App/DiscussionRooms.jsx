@@ -32,7 +32,6 @@ export default function DiscussionRooms() {
     const savedSession = localStorage.getItem('session');
     if (savedSession) {
       setSession(JSON.parse(savedSession)); // Set session from localStorage if it exists
-      console.log(savedSession);
     }
   }, []);
   // Fetch all rooms from the backend API
@@ -43,7 +42,7 @@ export default function DiscussionRooms() {
         if (!response.data.success) {
           throw new Error('Failed to fetch rooms');
         }
-        setRooms(response.data.data); // Assuming the API returns { success: true, data: [...] }
+        setRooms(response.data.data);
         setLoading(false);
       } catch (error) {
         console.error('Error fetching rooms:', error);
@@ -69,12 +68,10 @@ export default function DiscussionRooms() {
           toast.error('Failed to fetch joined rooms. Please try again.');
           return;
         }
-        console.log(response);
         // Update the state with the fetched rooms
         setJoinedRooms(response.data.data);
       } catch (error) {
         console.error('Error fetching joined rooms:', error.message);
-        toast.error('An error occurred while fetching joined rooms.');
       }
     };
     fetchJoinedRooms();
@@ -90,8 +87,9 @@ export default function DiscussionRooms() {
       });
       if (!response.data.success) {
         throw new Error('Failed to create room');
-      }
-      console.log('Room created:', response.data.data);
+      }else{
+        toast.success("Room created successfully. Waiting for admin's approval!")
+      };
       setShowCreateRoom(false); // Close the modal after successful creation
     } catch (error) {
       console.error('Error creating room:', error);
