@@ -33,7 +33,7 @@ function App() {
 
   return (
     <>
-      <Toaster position="top-center" richColors />
+      <Toaster position="bottom-center" richColors />
       <div className="flex flex-col min-h-screen">
         {/* Conditionally render Navbar */}
         {!isPortalRoute && <Navbar />}
@@ -60,6 +60,7 @@ function App() {
             <Route path="/universityprofile/:country/:universityId" element={<UniversityProfile />} />
             <Route path="/studentportal/:portalid" element={<StudentPortal />} />
             <Route path="/mentorportal/:portalid" element={<MentorPortal />} />
+            <Route path="*" element={<h1 className="text-center text-2xl">404 Not Found</h1>} />
           </Routes>
         </div>
 

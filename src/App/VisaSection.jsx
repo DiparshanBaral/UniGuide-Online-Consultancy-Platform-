@@ -364,7 +364,7 @@ export default function VisaSection() {
   };
 
   // Handle liking a post
-  const handleLikePost = async (country, postid) => {
+  const handleLikePost = async (country, postid, userId) => {
     if (!session) {
       toast.error('Please log in to like posts.');
       return;
@@ -372,19 +372,18 @@ export default function VisaSection() {
 
     // Check if postid exists - DEBUG the issue
     if (!postid) {
-      console.error('Missing postid for post:', { country, postid });
+      console.error('Missing postid for post:', { country, postid, userId });
       toast.error('Unable to like this post. Missing post ID.');
       return;
     }
 
     try {
-      console.log('Liking post with:', { country, postid });
-
       const response = await API.post(
         '/visa/experience/like',
         {
           country,
           postid,
+          userId,
         },
         {
           headers: {
@@ -423,8 +422,7 @@ export default function VisaSection() {
             return post;
           }),
         );
-
-        toast.success('Post liked!');
+        toast.success(response?.data.message);
       } else {
         throw new Error(response?.data?.message || 'Failed to like post');
       }
@@ -769,7 +767,7 @@ export default function VisaSection() {
                                       // Use _id as fallback if postid is missing
                                       const id =
                                         exp.postid || (exp._id ? exp._id.toString() : null);
-                                      handleLikePost(exp.country, id);
+                                      handleLikePost(exp.country, id, session?._id);
                                     }}
                                     className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full transition-colors"
                                   >
@@ -857,7 +855,7 @@ export default function VisaSection() {
                                 <CardFooter className="flex justify-between border-t pt-4 pb-4">
                                   <div className="flex gap-4 text-sm text-muted-foreground">
                                     <button
-                                      onClick={() => handleLikePost(exp.country, exp.postid)}
+                                      onClick={() => handleLikePost(exp.country, exp.postid, session?._id)}
                                       className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full transition-colors"
                                     >
                                       <Heart className="h-4 w-4 text-red-500" fill="red" />{' '}
@@ -948,7 +946,7 @@ export default function VisaSection() {
                               <CardFooter className="flex justify-between border-t pt-4 pb-4">
                                 <div className="flex gap-4 text-sm text-muted-foreground">
                                   <button
-                                    onClick={() => handleLikePost(post.country, post.postid)}
+                                    onClick={() => handleLikePost(post.country, post.postid, session?._id)}
                                     className="flex items-center gap-1 bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded-full transition-colors"
                                   >
                                     <Heart className="h-4 w-4 text-red-500" fill="red" />{' '}
@@ -1233,7 +1231,7 @@ export default function VisaSection() {
                     <div className="flex gap-4">
                       <button
                         onClick={() =>
-                          handleLikePost(selectedExperience.country, selectedExperience.postid)
+                          handleLikePost(selectedExperience.country, selectedExperience.postid, session?._id)
                         }
                         className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 px-3 py-2 rounded-full transition-colors"
                       >
