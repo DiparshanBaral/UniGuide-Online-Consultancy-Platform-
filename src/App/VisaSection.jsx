@@ -143,7 +143,7 @@ export default function VisaSection() {
             Authorization: `Bearer ${session?.token}`,
           },
         });
-
+        console.log(response);
         // Check if response exists and is successful
         if (response && response.status === 200) {
           setExperiences(response.data || []);
