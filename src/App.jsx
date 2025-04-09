@@ -22,6 +22,7 @@ import StudentPortal from '@/App/StudentPortal';
 import MentorPortal from '@/App/MentorPortal';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import NotificationsPage from './App/NotificationsPage';
 
 function App() {
   const location = useLocation();
@@ -60,6 +61,7 @@ function App() {
             <Route path="/universityprofile/:country/:universityId" element={<UniversityProfile />} />
             <Route path="/studentportal/:portalid" element={<StudentPortal />} />
             <Route path="/mentorportal/:portalid" element={<MentorPortal />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="*" element={<h1 className="text-center text-2xl">404 Not Found</h1>} />
           </Routes>
         </div>

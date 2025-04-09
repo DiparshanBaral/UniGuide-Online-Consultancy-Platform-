@@ -49,19 +49,9 @@ export default function StudentDashboard() {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="mt-[50px] flex min-h-screen bg-gray-100">
       {/* Sidebar */}
       <aside className="w-64 bg-white shadow-md p-4">
-        <div className="flex items-center gap-2 mb-6">
-          <Avatar>
-            <AvatarImage src="/placeholder-avatar.png" alt="Student Profile" />
-            <AvatarFallback>S</AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-semibold">John Doe</p>
-            <p className="text-sm text-gray-500">Student</p>
-          </div>
-        </div>
         <nav className="space-y-2">
           <Button
             variant={activeTab === "connectedMentors" ? "default" : "ghost"}
