@@ -1,11 +1,9 @@
-"use client"
-
 import { useState, useEffect, useRef } from "react"
 import { Link, useNavigate } from "react-router-dom"
 import { toast } from "sonner"
 import { useAtom } from "jotai"
 import { sessionAtom } from "@/atoms/session"
-import { Bell, GraduationCap, LogOut, Menu, MessageSquare, Search, Settings, User} from 'lucide-react'
+import { Bell, GraduationCap, LogOut, Menu, Search, User} from 'lucide-react'
 
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -71,6 +69,7 @@ export default function Navbar() {
     }
     document.addEventListener("mousedown", handleClickOutside)
     return () => document.removeEventListener("mousedown", handleClickOutside)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const fetchUserData = async (userId, token, role) => {
@@ -106,6 +105,7 @@ export default function Navbar() {
     } else {
       setIsFetchingUser(false)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session])
 
   const handleLogout = () => {
@@ -307,14 +307,6 @@ export default function Navbar() {
                       <Link to={session?.role === "mentor" ? "/mentordashboard" : "/studentdashboard"}>
                         Dashboard
                       </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      <span>Messages</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />

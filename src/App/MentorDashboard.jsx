@@ -76,19 +76,9 @@ export default function MentorDashboard() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="mt-[50px] flex min-h-screen bg-gray-100">
       {/* Sidebar */}
       <aside className="w-64 bg-white shadow-md p-4">
-        <div className="flex items-center gap-2 mb-6">
-          <Avatar>
-            <AvatarImage src="/placeholder-avatar.png" alt="Mentor Profile" />
-            <AvatarFallback>M</AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-semibold">Jane Doe</p>
-            <p className="text-sm text-gray-500">Mentor</p>
-          </div>
-        </div>
         <nav className="space-y-2">
           <Button
             variant={activeTab === 'connectedStudents' ? 'default' : 'ghost'}
