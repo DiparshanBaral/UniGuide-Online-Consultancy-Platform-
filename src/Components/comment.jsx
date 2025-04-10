@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Reply } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import API from '../api';
 
 // Utility function to format relative time
 const formatRelativeTime = (timestamp) => {
@@ -38,64 +39,76 @@ export function Comment({
 }) {
   const [isReplying, setIsReplying] = useState(false);
   const [replyContent, setReplyContent] = useState('');
+  const [session, setSession] = useState(null);
+
+  // Fetch session data from localStorage on initial render
+    useEffect(() => {
+      const savedSession = localStorage.getItem('session');
+      if (savedSession) {
+        setSession(JSON.parse(savedSession));
+      }
+    }, []);
 
   // Add a reply to this comment
   const handleAddReply = async () => {
     if (!replyContent.trim()) return;
-
+  
     try {
-      const newReply = {
-        id: `r${Date.now()}`,
-        content: replyContent,
-        author: {
-          name: 'Current User',
-          avatar: '/placeholder.svg?height=40&width=40',
-        },
-        upvotes: 0,
-        downvotes: 0,
-        timestamp: new Date().toISOString(),
-        replies: [],
+      const replyAuthor = {
+        name: `${session?.firstname || ''} ${session?.lastname || ''}`.trim() || 'Anonymous',
+        avatar: session?.profilePic || '/placeholder.svg',
       };
-
-      const updateCommentReplies = (comments, targetId, newReply) => {
-        return comments.map((c) => {
-          if (c.id === targetId) {
-            return {
-              ...c,
-              replies: [...(Array.isArray(c.replies) ? c.replies : []), newReply],
-            };
-          } else if (c.replies && c.replies.length > 0) {
-            return {
-              ...c,
-              replies: updateCommentReplies(c.replies, targetId, newReply),
-            };
-          }
-          return c;
-        });
-      };
-
-      if (parentComments.length > 0) {
-        let updatedComments = [...parentComments];
-        updatedComments = updateCommentReplies(updatedComments, comment.id, newReply);
-        onUpdateComments(updatedComments);
-      } else {
+  
+      const response = await API.post('/room/reply/comment', {
+        roomId,
+        postId,
+        commentid: comment.id,
+        replycontent: replyContent,
+        replyauthor: replyAuthor,
+      });
+  
+      if (response.data && response.data.reply) {
+        const newReply = response.data.reply;
+  
         const updatedComment = {
           ...comment,
           replies: [...(Array.isArray(comment.replies) ? comment.replies : []), newReply],
         };
-        onUpdateComments((prevComments) =>
-          prevComments.map((c) => (c.id === comment.id ? updatedComment : c)),
-        );
+  
+        // Update the parent comments state
+        if (parentComments.length > 0) {
+          const updateNestedComment = (comments, targetId, updatedComment) => {
+            return comments.map((c) =>
+              c.id === targetId
+                ? updatedComment
+                : c.replies && c.replies.length > 0
+                ? {
+                    ...c,
+                    replies: updateNestedComment(c.replies, targetId, updatedComment),
+                  }
+                : c,
+            );
+          };
+  
+          const updatedComments = updateNestedComment(parentComments, comment.id, updatedComment);
+          onUpdateComments(updatedComments);
+        } else {
+          onUpdateComments((prevComments) =>
+            prevComments.map((c) => (c.id === comment.id ? updatedComment : c)),
+          );
+        }
+  
+        setReplyContent('');
+        setIsReplying(false);
+      } else {
+        console.error('Unexpected response structure:', response.data);
       }
-
-      setReplyContent('');
-      setIsReplying(false);
     } catch (error) {
       console.error('Error adding reply:', error);
     }
   };
 
-  const maxDepth = 4;
+  const maxDepth = 1;
 
   return (
     <div className={`pl-${depth > 0 ? 4 : 0}`}>
@@ -153,13 +166,13 @@ export function Comment({
             <div className="mt-3">
               {comment.replies.map((reply) => (
                 <Comment
-                  key={reply.replyid}
+                  key={reply.replyid} // Use replyid as the key
                   comment={{
                     ...reply,
-                    id: reply.replyid,
+                    id: reply.replyid || reply.id, // Ensure id is assigned
                     content: reply.replycontent,
                     author: reply.replyauthor,
-                    timestamp: formatRelativeTime(reply.replytimestamp),
+                    timestamp: reply.replytimestamp,
                     replies: reply.commentreplies || [],
                   }}
                   postId={postId}

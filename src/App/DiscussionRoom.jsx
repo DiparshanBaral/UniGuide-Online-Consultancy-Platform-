@@ -217,50 +217,67 @@ export default function DiscussionRoom() {
     }
   };
 
-  // Reply to a comment
-  const handleReplyToComment = async (postId, commentId, replyContent) => {
+  // Function to handle upvote
+  const handleUpvote = async (postId) => {
     try {
-      const replyAuthor = {
-        name: `${session?.firstname || ''} ${session?.lastname || ''}`.trim() || 'Anonymous',
-        avatar: session?.profilePic || '/placeholder.svg',
-      };
+      const userId = session?._id; // Get the user ID from the session
+      if (!userId) {
+        toast.error('You need to be logged in to upvote.');
+        return;
+      }
 
-      const response = await API.post('/room/reply/comment', {
+      const response = await API.post('/room/post/upvote', {
         roomId,
         postId,
-        commentid: commentId,
-        replycontent: replyContent,
-        replyauthor: replyAuthor,
+        userId,
       });
 
-      if (response.data.success) {
+      if (response.status === 200) {
+        // Update the post's upvote count in the UI
         const updatedPosts = posts.map((post) =>
-          post.postid === postId
-            ? {
-                ...post,
-                comments: post.comments.map((comment) =>
-                  comment.commentid === commentId
-                    ? {
-                        ...comment,
-                        commentreplies: [
-                          ...(Array.isArray(comment.commentreplies) ? comment.commentreplies : []),
-                          response.data.reply,
-                        ],
-                      }
-                    : comment,
-                ),
-              }
-            : post,
+          post.postid === postId ? { ...post, upvotes: response.data.upvotes } : post,
         );
-
         setPosts(updatedPosts);
-        toast.success('Reply added successfully!');
+
+        toast.success(response.data.message);
       } else {
-        toast.error('Failed to add reply');
+        toast.error('Failed to upvote the post.');
       }
     } catch (error) {
-      console.error('Error replying to comment:', error);
-      toast.error('Error adding reply');
+      console.error('Error upvoting the post:', error);
+      toast.error('Error upvoting the post.');
+    }
+  };
+
+  // Function to handle downvote
+  const handleDownvote = async (postId) => {
+    try {
+      const userId = session?._id; // Get the user ID from the session
+      if (!userId) {
+        toast.error('You need to be logged in to downvote.');
+        return;
+      }
+
+      const response = await API.post('/room/post/downvote', {
+        roomId,
+        postId,
+        userId,
+      });
+
+      if (response.status === 200) {
+        // Update the post's upvote count in the UI
+        const updatedPosts = posts.map((post) =>
+          post.postid === postId ? { ...post, upvotes: response.data.upvotes } : post,
+        );
+        setPosts(updatedPosts);
+
+        toast.success(response.data.message);
+      } else {
+        toast.error('Failed to downvote the post.');
+      }
+    } catch (error) {
+      console.error('Error downvoting the post:', error);
+      toast.error('Error downvoting the post.');
     }
   };
 
@@ -342,6 +359,7 @@ export default function DiscussionRoom() {
                       variant="ghost"
                       size="icon"
                       className="text-muted-foreground hover:text-orange-500 hover:bg-transparent"
+                      onClick={() => handleUpvote(post.postid)} // Call handleUpvote
                     >
                       <ArrowUp className="h-5 w-5" />
                     </Button>
@@ -352,6 +370,7 @@ export default function DiscussionRoom() {
                       variant="ghost"
                       size="icon"
                       className="text-muted-foreground hover:text-blue-500 hover:bg-transparent"
+                      onClick={() => handleDownvote(post.postid)} // Call handleDownvote
                     >
                       <ArrowDown className="h-5 w-5" />
                     </Button>
@@ -425,26 +444,31 @@ export default function DiscussionRoom() {
                                 key={comment.commentid}
                                 comment={{
                                   ...comment,
-                                  id: comment.commentid,
+                                  id: comment.commentid, // Ensure id is assigned
                                   content: comment.commentcontent,
                                   author: comment.commentauthor,
-                                  timestamp: formatRelativeTime(comment.commenttimestamp),
-                                  replies: comment.commentreplies || [],
+                                  timestamp: comment.commenttimestamp,
+                                  replies: (comment.commentreplies || []).map((reply) => ({
+                                    ...reply,
+                                    id: reply.replyid || reply.id || `temp-id-${Math.random()}`, // Ensure id is assigned
+                                    content: reply.replycontent,
+                                    author: reply.replyauthor,
+                                    timestamp: reply.replytimestamp,
+                                    replies: reply.commentreplies || [],
+                                  })),
                                 }}
                                 postId={post.postid}
                                 roomId={roomId}
                                 onUpdateComments={(updatedComments) => {
-                                  setPosts(
-                                    posts.map((p) =>
+                                  // Update the comments for the specific post
+                                  setPosts((prevPosts) =>
+                                    prevPosts.map((p) =>
                                       p.postid === post.postid
                                         ? { ...p, comments: updatedComments }
                                         : p,
                                     ),
                                   );
                                 }}
-                                onReplyToComment={(commentId, replyContent) =>
-                                  handleReplyToComment(post.postid, commentId, replyContent)
-                                }
                               />
                             ))
                           ) : (
