@@ -116,7 +116,7 @@ export default function Login() {
     );
   
     // Redirect based on role
-    if (role === "admin") navigate("/adminDashboard");
+    if (role === "admin") navigate("/admin/");
     else navigate("/");
   };
   

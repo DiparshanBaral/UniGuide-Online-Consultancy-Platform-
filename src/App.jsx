@@ -13,31 +13,32 @@ import VisaSection from '@/App/VisaSection';
 import Universities from '@/App/Universities';
 import MentorDashboard from '@/App/MentorDashboard'; 
 import StudentDashboard from '@/App/StudentDashboard';
-import AdminDashboard from '@/App/AdminDashboard';
 import UniversitiesList from '@/App/UniversitiesList';
 import UniversityProfile from '@/App/UniversityProfile';
 import MentorProfilePersonal from '@/App/Mentorprofilepersonal';
 import PublicStudentProfile from '@/App/PublicStudentProfile';
 import StudentPortal from '@/App/StudentPortal';
 import MentorPortal from '@/App/MentorPortal';
+import NotificationsPage from './App/NotificationsPage';
+import AdminRoutes from '@/App/Admin';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import NotificationsPage from './App/NotificationsPage';
 
 function App() {
   const location = useLocation();
 
-  // Check if the current route is a portal route
-  const isPortalRoute = 
+  // Check if the current route is a portal or admin route
+  const isExcludedRoute = 
     location.pathname.startsWith('/studentportal') || 
-    location.pathname.startsWith('/mentorportal');
+    location.pathname.startsWith('/mentorportal') || 
+    location.pathname.startsWith('/admin');
 
   return (
     <>
       <Toaster position="bottom-center" richColors />
       <div className="flex flex-col min-h-screen">
         {/* Conditionally render Navbar */}
-        {!isPortalRoute && <Navbar />}
+        {!isExcludedRoute && <Navbar />}
 
         {/* Main Content */}
         <div className="flex-grow pt-[10px]">
@@ -56,18 +57,18 @@ function App() {
             <Route path="/aboutus" element={<Aboutus />} />
             <Route path="/mentordashboard" element={<MentorDashboard />} />
             <Route path="/studentdashboard" element={<StudentDashboard />} />
-            <Route path="/admindashboard" element={<AdminDashboard />} />
             <Route path="/universitieslist" element={<UniversitiesList />} />
             <Route path="/universityprofile/:country/:universityId" element={<UniversityProfile />} />
             <Route path="/studentportal/:portalid" element={<StudentPortal />} />
             <Route path="/mentorportal/:portalid" element={<MentorPortal />} />
             <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/admin/*" element={<AdminRoutes />} />
             <Route path="*" element={<h1 className="text-center text-2xl">404 Not Found</h1>} />
           </Routes>
         </div>
 
         {/* Conditionally render Footer */}
-        {!isPortalRoute && <Footer />}
+        {!isExcludedRoute && <Footer />}
       </div>
     </>
   );
