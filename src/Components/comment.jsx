@@ -1,15 +1,9 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { Reply, MoreHorizontal } from 'lucide-react';
+import { Reply } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 
 // Utility function to format relative time
 const formatRelativeTime = (timestamp) => {
@@ -137,17 +131,6 @@ export function Comment({
                     Reply
                   </Button>
                 )}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-6 w-6">
-                      <MoreHorizontal className="h-3 w-3" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start">
-                    <DropdownMenuItem>Report</DropdownMenuItem>
-                    <DropdownMenuItem>Copy Text</DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
               {/* Reply form */}
               {isReplying && (

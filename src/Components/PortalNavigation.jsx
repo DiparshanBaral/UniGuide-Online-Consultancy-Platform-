@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, FileText, MessageCircle, ArrowLeft } from 'lucide-react';
 import { Link, useParams, useLocation } from 'react-router-dom'; // Import useLocation
 import API from '../api'; // Import your API utility
-import logo from '@/assets/logo.png';
+import logo from '@/assets/UniGuide_logo.png';
 
 const PortalNavigation = ({ activeTab, setActiveTab }) => {
   const [session, setSession] = useState(null);
@@ -18,7 +18,7 @@ const PortalNavigation = ({ activeTab, setActiveTab }) => {
       try {
         setLoading(true); // Reset loading state when navigating
 
-        // Step 1: Fetch session from localStorage
+        // Fetch session from localStorage
         const savedSession = localStorage.getItem('session');
         if (!savedSession) {
           throw new Error('No session found');
@@ -26,13 +26,13 @@ const PortalNavigation = ({ activeTab, setActiveTab }) => {
         const parsedSession = JSON.parse(savedSession);
         const token = parsedSession.token; // Extract token from session
 
-        // Step 2: Fetch portal data using portalId
+        // Fetch portal data using portalId
         const portalResponse = await API.get(`/portal/${portalid}`, {
           headers: { Authorization: `Bearer ${token}` }, // Include token for authentication
         });
         const portalData = portalResponse.data;
 
-        // Step 3: Determine the role and extract user details
+        // Determine the role and extract user details
         let userDetails, otherUserDetails;
         if (parsedSession.role === 'mentor') {
           userDetails = portalData.mentorId; // Mentor details are already populated

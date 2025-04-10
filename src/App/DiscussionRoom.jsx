@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import API from '../api'; // Custom Axios instance
-import { ArrowUp, ArrowDown, MessageSquare, Plus, ChevronLeft, Users, Tag } from 'lucide-react';
+import { ArrowUp, ArrowDown, MessageSquare, Plus, Users, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -33,7 +33,6 @@ const formatRelativeTime = (timestamp) => {
 };
 
 export default function DiscussionRoom() {
-  const navigate = useNavigate();
   const [posts, setPosts] = useState([]);
   const [myPosts, setMyPosts] = useState([]);
   const [expandedPost, setExpandedPost] = useState(null);
@@ -266,18 +265,7 @@ export default function DiscussionRoom() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      {/* Header */}
-      <header className="sticky top-0 z-10 bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <h1 className="text-xl font-bold">{roomDetails?.title || 'Discussion Room'}</h1>
-          </div>
-        </div>
-      </header>
+    <div className="mt-[50px] min-h-screen bg-slate-50">
       <main className="max-w-5xl mx-auto px-4 py-6">
         {/* Room Details Card */}
         {roomDetails && (
@@ -479,7 +467,7 @@ export default function DiscussionRoom() {
                 variant="outline"
                 className="mt-4 border-slate-800 text-slate-800 hover:bg-slate-800 hover:text-white"
               >
-                Be the first to post
+                Create your first to post
               </Button>
             </div>
           )}

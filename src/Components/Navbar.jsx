@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import logo from '@/assets/UniGuide_logo.png';
 import API from '../api';
 
 export default function Navbar() {
@@ -274,7 +275,7 @@ export default function Navbar() {
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-3">
               <img
-                src="./src/assets/UniGuide_logo.png" 
+                src={logo}
                 alt="UniGuide Logo"
                 className="h-14 w-14"
               />

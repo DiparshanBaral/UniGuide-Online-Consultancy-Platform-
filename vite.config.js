@@ -13,4 +13,5 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'), // Alias @ to src directory
     },
   },
+  assetsInclude: ['**/*.PNG'],
 });
