@@ -14,7 +14,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -27,7 +26,7 @@ import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import API from "../api";
 
-export default function UniversitySurveyForm({ onSubmit }) {
+export default function UniversitySurveyForm({ onSubmit, onClose }) {
   const [currentPage, setCurrentPage] = useState(1); // Tracks the current page of the form
   const [acceptanceRange, setAcceptanceRange] = useState([50, 70]);
   const [graduationRange, setGraduationRange] = useState([80, 100]);
@@ -36,46 +35,39 @@ export default function UniversitySurveyForm({ onSubmit }) {
   const schema = yup.object().shape({
     country: yup.string().required("Country is required"),
     fieldOfStudy: yup.string().required("Field of Study is required"),
-    budget: yup.string().required("Budget Range is required"),
+    budgetRange: yup.string().required("Budget Range is required"),
   });
 
   const form = useForm({
     defaultValues: {
       country: "",
       fieldOfStudy: "",
-      budget: "",
-      acceptanceRate: acceptanceRange,
-      graduationRate: graduationRange,
+      budgetRange: "",
+      acceptanceRateRange: acceptanceRange,
+      graduationRateRange: graduationRange,
     },
     resolver: yupResolver(schema), // Use yupResolver here
+    mode: "onChange", // Enable validation on change
   });
 
   // Function to handle form submission
   const handleSubmit = async (values) => {
     try {
-      console.log("Survey values submitted:", values);
-
-      // Validate required fields
-      if (!values.country || !values.fieldOfStudy || !values.budget) {
-        alert("Please fill in all required fields.");
-        return;
-      }
-
       // Format the acceptance rate range and graduation rate range for the backend
       const formattedValues = {
         ...values,
-        acceptanceRate: values.acceptanceRate.join("&apos;-&apos;"), // Convert array to string
-        graduationRate: values.graduationRate.join("&apos;-&apos;"), // Convert array to string
+        acceptanceRateRange: values.acceptanceRateRange.join("-"), // Convert array to string
+        graduationRateRange: values.graduationRateRange.join("-"), // Convert array to string
       };
 
       // Send the survey data to the backend
       const response = await API.post("/universities/survey", formattedValues);
 
-      // Log the results from the backend
-      console.log("Survey results:", response.data);
-
-      // Call the parent onSubmit handler
+      // Call the parent onSubmit handler with the results
       onSubmit(response.data);
+
+      // Close the survey dialog
+      onClose();
     } catch (error) {
       console.error("Error submitting survey:", error.response?.data || error.message);
       alert("An error occurred while submitting the survey. Please try again.");
@@ -103,21 +95,28 @@ export default function UniversitySurveyForm({ onSubmit }) {
                     name="country"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black">Country Preference</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(value)} value={field.value}>
+                        <FormLabel htmlFor="country" className="text-black">
+                          Country Preference
+                        </FormLabel>
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            form.trigger("country"); // Trigger validation
+                          }}
+                          value={field.value}
+                        >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger id="country" name="country">
                               <SelectValue placeholder="Select your preferred country" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
-                            <SelectItem value="US">United States</SelectItem>
-                            <SelectItem value="UK">United Kingdom</SelectItem>
-                            <SelectItem value="Canada">Canada</SelectItem>
-                            <SelectItem value="Australia">Australia</SelectItem>
+                            <SelectItem value="us">United States</SelectItem>
+                            <SelectItem value="uk">United Kingdom</SelectItem>
+                            <SelectItem value="canada">Canada</SelectItem>
+                            <SelectItem value="australia">Australia</SelectItem>
                           </SelectContent>
                         </Select>
-                        <FormDescription>Choose the country where you&apos;d like to pursue your studies</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -129,10 +128,18 @@ export default function UniversitySurveyForm({ onSubmit }) {
                     name="fieldOfStudy"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black">Field of Study</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(value)} value={field.value}>
+                        <FormLabel htmlFor="fieldOfStudy" className="text-black">
+                          Field of Study
+                        </FormLabel>
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            form.trigger("fieldOfStudy"); // Trigger validation
+                          }}
+                          value={field.value}
+                        >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger id="fieldOfStudy" name="fieldOfStudy">
                               <SelectValue placeholder="Select your field of study" />
                             </SelectTrigger>
                           </FormControl>
@@ -140,11 +147,10 @@ export default function UniversitySurveyForm({ onSubmit }) {
                             <SelectItem value="Computer Science">Computer Science</SelectItem>
                             <SelectItem value="Business">Business</SelectItem>
                             <SelectItem value="Engineering">Engineering</SelectItem>
-                            <SelectItem value="Arts &amp; Design">Arts &amp; Design</SelectItem>
+                            <SelectItem value="Arts & Design">Arts & Design</SelectItem>
                             <SelectItem value="Other">Other</SelectItem>
                           </SelectContent>
                         </Select>
-                        <FormDescription>Select the academic field you&apos;re interested in studying</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -153,13 +159,21 @@ export default function UniversitySurveyForm({ onSubmit }) {
                   {/* Budget Range */}
                   <FormField
                     control={form.control}
-                    name="budget"
+                    name="budgetRange"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-black">Budget Range</FormLabel>
-                        <Select onValueChange={(value) => field.onChange(value)} value={field.value}>
+                        <FormLabel htmlFor="budgetRange" className="text-black">
+                          Budget Range
+                        </FormLabel>
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            form.trigger("budgetRange"); // Trigger validation
+                          }}
+                          value={field.value}
+                        >
                           <FormControl>
-                            <SelectTrigger>
+                            <SelectTrigger id="budgetRange" name="budgetRange">
                               <SelectValue placeholder="Select your budget range" />
                             </SelectTrigger>
                           </FormControl>
@@ -169,7 +183,6 @@ export default function UniversitySurveyForm({ onSubmit }) {
                             <SelectItem value="high">$35k+</SelectItem>
                           </SelectContent>
                         </Select>
-                        <FormDescription>Choose your preferred annual tuition fee range</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -183,32 +196,24 @@ export default function UniversitySurveyForm({ onSubmit }) {
                   {/* Acceptance Rate Range */}
                   <FormField
                     control={form.control}
-                    name="acceptanceRate"
+                    name="acceptanceRateRange"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Acceptance Rate Range (%)</FormLabel>
+                        <FormLabel htmlFor="acceptanceRateRange">Acceptance Rate Range (%)</FormLabel>
                         <FormControl>
-                          <div className="space-y-4">
-                            <div className="pt-6 px-1">
-                              <Slider
-                                defaultValue={acceptanceRange}
-                                max={100}
-                                min={0}
-                                step={1}
-                                onValueChange={(value) => {
-                                  setAcceptanceRange(value);
-                                  field.onChange(value);
-                                }}
-                                className="relative"
-                              />
-                            </div>
-                            <div className="flex justify-between text-sm text-muted-foreground">
-                              <span>{acceptanceRange[0]}%</span>
-                              <span>{acceptanceRange[1]}%</span>
-                            </div>
-                          </div>
+                          <Slider
+                            id="acceptanceRateRange"
+                            name="acceptanceRateRange"
+                            defaultValue={acceptanceRange}
+                            max={100}
+                            min={0}
+                            step={1}
+                            onValueChange={(value) => {
+                              setAcceptanceRange(value);
+                              field.onChange(value);
+                            }}
+                          />
                         </FormControl>
-                        <FormDescription>Select your preferred university acceptance rate range</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -217,32 +222,24 @@ export default function UniversitySurveyForm({ onSubmit }) {
                   {/* Graduation Rate Range */}
                   <FormField
                     control={form.control}
-                    name="graduationRate"
+                    name="graduationRateRange"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Graduation Rate Range (%)</FormLabel>
+                        <FormLabel htmlFor="graduationRateRange">Graduation Rate Range (%)</FormLabel>
                         <FormControl>
-                          <div className="space-y-4">
-                            <div className="pt-6 px-1">
-                              <Slider
-                                defaultValue={graduationRange}
-                                max={100}
-                                min={0}
-                                step={1}
-                                onValueChange={(value) => {
-                                  setGraduationRange(value);
-                                  field.onChange(value);
-                                }}
-                                className="relative"
-                              />
-                            </div>
-                            <div className="flex justify-between text-sm text-muted-foreground">
-                              <span>{graduationRange[0]}%</span>
-                              <span>{graduationRange[1]}%</span>
-                            </div>
-                          </div>
+                          <Slider
+                            id="graduationRateRange"
+                            name="graduationRateRange"
+                            defaultValue={graduationRange}
+                            max={100}
+                            min={0}
+                            step={1}
+                            onValueChange={(value) => {
+                              setGraduationRange(value);
+                              field.onChange(value);
+                            }}
+                          />
                         </FormControl>
-                        <FormDescription>Select your preferred university graduation rate range</FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -255,11 +252,7 @@ export default function UniversitySurveyForm({ onSubmit }) {
         <CardFooter className="bg-muted/30 p-6 rounded-b-lg flex justify-between">
           {/* Back Button */}
           {currentPage === 2 && (
-            <Button
-              variant="outline"
-              onClick={() => setCurrentPage(1)}
-              className="w-32"
-            >
+            <Button variant="outline" onClick={() => setCurrentPage(1)} className="w-32">
               Back
             </Button>
           )}
@@ -298,4 +291,5 @@ export default function UniversitySurveyForm({ onSubmit }) {
 // Props Validation
 UniversitySurveyForm.propTypes = {
   onSubmit: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired, // Add onClose prop validation
 };

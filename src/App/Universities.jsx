@@ -90,33 +90,6 @@ function Universities() {
     }
   };
 
-  // Handle survey submission
-  const handleSurveySubmit = async (values) => {
-    try {
-      console.log('Survey values submitted:', values);
-
-      // Format the acceptance rate range and graduation rate range for the backend
-      const formattedValues = {
-        ...values,
-        acceptanceRateRange: values.acceptanceRate.join('-'),
-        graduationRateRange: values.graduationRate.join('-'),
-      };
-
-      // Send the survey data to the backend
-      const response = await API.post('/universities/survey', formattedValues);
-
-      // Log the results from the backend
-      console.log('Survey results:', response.data);
-
-      // Update the state with the survey results
-      setSurveyResults(response.data);
-      setIsSurveyOpen(false); // Close the survey modal
-    } catch (error) {
-      console.error('Error submitting survey:', error);
-      alert('An error occurred while submitting the survey. Please try again.');
-    }
-  };
-
   return (
     <div className="pt-[90px] px-6 sm:px-16 md:px-24 lg:px-32 py-10 bg-gray-50 text-gray-800">
       <div className="max-w-7xl mx-auto">
@@ -425,7 +398,10 @@ function Universities() {
             </VisuallyHidden>
 
             {/* Pass the onSubmit handler to the Survey component */}
-            <Survey onSubmit={handleSurveySubmit} />
+            <Survey
+              onSubmit={(results) => setSurveyResults(results)}
+              onClose={() => setIsSurveyOpen(false)} // Close the dialog
+            />
           </DialogContent>
         </Dialog>
 

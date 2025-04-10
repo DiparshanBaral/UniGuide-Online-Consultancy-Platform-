@@ -1,80 +1,89 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
-import { toast } from "sonner"
-import { useAtom } from "jotai"
-import { sessionAtom } from "@/atoms/session"
-import { Bell, Trash2, ArrowLeft } from "lucide-react"
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
+import { useAtom } from 'jotai';
+import { sessionAtom } from '@/atoms/session';
+import { Bell, Trash2, ArrowLeft } from 'lucide-react';
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { Skeleton } from "@/components/ui/skeleton"
-import { cn } from "@/lib/utils"
-import API from "../api"
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
+import API from '../api';
 
 export default function NotificationsPage() {
-  const [session] = useAtom(sessionAtom)
-  const [notifications, setNotifications] = useState([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState("all")
-  const navigate = useNavigate()
+  const [session] = useAtom(sessionAtom);
+  const [notifications, setNotifications] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('all');
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!session || !session._id) {
-      navigate("/login")
-      return
+      navigate('/login');
+      return;
     }
 
     // Check if we have cached notifications from the navbar
-    const cachedNotifications = sessionStorage.getItem("cachedNotifications")
+    const cachedNotifications = sessionStorage.getItem('cachedNotifications');
     if (cachedNotifications) {
-      setNotifications(JSON.parse(cachedNotifications))
-      setIsLoading(false)
+      setNotifications(JSON.parse(cachedNotifications));
+      setIsLoading(false);
       // Clear the cache after using it
-      sessionStorage.removeItem("cachedNotifications")
+      sessionStorage.removeItem('cachedNotifications');
     }
 
     // Still fetch from API to ensure we have the latest data
-    fetchNotifications()
+    fetchNotifications();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session])
+  }, [session]);
 
   const fetchNotifications = async () => {
-    if (!session || !session._id || !session.token) return
+    if (!session || !session._id || !session.token) return;
 
     try {
-      setIsLoading(true)
+      setIsLoading(true);
       // Make sure we're using the correct endpoint format
       const response = await API.get(`/notifications/${session._id}`, {
         headers: {
           Authorization: `Bearer ${session.token}`,
         },
-      })
+      });
 
-      console.log("Notifications response:", response.data)
+      console.log('Notifications response:', response.data);
 
       if (response.data && response.data.notifications) {
-        setNotifications(response.data.notifications)
+        setNotifications(response.data.notifications);
       } else {
-        console.error("Invalid notification response format:", response.data)
-        setNotifications([])
+        console.error('Invalid notification response format:', response.data);
+        setNotifications([]);
       }
     } catch (error) {
-      console.error("Error fetching notifications:", error)
-      toast.error("Failed to fetch notifications")
-      setNotifications([])
+      console.error('Error fetching notifications:', error);
+      toast.error('Failed to fetch notifications');
+      setNotifications([]);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const markNotificationAsRead = async (notificationId, e) => {
-    e.stopPropagation()
+    e.stopPropagation();
 
-    if (!session || !session.token) return
+    // Fetch session from localStorage as a fallback
+    const savedSession = localStorage.getItem('session');
+    const parsedSession = savedSession ? JSON.parse(savedSession) : null;
+
+    const token = session?.token || parsedSession?.token; // Use session state or fallback to localStorage
+
+    if (!token) {
+      toast.error('You need to be logged in to mark notifications as read.');
+      return;
+    }
 
     try {
       const response = await API.put(
@@ -82,71 +91,82 @@ export default function NotificationsPage() {
         {},
         {
           headers: {
-            Authorization: `Bearer ${session.token}`,
+            Authorization: `Bearer ${token}`,
           },
         },
-      )
+      );
 
-      console.log("Mark as read response:", response)
+      console.log('Mark as read response:', response);
 
       if (response.status === 200) {
         // Update local state
-        setNotifications((prev) => prev.map((n) => (n._id === notificationId ? { ...n, isRead: true } : n)))
-        toast.success("Notification marked as read")
+        setNotifications((prev) =>
+          prev.map((n) => (n._id === notificationId ? { ...n, isRead: true } : n)),
+        );
+        toast.success('Notification marked as read');
       }
     } catch (error) {
-      console.error("Error marking notification as read:", error)
-      toast.error("Failed to mark notification as read")
+      console.error('Error marking notification as read:', error);
+      toast.error('Failed to mark notification as read');
     }
-  }
+  };
 
   const markAllNotificationsAsRead = async () => {
-    if (!session || !session._id || !session.token) return
+    // Fetch session from localStorage as a fallback
+    const savedSession = localStorage.getItem('session');
+    const parsedSession = savedSession ? JSON.parse(savedSession) : null;
+
+    const token = session?.token || parsedSession?.token; // Use session state or fallback to localStorage
+
+    if (!token) {
+      toast.error('You need to be logged in to mark notifications as read.');
+      return;
+    }
 
     try {
       const response = await API.put(
-        `/notifications/${session._id}/readall`,
+        `/notifications/${session?._id || parsedSession?._id}/readall`,
         {},
         {
           headers: {
-            Authorization: `Bearer ${session.token}`,
+            Authorization: `Bearer ${token}`,
           },
         },
-      )
+      );
 
-      console.log("Mark all as read response:", response)
+      console.log('Mark all as read response:', response);
 
       if (response.status === 200) {
         // Update local state
-        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
-        toast.success("All notifications marked as read")
+        setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+        toast.success('All notifications marked as read');
       }
     } catch (error) {
-      console.error("Error marking notifications as read:", error)
-      toast.error("Failed to mark notifications as read")
+      console.error('Error marking notifications as read:', error);
+      toast.error('Failed to mark notifications as read');
     }
-  }
+  };
 
   const deleteNotification = async (notificationId, e) => {
-    e.stopPropagation()
+    e.stopPropagation();
 
-    if (!session || !session.token) return
+    if (!session || !session.token) return;
 
     try {
       await API.delete(`/notifications/${notificationId}`, {
         headers: {
           Authorization: `Bearer ${session.token}`,
         },
-      })
+      });
 
       // Update local state
-      setNotifications(notifications.filter((n) => n._id !== notificationId))
-      toast.success("Notification deleted")
+      setNotifications(notifications.filter((n) => n._id !== notificationId));
+      toast.success('Notification deleted');
     } catch (error) {
-      console.error("Error deleting notification:", error)
-      toast.error("Failed to delete notification")
+      console.error('Error deleting notification:', error);
+      toast.error('Failed to delete notification');
     }
-  }
+  };
 
   const handleNotificationClick = async (notification) => {
     if (!notification.isRead) {
@@ -159,31 +179,33 @@ export default function NotificationsPage() {
               Authorization: `Bearer ${session.token}`,
             },
           },
-        )
+        );
 
         if (response.status === 200) {
           // Update local state
-          setNotifications((prev) => prev.map((n) => (n._id === notification._id ? { ...n, isRead: true } : n)))
+          setNotifications((prev) =>
+            prev.map((n) => (n._id === notification._id ? { ...n, isRead: true } : n)),
+          );
         }
       } catch (error) {
-        console.error("Error marking notification as read:", error)
+        console.error('Error marking notification as read:', error);
       }
     }
 
     // Navigate to the link if provided
     if (notification.link) {
-      navigate(notification.link)
+      navigate(notification.link);
     }
-  }
+  };
 
   const filteredNotifications = notifications.filter((notification) => {
-    if (activeTab === "all") return true
-    if (activeTab === "unread") return !notification.isRead
-    if (activeTab === "read") return notification.isRead
-    return true
-  })
+    if (activeTab === 'all') return true;
+    if (activeTab === 'unread') return !notification.isRead;
+    if (activeTab === 'read') return notification.isRead;
+    return true;
+  });
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length
+  const unreadCount = notifications.filter((n) => !n.isRead).length;
 
   return (
     <div className="container mx-auto px-4 py-24">
@@ -198,11 +220,18 @@ export default function NotificationsPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-2xl">Your Notifications</CardTitle>
-            <CardDescription className="text-base">Stay updated with the latest information</CardDescription>
+            <CardDescription className="text-base">
+              Stay updated with the latest information
+            </CardDescription>
           </div>
           <div className="flex items-center gap-2">
             {unreadCount > 0 && (
-              <Button variant="outline" size="sm" onClick={markAllNotificationsAsRead} className="h-9 text-sm">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={markAllNotificationsAsRead}
+                className="h-9 text-sm"
+              >
                 Mark all as read
               </Button>
             )}
@@ -245,9 +274,9 @@ export default function NotificationsPage() {
                     <div
                       key={notification._id}
                       className={cn(
-                        "flex items-start space-x-4 p-4 border rounded-lg transition-colors",
-                        !notification.isRead ? "bg-accent/20" : "hover:bg-accent/10",
-                        notification.link && "cursor-pointer",
+                        'flex items-start space-x-4 p-4 border rounded-lg transition-colors',
+                        !notification.isRead ? 'bg-accent/20' : 'hover:bg-accent/10',
+                        notification.link && 'cursor-pointer',
                       )}
                       onClick={() => notification.link && handleNotificationClick(notification)}
                     >
@@ -256,10 +285,16 @@ export default function NotificationsPage() {
                       </div>
                       <div className="space-y-1 flex-1">
                         <div className="flex items-center justify-between">
-                          <h3 className={cn("text-lg", !notification.isRead && "font-medium")}>{notification.title}</h3>
-                          {!notification.isRead && <span className="h-3 w-3 bg-blue-500 rounded-full"></span>}
+                          <h3 className={cn('text-lg', !notification.isRead && 'font-medium')}>
+                            {notification.title}
+                          </h3>
+                          {!notification.isRead && (
+                            <span className="h-3 w-3 bg-blue-500 rounded-full"></span>
+                          )}
                         </div>
-                        <p className="text-base text-muted-foreground">{notification.description}</p>
+                        <p className="text-base text-muted-foreground">
+                          {notification.description}
+                        </p>
                         <div className="flex items-center justify-between">
                           <span className="text-sm text-muted-foreground">
                             {new Date(notification.createdAt).toLocaleString()}
@@ -294,11 +329,11 @@ export default function NotificationsPage() {
                   <Bell className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <h3 className="text-xl font-medium">No notifications</h3>
                   <p className="text-lg text-muted-foreground">
-                    {activeTab === "all"
+                    {activeTab === 'all'
                       ? "You don't have any notifications yet"
-                      : activeTab === "unread"
-                        ? "You don't have any unread notifications"
-                        : "You don't have any read notifications"}
+                      : activeTab === 'unread'
+                      ? "You don't have any unread notifications"
+                      : "You don't have any read notifications"}
                   </p>
                 </div>
               )}
@@ -307,5 +342,5 @@ export default function NotificationsPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
