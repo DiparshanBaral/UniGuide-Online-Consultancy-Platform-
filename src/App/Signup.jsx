@@ -83,7 +83,9 @@ export default function SignupForm() {
           confirmPassword: "",
           role: "student",
         })
-        navigate("/login")
+
+        // Navigate to home with query parameter to trigger profile completion form
+        navigate("/?newSignup=true")
       }
     } catch (error) {
       toast.error(error.response?.data?.message || "Server error")
@@ -94,6 +96,7 @@ export default function SignupForm() {
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-primary/5 to-background">
+      <div className="absolute top-0 left-0 right-0 h-24 bg-primary/10" />
 
       <div className="w-full max-w-md relative z-10">
         <div className="absolute inset-0 bg-white/30 rounded-2xl blur-xl -z-10 transform -rotate-3" />
@@ -117,7 +120,7 @@ export default function SignupForm() {
                     <UserRound className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="firstname"
-                      placeholder="Firstname"
+                      placeholder="John"
                       value={formData.firstname}
                       onChange={handleChange}
                       className="pl-10 border-primary/20 focus-visible:ring-primary/30"
@@ -131,7 +134,7 @@ export default function SignupForm() {
                     <UserRound className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="lastname"
-                      placeholder="Lastname"
+                      placeholder="Doe"
                       value={formData.lastname}
                       onChange={handleChange}
                       className="pl-10 border-primary/20 focus-visible:ring-primary/30"
