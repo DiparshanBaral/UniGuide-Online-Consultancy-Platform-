@@ -1,94 +1,96 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import API from "../api";
-import { useAtom } from "jotai";
-import { sessionAtom } from "@/atoms/session";
+"use client"
 
-export default function Login() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-  const [, setSession] = useAtom(sessionAtom);
+import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { toast } from "sonner"
+import { Eye, EyeOff, Mail, Lock } from "lucide-react"
+import { useAtom } from "jotai"
+import logo from "@/assets/UniGuide_logo.png"
+
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import API from "../api"
+import { sessionAtom } from "@/atoms/session"
+
+export default function LoginForm() {
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const navigate = useNavigate()
+  const [, setSession] = useAtom(sessionAtom)
 
   const handleLogin = async (e) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-  
+    e.preventDefault()
+    setLoading(true)
+
     try {
-      let response = await attemptAdminLogin(email, password);
-  
+      let response = await attemptAdminLogin(email, password)
+
       if (response?.data?.token) {
-        handleSuccessfulLogin(response.data, "admin");
-        return;
+        handleSuccessfulLogin(response.data, "admin")
+        return
       }
-  
-      console.log("Admin login failed, attempting student login...");
-  
-      response = await attemptStudentLogin(email, password);
-  
+
+      response = await attemptStudentLogin(email, password)
+
       if (response?.data?.token) {
-        handleSuccessfulLogin(response.data, "student");
-        return;
+        handleSuccessfulLogin(response.data, "student")
+        return
       }
-  
-      console.log("Student login failed, attempting mentor login...");
-  
-      response = await attemptMentorLogin(email, password);
-  
+
+      response = await attemptMentorLogin(email, password)
+
       if (response?.data?.token) {
-        handleSuccessfulLogin(response.data, "mentor");
-        return;
+        handleSuccessfulLogin(response.data, "mentor")
+        return
       }
-  
-      throw new Error("Invalid credentials. Please try again.");
+
+      throw new Error("Invalid credentials. Please try again.")
     } catch (err) {
-      setError(err.message || "Invalid credentials. Please try again.");
-      console.error("Login error:", err);
+      toast.error(err.message || "Invalid credentials. Please try again.")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
-  
+  }
+
   const attemptAdminLogin = async (email, password) => {
     try {
-      const response = await API.post("/admin/login", { email, password });
-      return response;
+      const response = await API.post("/admin/login", { email, password })
+      return response
     // eslint-disable-next-line no-unused-vars
     } catch (adminError) {
-      return null;
+      return null
     }
-  };
-  
+  }
+
   const attemptStudentLogin = async (email, password) => {
     try {
-      const response = await API.post("/student/login", { email, password });
-      return response;
+      const response = await API.post("/student/login", { email, password })
+      return response
     // eslint-disable-next-line no-unused-vars
     } catch (studentError) {
-      return null; // Return null on error
+      return null
     }
-  };
-  
+  }
+
   const attemptMentorLogin = async (email, password) => {
     try {
-      const response = await API.post("/mentor/login", { email, password });
-      return response;
+      const response = await API.post("/mentor/login", { email, password })
+      return response
     // eslint-disable-next-line no-unused-vars
     } catch (mentorError) {
-      return null; // Return null on error
+      return null
     }
-  };
-  
+  }
+
   const handleSuccessfulLogin = (user, role) => {
     if (!user || !user.token) {
-      console.error("Invalid response from server:", user);
-      throw new Error("Invalid response from server. User data is missing.");
+      throw new Error("Invalid response from server. User data is missing.")
     }
-  
+
     let sessionData = {
       _id: user._id,
       firstname: user.firstname,
@@ -97,84 +99,113 @@ export default function Login() {
       role: role,
       token: user.token,
       profilePic: user.profilePic,
-    };
-  
-    if (role === "admin") {
-      console.log("Admin login detected.");
-      sessionData = { role: "admin", token: user.token };
     }
-  
+
+    if (role === "admin") {
+      sessionData = { role: "admin", token: user.token }
+    }
+
     // Save session data
-    localStorage.setItem("session", JSON.stringify(sessionData));
-  
+    localStorage.setItem("session", JSON.stringify(sessionData))
+
     // Update session state
-    setSession(sessionData);
-    toast.success(
-      role === "admin"
-        ? "Welcome, Admin"
-        : `Welcome back, ${user.firstname} ${user.lastname}`
-    );
-  
+    setSession(sessionData)
+    toast.success(role === "admin" ? "Welcome, Admin" : `Welcome back, ${user.firstname} ${user.lastname}`)
+
     // Redirect based on role
-    if (role === "admin") navigate("/admin/");
-    else navigate("/");
-  };
-  
+    if (role === "admin") navigate("/admin/")
+    else navigate("/")
+  }
 
   return (
-    <div
-      className="h-screen w-full bg-cover bg-center flex items-center justify-center"
-      style={{ backgroundImage: "url('./src/assets/authentication_background.png')" }}
-    >
-      <div className="bg-white bg-opacity-90 rounded-lg shadow-lg p-8 w-full max-w-md">
-        <h2 className="text-2xl font-semibold text-center mb-6">Login</h2>
-        {error && <p className="text-red-500 text-sm text-center mb-4">{error}</p>}
-        <form onSubmit={handleLogin}>
-          <div className="mb-4">
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              required
-            />
-          </div>
-          <div className="mb-4">
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-green-500 text-white py-2 px-4 rounded-md hover:bg-green-600 transition duration-300 disabled:opacity-50"
-            disabled={loading}
-          >
-            {loading ? "Logging in..." : "Login"}
-          </button>
-          <div className="mt-4 text-center">
-            <p className="text-sm text-gray-500">
+    <div className="min-h-screen w-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-primary/5 to-background">
+
+
+      <div className="w-full max-w-md relative z-10">
+        <div className="absolute inset-0 bg-white/30 rounded-2xl blur-xl -z-10 transform -rotate-3" />
+        <div className="absolute inset-0 bg-white/30 rounded-2xl blur-xl -z-10 transform rotate-3" />
+
+        <Card className="w-full border border-primary/20 shadow-xl bg-card/95">
+          <CardHeader className="space-y-1 pb-6">
+            <div className="flex justify-center mb-4">
+              <img src={logo || "/placeholder.svg"} alt="UniGuide Logo" className="h-16 w-auto" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-center">Welcome Back</CardTitle>
+            <CardDescription className="text-center">Enter your credentials to access your account</CardDescription>
+          </CardHeader>
+
+          <CardContent>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10 border-primary/20 focus-visible:ring-primary/30"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="password">Password</Label>
+                  <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+                    Forgot password?
+                  </Link>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 border-primary/20 focus-visible:ring-primary/30"
+                    required
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-0 top-0 h-10 w-10"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
+                  </Button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full mt-6 transition-all hover:shadow-lg hover:shadow-primary/25"
+                disabled={loading}
+              >
+                {loading ? "Signing In..." : "Sign In"}
+              </Button>
+            </form>
+          </CardContent>
+
+          <CardFooter className="flex justify-center pb-6">
+            <p className="text-sm text-muted-foreground">
               Don&apos;t have an account?{" "}
-              <Link to="/signup" className="text-blue-500 hover:underline">
-                Sign up here
+              <Link to="/signup" className="text-primary font-medium hover:underline">
+                Sign up
               </Link>
             </p>
-          </div>
-        </form>
+          </CardFooter>
+        </Card>
+
+        <div className="absolute -bottom-4 -right-4 h-24 w-24 bg-primary/10 rounded-full blur-xl -z-10" />
+        <div className="absolute -top-4 -left-4 h-20 w-20 bg-primary/10 rounded-full blur-xl -z-10" />
       </div>
     </div>
-  );
+  )
 }
