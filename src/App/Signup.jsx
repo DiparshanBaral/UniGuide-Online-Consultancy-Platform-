@@ -44,26 +44,26 @@ export default function SignupForm() {
   }
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const { firstname, lastname, email, password, confirmPassword, role } = formData
+    const { firstname, lastname, email, password, confirmPassword, role } = formData;
 
     // Ensure passwords match
     if (password.trim() !== confirmPassword.trim()) {
-      toast.error("Passwords do not match!")
-      return
+      toast.error("Passwords do not match!");
+      return;
     }
 
     // Check for empty fields
     if (!firstname || !lastname || !email || !password || !confirmPassword) {
-      toast.error("Please fill in all fields!")
-      return
+      toast.error("Please fill in all fields!");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
 
     try {
-      const route = role === "student" ? "/student/signup" : "/mentor/signup"
+      const route = role === "student" ? "/student/signup" : "/mentor/signup";
 
       const response = await API.post(route, {
         firstname,
@@ -71,10 +71,10 @@ export default function SignupForm() {
         email,
         password,
         confirmPassword,
-      })
+      });
 
       if (response.status === 201) {
-        toast.success("Registration successful!")
+        toast.success("Registration successful!");
         setFormData({
           firstname: "",
           lastname: "",
@@ -82,21 +82,20 @@ export default function SignupForm() {
           password: "",
           confirmPassword: "",
           role: "student",
-        })
+        });
 
-        // Navigate to home with query parameter to trigger profile completion form
-        navigate("/?newSignup=true")
+        // Navigate to login page after successful signup
+        navigate("/login");
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Server error")
+      toast.error(error.response?.data?.message || "Server error");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-primary/5 to-background">
-      <div className="absolute top-0 left-0 right-0 h-24 bg-primary/10" />
 
       <div className="w-full max-w-md relative z-10">
         <div className="absolute inset-0 bg-white/30 rounded-2xl blur-xl -z-10 transform -rotate-3" />
@@ -120,7 +119,7 @@ export default function SignupForm() {
                     <UserRound className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="firstname"
-                      placeholder="John"
+                      placeholder="Firstname"
                       value={formData.firstname}
                       onChange={handleChange}
                       className="pl-10 border-primary/20 focus-visible:ring-primary/30"
@@ -134,7 +133,7 @@ export default function SignupForm() {
                     <UserRound className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                     <Input
                       id="lastname"
-                      placeholder="Doe"
+                      placeholder="Lastname"
                       value={formData.lastname}
                       onChange={handleChange}
                       className="pl-10 border-primary/20 focus-visible:ring-primary/30"

@@ -1,13 +1,18 @@
-"use client"
-
-import { useState, useEffect } from "react"
-import { toast } from "sonner"
-import API from "../api"
-import { Button } from "@/components/ui/button"
-import { AvatarUpload } from "@/components/ui/avatarupload"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
+"use client";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
+import API from "../api";
+import { Button } from "@/components/ui/button";
+import { AvatarUpload } from "@/components/ui/avatarupload";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertCircle,
   BookOpen,
@@ -18,64 +23,86 @@ import {
   Briefcase,
   Globe,
   DollarSign,
-} from "lucide-react"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+} from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import MentorProfileForm from "@/components/Mentor-form";
 
 function MentorProfilePersonal() {
-  const [user, setUser] = useState(null)
-  const [isEditing, setIsEditing] = useState(false)
-  const [updatedUser, setUpdatedUser] = useState({})
-  const [profilePic, setProfilePic] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [user, setUser] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [updatedUser, setUpdatedUser] = useState({});
+  const [profilePic, setProfilePic] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isProfileFormOpen, setIsProfileFormOpen] = useState(false);
 
+  // Fetch user data on component mount
   useEffect(() => {
     const fetchUserData = async () => {
-      const session = JSON.parse(localStorage.getItem("session"))
-
-      if (session && session._id && session.token) {
-        try {
+      setIsLoading(true);
+      try {
+        const session = JSON.parse(localStorage.getItem("session"));
+        if (session && session._id && session.token) {
           const response = await API.get(`/mentor/profile/${session._id}`, {
-            headers: {
-              Authorization: `Bearer ${session.token}`,
-            },
-          })
-
+            headers: { Authorization: `Bearer ${session.token}` },
+          });
           if (response.status === 200) {
-            const userData = response.data
-            setUser(userData)
-            setUpdatedUser(userData)
+            const userData = response.data;
+            setUser(userData);
+            setUpdatedUser(userData);
           } else {
-            console.error("Failed to fetch user data:", response.statusText)
-            toast.error("Failed to fetch user data. Please log in again.")
+            console.error("Failed to fetch user data:", response.statusText);
+            toast.error("Failed to fetch user data. Please log in again.");
           }
-        } catch (error) {
-          console.error("Error fetching user data:", error)
-          toast.error("An error occurred while fetching user data.")
-        } finally {
-          setIsLoading(false)
+        } else {
+          console.error("No valid session found in localStorage");
+          toast.error("No valid session found. Please log in again.");
         }
-      } else {
-        console.error("No valid session found in localStorage")
-        toast.error("No valid session found. Please log in again.")
-        setIsLoading(false)
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        toast.error("An error occurred while fetching user data.");
+      } finally {
+        setIsLoading(false);
       }
-    }
+    };
+    fetchUserData();
+  }, []);
 
-    fetchUserData()
-  }, [])
+  // Function to refetch user data after profile completion
+  const fetchUserData = async () => {
+    setIsLoading(true);
+    try {
+      const session = JSON.parse(localStorage.getItem("session"));
+      if (session && session._id && session.token) {
+        const response = await API.get(`/mentor/profile/${session._id}`, {
+          headers: { Authorization: `Bearer ${session.token}` },
+        });
+        if (response.status === 200) {
+          setUser(response.data);
+          setUpdatedUser(response.data);
+        } else {
+          console.error("Failed to fetch user data:", response.statusText);
+          toast.error("Failed to fetch user data. Please log in again.");
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+      toast.error("An error occurred while fetching user data.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
-
+    const { name, value } = e.target;
     if (name.includes(".")) {
-      const [parent, child] = name.split(".")
+      const [parent, child] = name.split(".");
       setUpdatedUser((prev) => ({
         ...prev,
         [parent]: {
           ...prev[parent],
           [child]: value,
         },
-      }))
+      }));
     } else if (name === "expertise") {
       setUpdatedUser((prev) => ({
         ...prev,
@@ -83,7 +110,7 @@ function MentorProfilePersonal() {
           .split(",")
           .map((item) => item.trim())
           .filter((item) => item !== ""),
-      }))
+      }));
     } else if (name === "languages") {
       setUpdatedUser((prev) => ({
         ...prev,
@@ -91,81 +118,66 @@ function MentorProfilePersonal() {
           .split(",")
           .map((item) => item.trim())
           .filter((item) => item !== ""),
-      }))
+      }));
     } else {
       setUpdatedUser((prev) => ({
         ...prev,
         [name]: value,
-      }))
+      }));
     }
-  }
+  };
 
   const handleUpdateProfile = async () => {
     if (!updatedUser.firstname || !updatedUser.lastname || !updatedUser.email) {
-      toast.error("Please fill in all required fields.")
-      return
+      toast.error("Please fill in all required fields.");
+      return;
     }
-
-    setIsLoading(true)
-
+    setIsLoading(true);
     try {
-      const session = JSON.parse(localStorage.getItem("session"))
-      const formData = new FormData()
-
-      // Basic info
-      formData.append("firstname", updatedUser.firstname)
-      formData.append("lastname", updatedUser.lastname)
-      formData.append("email", updatedUser.email)
-      formData.append("bio", updatedUser.bio || "")
-
-      // Mentor specific fields
-      formData.append("expertise", JSON.stringify(updatedUser.expertise || []))
-      formData.append("university", updatedUser.university || "")
-      formData.append("degree", updatedUser.degree || "")
-      formData.append("yearsOfExperience", updatedUser.yearsOfExperience || 0)
-
-      // Payment info
-      const paymentInfo = {
-        amount: updatedUser.paymentInformation?.amount || 0,
-        currency: updatedUser.paymentInformation?.currency || "USD",
-      }
-      formData.append("paymentInformation", JSON.stringify(paymentInfo))
-
-      // Languages
-      formData.append("languages", JSON.stringify(updatedUser.languages || []))
-
+      const session = JSON.parse(localStorage.getItem("session"));
+      const formData = new FormData();
+      // Append updated fields to FormData
+      formData.append("firstname", updatedUser.firstname);
+      formData.append("lastname", updatedUser.lastname);
+      formData.append("email", updatedUser.email);
+      formData.append("bio", updatedUser.bio || "");
+      formData.append("expertise", JSON.stringify(updatedUser.expertise || []));
+      formData.append("university", updatedUser.university || "");
+      formData.append("degree", updatedUser.degree || "");
+      formData.append("yearsOfExperience", updatedUser.yearsOfExperience || 0);
+      formData.append(
+        "paymentInformation",
+        JSON.stringify(updatedUser.paymentInformation || {})
+      );
+      formData.append("languages", JSON.stringify(updatedUser.languages || []));
       if (profilePic) {
-        formData.append("profilePic", profilePic)
+        formData.append("profilePic", profilePic);
       }
-
       const response = await API.put(`/mentor/${user._id}`, formData, {
-        headers: {
-          Authorization: `Bearer ${session.token}`,
-        },
-      })
-
+        headers: { Authorization: `Bearer ${session.token}` },
+      });
       if (response.status === 200) {
-        setUser(response.data)
-        setUpdatedUser(response.data)
-        setProfilePic(null)
-        setIsEditing(false)
-        toast.success("Profile updated successfully!")
+        setUser(response.data);
+        setUpdatedUser(response.data);
+        setProfilePic(null);
+        setIsEditing(false);
+        toast.success("Profile updated successfully!");
       } else {
-        toast.error(`Failed to update profile: ${response.statusText}`)
+        toast.error(`Failed to update profile: ${response.statusText}`);
       }
     } catch (error) {
-      toast.error("An error occurred while updating the profile. " + error.message)
+      toast.error("An error occurred while updating the profile. " + error.message);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
-    )
+    );
   }
 
   if (!user) {
@@ -173,7 +185,7 @@ function MentorProfilePersonal() {
       <div className="flex justify-center items-center h-screen">
         <p className="text-muted-foreground">No user data found.</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -182,19 +194,23 @@ function MentorProfilePersonal() {
         {!user.profileCompleted && (
           <Alert className="mb-6 border-amber-500/50 bg-amber-500/10">
             <AlertCircle className="h-5 w-5 text-amber-500" />
-            <AlertTitle className="text-amber-500 font-medium">Complete your mentor profile</AlertTitle>
+            <AlertTitle className="text-amber-500 font-medium">
+              Complete your mentor profile
+            </AlertTitle>
             <AlertDescription className="text-amber-500/90">
-              Your profile is incomplete. Complete your profile to be visible to students and start mentoring.
+              Your profile is incomplete. Complete your profile to be visible to students and start
+              mentoring.
             </AlertDescription>
-            <Button className="mt-2 bg-amber-500 hover:bg-amber-600 text-white" onClick={() => setIsEditing(true)}>
+            <Button
+              className="mt-2 bg-amber-500 hover:bg-amber-600 text-white"
+              onClick={() => setIsProfileFormOpen(true)} // Open the MentorProfileForm dialog
+            >
               Complete Profile
             </Button>
           </Alert>
         )}
-
         <Card className="border-primary/10 shadow-lg overflow-hidden">
           <div className="h-32 bg-gradient-to-r from-primary to-primary/60"></div>
-
           <div className="px-6 sm:px-10 pt-5 pb-6 -mt-16 relative">
             <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-end">
               <div className="relative flex justify-center">
@@ -213,7 +229,6 @@ function MentorProfilePersonal() {
                   </Badge>
                 )}
               </div>
-
               <div className="flex-1">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
@@ -226,9 +241,11 @@ function MentorProfilePersonal() {
                       </p>
                     )}
                   </div>
-
                   {!isEditing ? (
-                    <Button onClick={() => setIsEditing(true)} className="sm:self-start flex items-center gap-2">
+                    <Button
+                      onClick={() => setIsEditing(true)}
+                      className="sm:self-start flex items-center gap-2"
+                    >
                       <Edit className="h-4 w-4" />
                       Edit Profile
                     </Button>
@@ -244,120 +261,115 @@ function MentorProfilePersonal() {
               </div>
             </div>
           </div>
-
           <Tabs defaultValue="profile" className="px-6 sm:px-10 pb-6">
             <TabsList className="mb-6">
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="reviews">Reviews</TabsTrigger>
             </TabsList>
-
             <TabsContent value="profile">
               {!isEditing ? (
                 <div className="grid gap-6 md:grid-cols-2">
-                  <div className="space-y-6">
-                    <Card className="border-primary/10">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <UserRound className="h-5 w-5 text-primary" />
-                          About Me
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-muted-foreground">{user.bio || "No bio available."}</p>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="border-primary/10">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Briefcase className="h-5 w-5 text-primary" />
-                          Experience
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="space-y-2">
-                          <div>
-                            <span className="font-medium">Years of Experience:</span>
-                            <span className="text-muted-foreground ml-2">
-                              {user.yearsOfExperience || "Not specified"}
-                            </span>
-                          </div>
+                  <Card className="border-primary/10">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <UserRound className="h-5 w-5 text-primary" />
+                        About Me
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground">{user.bio || "No bio available."}</p>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-primary/10">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Briefcase className="h-5 w-5 text-primary" />
+                        Experience
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <div>
+                          <span className="font-medium">Years of Experience:</span>
+                          <span className="text-muted-foreground ml-2">
+                            {user.yearsOfExperience || "Not specified"}
+                          </span>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  <div className="space-y-6">
-                    <Card className="border-primary/10">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <BookOpen className="h-5 w-5 text-primary" />
-                          Expertise
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex flex-wrap gap-2">
-                          {user.expertise && user.expertise.length > 0 ? (
-                            user.expertise.map((exp, index) => {
-                              // Clean up the expertise string
-                              const cleanExpertise =
-                                typeof exp === "string" ? exp.replace(/^"\\"|"\\"|""|\\"|"$/g, "") : exp
-
-                              return (
-                                <Badge key={index} variant="secondary" className="bg-primary/10 text-primary">
-                                  {cleanExpertise}
-                                </Badge>
-                              )
-                            })
-                          ) : (
-                            <p className="text-muted-foreground">No expertise specified.</p>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="border-primary/10">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <Globe className="h-5 w-5 text-primary" />
-                          Languages
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="flex flex-wrap gap-2">
-                          {user.languages && user.languages.length > 0 ? (
-                            user.languages.map((lang, index) => {
-                              // Clean up the language string
-                              const cleanLanguage =
-                                typeof lang === "string" ? lang.replace(/^"\\"|"\\"|""|\\"|"$/g, "") : lang
-
-                              return (
-                                <Badge key={index} variant="outline">
-                                  {cleanLanguage}
-                                </Badge>
-                              )
-                            })
-                          ) : (
-                            <p className="text-muted-foreground">No languages specified.</p>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="border-primary/10">
-                      <CardHeader className="pb-2">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <DollarSign className="h-5 w-5 text-primary" />
-                          Consultation Fee
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-xl font-semibold">
-                          {user.paymentInformation?.amount || 0} {user.paymentInformation?.currency || "USD"}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-primary/10">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <BookOpen className="h-5 w-5 text-primary" />
+                        Expertise
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {user.expertise && user.expertise.length > 0 ? (
+                          user.expertise.map((exp, index) => {
+                            const cleanExpertise =
+                              typeof exp === "string"
+                                ? exp.replace(/^"\\"|"\\"|""|\\"|"$/g, "")
+                                : exp;
+                            return (
+                              <Badge
+                                key={index}
+                                variant="secondary"
+                                className="bg-primary/10 text-primary"
+                              >
+                                {cleanExpertise}
+                              </Badge>
+                            );
+                          })
+                        ) : (
+                          <p className="text-muted-foreground">No expertise specified.</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-primary/10">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <Globe className="h-5 w-5 text-primary" />
+                        Languages
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {user.languages && user.languages.length > 0 ? (
+                          user.languages.map((lang, index) => {
+                            const cleanLanguage =
+                              typeof lang === "string"
+                                ? lang.replace(/^"\\"|"\\"|""|\\"|"$/g, "")
+                                : lang;
+                            return (
+                              <Badge key={index} variant="outline">
+                                {cleanLanguage}
+                              </Badge>
+                            );
+                          })
+                        ) : (
+                          <p className="text-muted-foreground">No languages specified.</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                  <Card className="border-primary/10">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <DollarSign className="h-5 w-5 text-primary" />
+                        Consultation Fee
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-xl font-semibold">
+                        {user.paymentInformation?.amount || 0}{" "}
+                        {user.paymentInformation?.currency || "USD"}
+                      </p>
+                    </CardContent>
+                  </Card>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -383,7 +395,6 @@ function MentorProfilePersonal() {
                       />
                     </div>
                   </div>
-
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Email</label>
                     <input
@@ -394,7 +405,6 @@ function MentorProfilePersonal() {
                       className="w-full px-3 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
                     />
                   </div>
-
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Bio</label>
                     <textarea
@@ -404,7 +414,6 @@ function MentorProfilePersonal() {
                       className="w-full px-3 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 min-h-[100px]"
                     />
                   </div>
-
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">University</label>
@@ -427,7 +436,6 @@ function MentorProfilePersonal() {
                       />
                     </div>
                   </div>
-
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">Years of Experience</label>
@@ -462,25 +470,31 @@ function MentorProfilePersonal() {
                       </div>
                     </div>
                   </div>
-
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Expertise (comma separated)</label>
                     <input
                       type="text"
                       name="expertise"
-                      value={Array.isArray(updatedUser.expertise) ? updatedUser.expertise.join(", ") : ""}
+                      value={
+                        Array.isArray(updatedUser.expertise)
+                          ? updatedUser.expertise.join(", ")
+                          : ""
+                      }
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
                       placeholder="e.g., Scholarship Applications, Visa Process, Computer Science"
                     />
                   </div>
-
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Languages (comma separated)</label>
                     <input
                       type="text"
                       name="languages"
-                      value={Array.isArray(updatedUser.languages) ? updatedUser.languages.join(", ") : ""}
+                      value={
+                        Array.isArray(updatedUser.languages)
+                          ? updatedUser.languages.join(", ")
+                          : ""
+                      }
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
                       placeholder="e.g., English, Spanish, French"
@@ -489,7 +503,6 @@ function MentorProfilePersonal() {
                 </div>
               )}
             </TabsContent>
-
             <TabsContent value="reviews">
               <Card className="border-primary/10">
                 <CardHeader>
@@ -503,9 +516,19 @@ function MentorProfilePersonal() {
             </TabsContent>
           </Tabs>
         </Card>
+
+        {/* Render the MentorProfileForm dialog */}
+        <MentorProfileForm
+          isOpen={isProfileFormOpen}
+          onClose={() => {
+            setIsProfileFormOpen(false);
+            fetchUserData(); // Refetch user data to update the profile
+          }}
+          userId={user?._id}
+        />
       </div>
     </div>
-  )
+  );
 }
 
-export default MentorProfilePersonal
+export default MentorProfilePersonal;

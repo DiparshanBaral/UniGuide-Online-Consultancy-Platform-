@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { AlertCircle, BookOpen, School, UserRound, Edit, CheckCircle2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import StudentProfileForm from '@/components/Student-form'; // Import the StudentProfileForm
 
 function Profile() {
   const navigate = useNavigate();
@@ -25,38 +26,41 @@ function Profile() {
   const [profilePic, setProfilePic] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [wishlistUniversities, setWishlistUniversities] = useState([]);
+  const [isProfileFormOpen, setIsProfileFormOpen] = useState(false); // State for controlling the dialog
 
   // Fetch user data on component mount
   useEffect(() => {
-    const fetchUserData = async () => {
-      setIsLoading(true);
-      try {
-        const session = JSON.parse(localStorage.getItem('session'));
-        if (session && session._id && session.token) {
-          const response = await API.get(`/student/${session._id}`, {
-            headers: { Authorization: `Bearer ${session.token}` },
-          });
-          if (response.status === 200) {
-            const userData = response.data;
-            setUser(userData);
-            setUpdatedUser(userData);
-          } else {
-            console.error('Failed to fetch user data:', response.statusText);
-            toast.error('Failed to fetch user data. Please log in again.');
-          }
-        } else {
-          console.error('No valid session found in localStorage');
-          toast.error('No valid session found. Please log in again.');
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        toast.error('An error occurred while fetching user data.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchUserData();
   }, []);
+
+  // Function to fetch user data
+  const fetchUserData = async () => {
+    setIsLoading(true);
+    try {
+      const session = JSON.parse(localStorage.getItem('session'));
+      if (session && session._id && session.token) {
+        const response = await API.get(`/student/${session._id}`, {
+          headers: { Authorization: `Bearer ${session.token}` },
+        });
+        if (response.status === 200) {
+          const userData = response.data;
+          setUser(userData);
+          setUpdatedUser(userData);
+        } else {
+          console.error('Failed to fetch user data:', response.statusText);
+          toast.error('Failed to fetch user data. Please log in again.');
+        }
+      } else {
+        console.error('No valid session found in localStorage');
+        toast.error('No valid session found. Please log in again.');
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      toast.error('An error occurred while fetching user data.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Handle input changes for text fields
   const handleInputChange = (e) => {
@@ -84,13 +88,11 @@ function Profile() {
       if (profilePic) {
         formData.append('profilePic', profilePic);
       }
-
       const response = await API.put(`/student/${user._id}`, formData, {
         headers: {
           Authorization: `Bearer ${session.token}`,
         },
       });
-
       if (response.status === 200) {
         setUser(response.data);
         setUpdatedUser(response.data);
@@ -117,11 +119,9 @@ function Profile() {
           toast.error('You must be logged in to view your wishlist.');
           return;
         }
-
         const response = await API.get('/student/wishlist', {
           headers: { Authorization: `Bearer ${session.token}` },
         });
-
         if (response.status === 200) {
           setWishlistUniversities(response.data.wishlistUniversities);
         } else {
@@ -133,7 +133,6 @@ function Profile() {
         toast.error('An error occurred while fetching wishlist universities.');
       }
     };
-
     fetchWishlistUniversities();
   }, []);
 
@@ -167,7 +166,7 @@ function Profile() {
             </AlertDescription>
             <Button
               className="mt-2 bg-amber-500 hover:bg-amber-600 text-white"
-              onClick={() => setIsEditing(true)} // Open edit mode for profile completion
+              onClick={() => setIsProfileFormOpen(true)} // Open the StudentProfileForm dialog
             >
               Complete Profile
             </Button>
@@ -353,6 +352,16 @@ function Profile() {
             </TabsContent>
           </Tabs>
         </Card>
+
+        {/* Render the StudentProfileForm dialog */}
+        <StudentProfileForm
+          isOpen={isProfileFormOpen}
+          onClose={() => {
+            setIsProfileFormOpen(false);
+            fetchUserData(); // Refetch user data to update the profile
+          }}
+          userId={user?._id}
+        />
       </div>
     </div>
   );
