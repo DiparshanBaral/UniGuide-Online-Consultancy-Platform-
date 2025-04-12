@@ -1,140 +1,134 @@
-import { useState, useEffect } from 'react';
-import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
-import API from '../api';
-import { Button } from '@/components/ui/button';
-import { AvatarUpload } from '@/components/ui/avatarupload';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardFooter,
-} from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { AlertCircle, BookOpen, School, UserRound, Edit, CheckCircle2 } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import StudentProfileForm from '@/components/Student-form'; // Import the StudentProfileForm
+import { useState, useEffect } from "react"
+import { toast } from "sonner"
+import { useNavigate } from "react-router-dom"
+import API from "../api"
+import { Button } from "@/components/ui/button"
+import { AvatarUpload } from "@/components/ui/avatarupload"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
+import { AlertCircle, BookOpen, School, UserRound, Edit, CheckCircle2 } from "lucide-react"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import StudentProfileForm from "@/components/Student-form"
+import PasswordUpdateForm from "@/components/PasswordUpdateForm" 
 
 function Profile() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [updatedUser, setUpdatedUser] = useState({});
-  const [profilePic, setProfilePic] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [wishlistUniversities, setWishlistUniversities] = useState([]);
-  const [isProfileFormOpen, setIsProfileFormOpen] = useState(false); // State for controlling the dialog
+  const navigate = useNavigate()
+  const [user, setUser] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [updatedUser, setUpdatedUser] = useState({})
+  const [profilePic, setProfilePic] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [wishlistUniversities, setWishlistUniversities] = useState([])
+  const [isProfileFormOpen, setIsProfileFormOpen] = useState(false) // State for controlling the dialog
 
   // Fetch user data on component mount
   useEffect(() => {
-    fetchUserData();
-  }, []);
+    fetchUserData()
+  }, [])
 
   // Function to fetch user data
   const fetchUserData = async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const session = JSON.parse(localStorage.getItem('session'));
+      const session = JSON.parse(localStorage.getItem("session"))
       if (session && session._id && session.token) {
         const response = await API.get(`/student/${session._id}`, {
           headers: { Authorization: `Bearer ${session.token}` },
-        });
+        })
         if (response.status === 200) {
-          const userData = response.data;
-          setUser(userData);
-          setUpdatedUser(userData);
+          const userData = response.data
+          setUser(userData)
+          setUpdatedUser(userData)
         } else {
-          console.error('Failed to fetch user data:', response.statusText);
-          toast.error('Failed to fetch user data. Please log in again.');
+          console.error("Failed to fetch user data:", response.statusText)
+          toast.error("Failed to fetch user data. Please log in again.")
         }
       } else {
-        console.error('No valid session found in localStorage');
-        toast.error('No valid session found. Please log in again.');
+        console.error("No valid session found in localStorage")
+        toast.error("No valid session found. Please log in again.")
       }
     } catch (error) {
-      console.error('Error fetching user data:', error);
-      toast.error('An error occurred while fetching user data.');
+      console.error("Error fetching user data:", error)
+      toast.error("An error occurred while fetching user data.")
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   // Handle input changes for text fields
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setUpdatedUser((prev) => ({ ...prev, [name]: value }));
-  };
+    const { name, value } = e.target
+    setUpdatedUser((prev) => ({ ...prev, [name]: value }))
+  }
 
   // Handle profile update submission
   const handleUpdateProfile = async () => {
     if (!updatedUser.firstname || !updatedUser.lastname || !updatedUser.email) {
-      toast.error('Please fill in all required fields.');
-      return;
+      toast.error("Please fill in all required fields.")
+      return
     }
-    setIsLoading(true);
+    setIsLoading(true)
     try {
-      const session = JSON.parse(localStorage.getItem('session'));
-      const formData = new FormData();
+      const session = JSON.parse(localStorage.getItem("session"))
+      const formData = new FormData()
       // Append updated fields to FormData
-      formData.append('firstname', updatedUser.firstname);
-      formData.append('lastname', updatedUser.lastname);
-      formData.append('email', updatedUser.email);
-      formData.append('bio', updatedUser.bio || '');
-      formData.append('major', updatedUser.major || '');
+      formData.append("firstname", updatedUser.firstname)
+      formData.append("lastname", updatedUser.lastname)
+      formData.append("email", updatedUser.email)
+      formData.append("bio", updatedUser.bio || "")
+      formData.append("major", updatedUser.major || "")
       // Append profile picture if available
       if (profilePic) {
-        formData.append('profilePic', profilePic);
+        formData.append("profilePic", profilePic)
       }
       const response = await API.put(`/student/${user._id}`, formData, {
         headers: {
           Authorization: `Bearer ${session.token}`,
         },
-      });
+      })
       if (response.status === 200) {
-        setUser(response.data);
-        setUpdatedUser(response.data);
-        setProfilePic(null); // Reset profile picture state
-        setIsEditing(false); // Exit editing mode
-        toast.success('Profile updated successfully!');
+        setUser(response.data)
+        setUpdatedUser(response.data)
+        setProfilePic(null) // Reset profile picture state
+        setIsEditing(false) // Exit editing mode
+        toast.success("Profile updated successfully!")
       } else {
-        toast.error(`Failed to update profile: ${response.data.message || response.statusText}`);
+        toast.error(`Failed to update profile: ${response.data.message || response.statusText}`)
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('An error occurred while updating the profile. ' + error.message);
+      console.error("Error updating profile:", error)
+      toast.error("An error occurred while updating the profile. " + error.message)
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   // Fetch wishlist universities
   useEffect(() => {
     const fetchWishlistUniversities = async () => {
       try {
-        const session = JSON.parse(localStorage.getItem('session'));
+        const session = JSON.parse(localStorage.getItem("session"))
         if (!session || !session.token) {
-          toast.error('You must be logged in to view your wishlist.');
-          return;
+          toast.error("You must be logged in to view your wishlist.")
+          return
         }
-        const response = await API.get('/student/wishlist', {
+        const response = await API.get("/student/wishlist", {
           headers: { Authorization: `Bearer ${session.token}` },
-        });
+        })
         if (response.status === 200) {
-          setWishlistUniversities(response.data.wishlistUniversities);
+          setWishlistUniversities(response.data.wishlistUniversities)
         } else {
-          console.error('Failed to fetch wishlist universities:', response.statusText);
-          toast.error('Failed to fetch wishlist universities.');
+          console.error("Failed to fetch wishlist universities:", response.statusText)
+          toast.error("Failed to fetch wishlist universities.")
         }
       } catch (error) {
-        console.error('Error fetching wishlist universities:', error);
-        toast.error('An error occurred while fetching wishlist universities.');
+        console.error("Error fetching wishlist universities:", error)
+        toast.error("An error occurred while fetching wishlist universities.")
       }
-    };
-    fetchWishlistUniversities();
-  }, []);
+    }
+    fetchWishlistUniversities()
+  }, [])
 
   // Loading state
   if (isLoading) {
@@ -142,7 +136,7 @@ function Profile() {
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
-    );
+    )
   }
 
   // No user data found
@@ -151,7 +145,7 @@ function Profile() {
       <div className="flex justify-center items-center h-screen">
         <p className="text-muted-foreground">No user data found.</p>
       </div>
-    );
+    )
   }
 
   return (
@@ -199,12 +193,9 @@ function Profile() {
                     <p className="text-muted-foreground">{user.email}</p>
                   </div>
                   {!isEditing ? (
-                    <Button
-                      onClick={() => setIsEditing(true)}
-                      className="sm:self-start flex items-center gap-2"
-                    >
+                    <Button onClick={() => setIsEditing(true)} className="sm:self-start flex items-center gap-2">
                       <Edit className="h-4 w-4" />
-                      {user.profileCompleted ? 'Edit Profile' : 'Complete Profile'}
+                      {user.profileCompleted ? "Edit Profile" : "Complete Profile"}
                     </Button>
                   ) : (
                     <div className="flex gap-2 sm:self-start">
@@ -222,6 +213,7 @@ function Profile() {
             <TabsList className="mb-6">
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="universities">Universities</TabsTrigger>
+              <TabsTrigger value="security">Security</TabsTrigger>
             </TabsList>
             <TabsContent value="profile">
               {!isEditing ? (
@@ -234,7 +226,7 @@ function Profile() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-muted-foreground">{user.bio || 'No bio available.'}</p>
+                      <p className="text-muted-foreground">{user.bio || "No bio available."}</p>
                     </CardContent>
                   </Card>
                   <Card className="border-primary/10">
@@ -248,9 +240,7 @@ function Profile() {
                       <div className="space-y-2">
                         <div>
                           <span className="font-medium">Major:</span>
-                          <span className="text-muted-foreground ml-2">
-                            {user.major || 'Not specified'}
-                          </span>
+                          <span className="text-muted-foreground ml-2">{user.major || "Not specified"}</span>
                         </div>
                       </div>
                     </CardContent>
@@ -294,7 +284,7 @@ function Profile() {
                     <label className="text-sm font-medium">Bio</label>
                     <textarea
                       name="bio"
-                      value={updatedUser.bio || ''}
+                      value={updatedUser.bio || ""}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 min-h-[100px]"
                     />
@@ -304,7 +294,7 @@ function Profile() {
                     <input
                       type="text"
                       name="major"
-                      value={updatedUser.major || ''}
+                      value={updatedUser.major || ""}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
                     />
@@ -340,14 +330,24 @@ function Profile() {
                   )}
                 </CardContent>
                 <CardFooter>
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => navigate('/universities')}
-                  >
+                  <Button variant="outline" className="w-full" onClick={() => navigate("/universities")}>
                     Explore Universities
                   </Button>
                 </CardFooter>
+              </Card>
+            </TabsContent>
+            <TabsContent value="security">
+              <Card className="border-primary/10">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-primary" />
+                    Update Password
+                  </CardTitle>
+                  <CardDescription>Change your account password</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <PasswordUpdateForm />
+                </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
@@ -357,14 +357,14 @@ function Profile() {
         <StudentProfileForm
           isOpen={isProfileFormOpen}
           onClose={() => {
-            setIsProfileFormOpen(false);
-            fetchUserData(); // Refetch user data to update the profile
+            setIsProfileFormOpen(false)
+            fetchUserData() // Refetch user data to update the profile
           }}
           userId={user?._id}
         />
       </div>
     </div>
-  );
+  )
 }
 
-export default Profile;
+export default Profile

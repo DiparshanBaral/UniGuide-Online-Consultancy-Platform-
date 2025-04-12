@@ -1,17 +1,11 @@
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
-import API from "../api";
-import { Button } from "@/components/ui/button";
-import { AvatarUpload } from "@/components/ui/avatarupload";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import API from '../api';
+import { Button } from '@/components/ui/button';
+import { AvatarUpload } from '@/components/ui/avatarupload';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import {
   AlertCircle,
   BookOpen,
@@ -22,9 +16,13 @@ import {
   Briefcase,
   Globe,
   DollarSign,
-} from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import MentorProfileForm from "@/components/Mentor-form";
+  MessageSquare,
+} from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import MentorProfileForm from '@/components/Mentor-form';
+import MentorReviewsList from '@/components/mentor-reviews-list';
+import RatingStars from '@/Components/ui/rating-stars';
+import PasswordUpdateForm from "@/components/PasswordUpdateForm";
 
 function MentorProfilePersonal() {
   const [user, setUser] = useState(null);
@@ -33,13 +31,14 @@ function MentorProfilePersonal() {
   const [profilePic, setProfilePic] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isProfileFormOpen, setIsProfileFormOpen] = useState(false);
+  const [averageRating, setAverageRating] = useState(0);
 
   // Fetch user data on component mount
   useEffect(() => {
     const fetchUserData = async () => {
       setIsLoading(true);
       try {
-        const session = JSON.parse(localStorage.getItem("session"));
+        const session = JSON.parse(localStorage.getItem('session'));
         if (session && session._id && session.token) {
           const response = await API.get(`/mentor/profile/${session._id}`, {
             headers: { Authorization: `Bearer ${session.token}` },
@@ -48,17 +47,18 @@ function MentorProfilePersonal() {
             const userData = response.data;
             setUser(userData);
             setUpdatedUser(userData);
+            fetchAverageRating(session._id, session.token);
           } else {
-            console.error("Failed to fetch user data:", response.statusText);
-            toast.error("Failed to fetch user data. Please log in again.");
+            console.error('Failed to fetch user data:', response.statusText);
+            toast.error('Failed to fetch user data. Please log in again.');
           }
         } else {
-          console.error("No valid session found in localStorage");
-          toast.error("No valid session found. Please log in again.");
+          console.error('No valid session found in localStorage');
+          toast.error('No valid session found. Please log in again.');
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
-        toast.error("An error occurred while fetching user data.");
+        console.error('Error fetching user data:', error);
+        toast.error('An error occurred while fetching user data.');
       } finally {
         setIsLoading(false);
       }
@@ -66,11 +66,23 @@ function MentorProfilePersonal() {
     fetchUserData();
   }, []);
 
+  // Fetch average rating for the mentor
+  const fetchAverageRating = async (mentorId, token) => {
+    try {
+      const response = await API.get(`/review/${mentorId}/average`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setAverageRating(Number.parseFloat(response.data.averageRating) || 0);
+    } catch (error) {
+      console.error('Error fetching average rating:', error);
+    }
+  };
+
   // Function to refetch user data after profile completion
   const fetchUserData = async () => {
     setIsLoading(true);
     try {
-      const session = JSON.parse(localStorage.getItem("session"));
+      const session = JSON.parse(localStorage.getItem('session'));
       if (session && session._id && session.token) {
         const response = await API.get(`/mentor/profile/${session._id}`, {
           headers: { Authorization: `Bearer ${session.token}` },
@@ -79,13 +91,13 @@ function MentorProfilePersonal() {
           setUser(response.data);
           setUpdatedUser(response.data);
         } else {
-          console.error("Failed to fetch user data:", response.statusText);
-          toast.error("Failed to fetch user data. Please log in again.");
+          console.error('Failed to fetch user data:', response.statusText);
+          toast.error('Failed to fetch user data. Please log in again.');
         }
       }
     } catch (error) {
-      console.error("Error fetching user data:", error);
-      toast.error("An error occurred while fetching user data.");
+      console.error('Error fetching user data:', error);
+      toast.error('An error occurred while fetching user data.');
     } finally {
       setIsLoading(false);
     }
@@ -93,8 +105,8 @@ function MentorProfilePersonal() {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name.includes(".")) {
-      const [parent, child] = name.split(".");
+    if (name.includes('.')) {
+      const [parent, child] = name.split('.');
       setUpdatedUser((prev) => ({
         ...prev,
         [parent]: {
@@ -102,21 +114,21 @@ function MentorProfilePersonal() {
           [child]: value,
         },
       }));
-    } else if (name === "expertise") {
+    } else if (name === 'expertise') {
       setUpdatedUser((prev) => ({
         ...prev,
         expertise: value
-          .split(",")
+          .split(',')
           .map((item) => item.trim())
-          .filter((item) => item !== ""),
+          .filter((item) => item !== ''),
       }));
-    } else if (name === "languages") {
+    } else if (name === 'languages') {
       setUpdatedUser((prev) => ({
         ...prev,
         languages: value
-          .split(",")
+          .split(',')
           .map((item) => item.trim())
-          .filter((item) => item !== ""),
+          .filter((item) => item !== ''),
       }));
     } else {
       setUpdatedUser((prev) => ({
@@ -128,29 +140,26 @@ function MentorProfilePersonal() {
 
   const handleUpdateProfile = async () => {
     if (!updatedUser.firstname || !updatedUser.lastname || !updatedUser.email) {
-      toast.error("Please fill in all required fields.");
+      toast.error('Please fill in all required fields.');
       return;
     }
     setIsLoading(true);
     try {
-      const session = JSON.parse(localStorage.getItem("session"));
+      const session = JSON.parse(localStorage.getItem('session'));
       const formData = new FormData();
       // Append updated fields to FormData
-      formData.append("firstname", updatedUser.firstname);
-      formData.append("lastname", updatedUser.lastname);
-      formData.append("email", updatedUser.email);
-      formData.append("bio", updatedUser.bio || "");
-      formData.append("expertise", JSON.stringify(updatedUser.expertise || []));
-      formData.append("university", updatedUser.university || "");
-      formData.append("degree", updatedUser.degree || "");
-      formData.append("yearsOfExperience", updatedUser.yearsOfExperience || 0);
-      formData.append(
-        "paymentInformation",
-        JSON.stringify(updatedUser.paymentInformation || {})
-      );
-      formData.append("languages", JSON.stringify(updatedUser.languages || []));
+      formData.append('firstname', updatedUser.firstname);
+      formData.append('lastname', updatedUser.lastname);
+      formData.append('email', updatedUser.email);
+      formData.append('bio', updatedUser.bio || '');
+      formData.append('expertise', JSON.stringify(updatedUser.expertise || []));
+      formData.append('university', updatedUser.university || '');
+      formData.append('degree', updatedUser.degree || '');
+      formData.append('yearsOfExperience', updatedUser.yearsOfExperience || 0);
+      formData.append('paymentInformation', JSON.stringify(updatedUser.paymentInformation || {}));
+      formData.append('languages', JSON.stringify(updatedUser.languages || []));
       if (profilePic) {
-        formData.append("profilePic", profilePic);
+        formData.append('profilePic', profilePic);
       }
       const response = await API.put(`/mentor/${user._id}`, formData, {
         headers: { Authorization: `Bearer ${session.token}` },
@@ -160,12 +169,12 @@ function MentorProfilePersonal() {
         setUpdatedUser(response.data);
         setProfilePic(null);
         setIsEditing(false);
-        toast.success("Profile updated successfully!");
+        toast.success('Profile updated successfully!');
       } else {
         toast.error(`Failed to update profile: ${response.statusText}`);
       }
     } catch (error) {
-      toast.error("An error occurred while updating the profile. " + error.message);
+      toast.error('An error occurred while updating the profile. ' + error.message);
     } finally {
       setIsLoading(false);
     }
@@ -236,7 +245,7 @@ function MentorProfilePersonal() {
                     {user.university && (
                       <p className="text-sm flex items-center gap-1 mt-1">
                         <School className="h-3.5 w-3.5 text-primary" />
-                        {user.university}, {user.degree || ""}
+                        {user.university}, {user.degree || ''}
                       </p>
                     )}
                   </div>
@@ -264,6 +273,7 @@ function MentorProfilePersonal() {
             <TabsList className="mb-6">
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="reviews">Reviews</TabsTrigger>
+              <TabsTrigger value="security">Security</TabsTrigger>
             </TabsList>
             <TabsContent value="profile">
               {!isEditing ? (
@@ -276,7 +286,7 @@ function MentorProfilePersonal() {
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-muted-foreground">{user.bio || "No bio available."}</p>
+                      <p className="text-muted-foreground">{user.bio || 'No bio available.'}</p>
                     </CardContent>
                   </Card>
                   <Card className="border-primary/10">
@@ -291,7 +301,7 @@ function MentorProfilePersonal() {
                         <div>
                           <span className="font-medium">Years of Experience:</span>
                           <span className="text-muted-foreground ml-2">
-                            {user.yearsOfExperience || "Not specified"}
+                            {user.yearsOfExperience || 'Not specified'}
                           </span>
                         </div>
                       </div>
@@ -309,8 +319,8 @@ function MentorProfilePersonal() {
                         {user.expertise && user.expertise.length > 0 ? (
                           user.expertise.map((exp, index) => {
                             const cleanExpertise =
-                              typeof exp === "string"
-                                ? exp.replace(/^"\\"|"\\"|""|\\"|"$/g, "")
+                              typeof exp === 'string'
+                                ? exp.replace(/^"\\"|"\\"|""|\\"|"$/g, '')
                                 : exp;
                             return (
                               <Badge
@@ -340,8 +350,8 @@ function MentorProfilePersonal() {
                         {user.languages && user.languages.length > 0 ? (
                           user.languages.map((lang, index) => {
                             const cleanLanguage =
-                              typeof lang === "string"
-                                ? lang.replace(/^"\\"|"\\"|""|\\"|"$/g, "")
+                              typeof lang === 'string'
+                                ? lang.replace(/^"\\"|"\\"|""|\\"|"$/g, '')
                                 : lang;
                             return (
                               <Badge key={index} variant="outline">
@@ -364,8 +374,8 @@ function MentorProfilePersonal() {
                     </CardHeader>
                     <CardContent>
                       <p className="text-xl font-semibold">
-                        {user.paymentInformation?.amount || 0}{" "}
-                        {user.paymentInformation?.currency || "USD"}
+                        {user.paymentInformation?.amount || 0}{' '}
+                        {user.paymentInformation?.currency || 'USD'}
                       </p>
                     </CardContent>
                   </Card>
@@ -408,7 +418,7 @@ function MentorProfilePersonal() {
                     <label className="text-sm font-medium">Bio</label>
                     <textarea
                       name="bio"
-                      value={updatedUser.bio || ""}
+                      value={updatedUser.bio || ''}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30 min-h-[100px]"
                     />
@@ -419,7 +429,7 @@ function MentorProfilePersonal() {
                       <input
                         type="text"
                         name="university"
-                        value={updatedUser.university || ""}
+                        value={updatedUser.university || ''}
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
                       />
@@ -429,7 +439,7 @@ function MentorProfilePersonal() {
                       <input
                         type="text"
                         name="degree"
-                        value={updatedUser.degree || ""}
+                        value={updatedUser.degree || ''}
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
                       />
@@ -458,13 +468,13 @@ function MentorProfilePersonal() {
                         />
                         <select
                           name="paymentInformation.currency"
-                          value={updatedUser.paymentInformation?.currency || "USD"}
+                          value={updatedUser.paymentInformation?.currency || 'USD'}
                           onChange={handleInputChange}
                           className="w-24 px-3 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
                         >
                           <option value="USD">USD</option>
                           <option value="EUR">EUR</option>
-                          <option value="GBP">GBP</option>
+                          <option value="NRS">NRS</option>
                         </select>
                       </div>
                     </div>
@@ -475,9 +485,7 @@ function MentorProfilePersonal() {
                       type="text"
                       name="expertise"
                       value={
-                        Array.isArray(updatedUser.expertise)
-                          ? updatedUser.expertise.join(", ")
-                          : ""
+                        Array.isArray(updatedUser.expertise) ? updatedUser.expertise.join(', ') : ''
                       }
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
@@ -490,9 +498,7 @@ function MentorProfilePersonal() {
                       type="text"
                       name="languages"
                       value={
-                        Array.isArray(updatedUser.languages)
-                          ? updatedUser.languages.join(", ")
-                          : ""
+                        Array.isArray(updatedUser.languages) ? updatedUser.languages.join(', ') : ''
                       }
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
@@ -503,13 +509,36 @@ function MentorProfilePersonal() {
               )}
             </TabsContent>
             <TabsContent value="reviews">
-              <Card className="border-primary/10">
-                <CardHeader>
-                  <CardTitle>Student Reviews</CardTitle>
-                  <CardDescription>What students say about your mentorship</CardDescription>
+              <Card className="border-primary/10 shadow-md">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <MessageSquare className="h-5 w-5 text-primary" />
+                      Student Reviews
+                    </CardTitle>
+                    <CardDescription>What students say about your mentorship</CardDescription>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <RatingStars rating={averageRating} />
+                    <span className="font-medium">{averageRating.toFixed(1)}</span>
+                  </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">No reviews yet.</p>
+                  <MentorReviewsList mentorId={user._id} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="security">
+              <Card className="border-primary/10">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <AlertCircle className="h-5 w-5 text-primary" />
+                    Update Password
+                  </CardTitle>
+                  <CardDescription>Change your account password</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <PasswordUpdateForm />
                 </CardContent>
               </Card>
             </TabsContent>

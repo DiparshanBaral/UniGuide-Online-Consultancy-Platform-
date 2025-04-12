@@ -1,63 +1,83 @@
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
-import API from "../api";
-import { useParams } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageSquare, Briefcase, Globe, BookOpen, School, DollarSign, User } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import RatingStars from "@/components/ui/rating-stars";
+import { useState, useEffect } from "react"
+import { toast } from "sonner"
+import API from "../api"
+import { useParams } from "react-router-dom"
+import { motion } from "framer-motion"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { MessageSquare, Briefcase, Globe, BookOpen, School, DollarSign, User } from "lucide-react"
+import { Separator } from "@/components/ui/separator"
+import RatingStars from "@/components/ui/rating-stars"
+import MentorReview from "@/components/mentor-review"
+import MentorReviewsList from "@/components/mentor-reviews-list"
 
 const containerVariants = {
   hidden: { opacity: 0, y: 50 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, staggerChildren: 0.2 } },
-};
+}
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-};
+}
 
 function MentorProfile() {
-  const { id } = useParams();
-  const [mentor, setMentor] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [description, setDescription] = useState("");
-  const session = JSON.parse(localStorage.getItem("session"));
+  const { id } = useParams()
+  const [mentor, setMentor] = useState(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [description, setDescription] = useState("")
+  const [averageRating, setAverageRating] = useState(0)
+  const session = JSON.parse(localStorage.getItem("session"))
 
   useEffect(() => {
     const fetchMentorData = async () => {
-      setIsLoading(true);
+      setIsLoading(true)
       try {
-        const response = await API.get(`/mentor/${id}`);
-        setMentor(response.data);
+        const response = await API.get(`/mentor/${id}`)
+        setMentor(response.data)
+        fetchAverageRating()
       } catch (error) {
-        console.error("Error fetching mentor data:", error);
-        toast.error("Failed to fetch mentor data.");
+        console.error("Error fetching mentor data:", error)
+        toast.error("Failed to fetch mentor data.")
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
-    fetchMentorData();
-  }, [id]);
+    }
+    fetchMentorData()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id])
+
+  const fetchAverageRating = async () => {
+    try {
+      if (session?.token) {
+        const response = await API.get(`/review/${id}/average`, {
+          headers: {
+            Authorization: `Bearer ${session.token}`,
+          },
+        })
+        setAverageRating(Number.parseFloat(response.data.averageRating) || 0)
+      }
+    } catch (error) {
+      console.error("Error fetching average rating:", error)
+    }
+  }
 
   // Handle connection request submission
   const handleApplyForConnection = async () => {
     if (!description.trim()) {
-      toast.error("Please provide a description for your connection request.");
-      return;
+      toast.error("Please provide a description for your connection request.")
+      return
     }
     try {
-      const session = JSON.parse(localStorage.getItem("session"));
+      const session = JSON.parse(localStorage.getItem("session"))
       if (!session || !session.token) {
-        toast.error("You must be logged in to apply for a connection.");
-        return;
+        toast.error("You must be logged in to apply for a connection.")
+        return
       }
       const response = await API.post(
         "/connections/apply",
@@ -70,25 +90,30 @@ function MentorProfile() {
           headers: {
             Authorization: `Bearer ${session.token}`,
           },
-        }
-      );
+        },
+      )
       if (response.status === 201) {
-        toast.success("Connection request submitted successfully!");
-        setIsDialogOpen(false);
-        setDescription("");
+        toast.success("Connection request submitted successfully!")
+        setIsDialogOpen(false)
+        setDescription("")
       }
     } catch (error) {
-      console.error("Error submitting connection request:", error);
-      toast.error(error.response?.data?.error || "An error occurred while submitting the request.");
+      console.error("Error submitting connection request:", error)
+      toast.error(error.response?.data?.error || "An error occurred while submitting the request.")
     }
-  };
+  }
+
+  const handleReviewSubmitted = () => {
+    // Refresh average rating after a new review is submitted
+    fetchAverageRating()
+  }
 
   if (isLoading) {
     return (
       <div className="pt-[90px] min-h-screen bg-gradient-to-b from-background to-primary/5 flex justify-center items-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
       </div>
-    );
+    )
   }
 
   if (!mentor) {
@@ -96,16 +121,8 @@ function MentorProfile() {
       <div className="pt-[90px] min-h-screen bg-gradient-to-b from-background to-primary/5 flex justify-center items-center">
         <p className="text-muted-foreground">Mentor profile not found.</p>
       </div>
-    );
+    )
   }
-
-  // Calculate average rating
-  const avgRating =
-    Array.isArray(mentor.rating) && mentor.rating.length > 0
-      ? mentor.rating.reduce((sum, r) => sum + r, 0) / mentor.rating.length
-      : typeof mentor.rating === "number"
-      ? mentor.rating
-      : 0;
 
   return (
     <div className="mt-[60px] min-h-screen bg-gradient-to-b from-background to-primary/5 py-12">
@@ -137,8 +154,8 @@ function MentorProfile() {
                   {mentor.university || "University not specified"}
                 </p>
                 <div className="flex items-center gap-2 mt-2">
-                  <RatingStars rating={avgRating} /> {/* Use RatingStars here */}
-                  <span className="text-sm text-muted-foreground">({mentor.totalReviews || 0} reviews)</span>
+                  <RatingStars rating={averageRating} />
+                  <span className="font-medium">{averageRating.toFixed(1)}</span>
                 </div>
                 {/* Connect with Mentor Button */}
                 {session && session.role === "student" && (
@@ -287,6 +304,12 @@ function MentorProfile() {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Add Review Section (only for students who are logged in) */}
+            {session && session.role === "student" && (
+              <MentorReview mentorId={id} onReviewSubmitted={handleReviewSubmitted} />
+            )}
+
             {/* Reviews */}
             <Card className="border-primary/10 shadow-md">
               <CardHeader className="flex flex-row items-center justify-between">
@@ -298,49 +321,19 @@ function MentorProfile() {
                   <CardDescription>What students say about this mentor</CardDescription>
                 </div>
                 <div className="flex items-center gap-2">
-                  <RatingStars rating={avgRating} /> {/* Use RatingStars here */}
-                  <span className="font-medium">{avgRating.toFixed(1)}</span>
+                  <RatingStars rating={averageRating} />
+                  <span className="font-medium">{averageRating.toFixed(1)}</span>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
-                  {(mentor.reviews || []).length > 0 ? (
-                    mentor.reviews.map((review, index) => (
-                      <div key={index} className="p-4 rounded-lg bg-muted/50">
-                        <div className="flex items-start gap-4">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={review.authorAvatar || "/placeholder.svg"} alt={review.authorName} />
-                            <AvatarFallback className="bg-primary/10 text-primary">
-                              {review.authorName
-                                ?.split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between">
-                              <p className="font-medium">{review.authorName}</p>
-                              <time className="text-sm text-muted-foreground">
-                                {new Date(review.createdAt).toLocaleDateString()}
-                              </time>
-                            </div>
-                            <RatingStars rating={review.rating} size="sm" /> {/* Use RatingStars here */}
-                            <p className="text-muted-foreground mt-2">{review.comment}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-muted-foreground">No reviews yet.</p>
-                  )}
-                </div>
+                <MentorReviewsList mentorId={id} />
               </CardContent>
             </Card>
           </motion.div>
         </motion.div>
       </div>
     </div>
-  );
+  )
 }
 
-export default MentorProfile;
+export default MentorProfile
