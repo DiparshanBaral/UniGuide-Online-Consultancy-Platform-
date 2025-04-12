@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -38,10 +36,6 @@ import {
   TabsContent as InnerTabsContent,
 } from '@/components/ui/tabs';
 import {
-  Globe,
-  BookOpen,
-  MessageSquare,
-  FileText,
   ChevronRight,
   Calendar,
   User,
@@ -595,12 +589,6 @@ export default function VisaSection() {
                   >
                     Country Information
                   </TabsTrigger>
-                  <TabsTrigger
-                    value="resources"
-                    className="data-[state=active]:border-b-2 data-[state=active]:border-black data-[state=active]:shadow-none rounded-none px-1 py-3"
-                  >
-                    Resources
-                  </TabsTrigger>
                 </TabsList>
               </div>
 
@@ -1036,150 +1024,7 @@ export default function VisaSection() {
                     </Card>
                   ))}
                 </div>
-              </TabsContent>
-
-              {/* Resources Tab */}
-              <TabsContent value="resources" className="mt-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-8">Visa Resources & Guides</h2>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <FileText className="h-5 w-5 text-black" /> Document Checklists
-                      </CardTitle>
-                      <CardDescription>
-                        Country-specific document requirements and preparation guides
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-3">
-                        {countries.map((country) => (
-                          <li key={country.code} className="flex items-center gap-2">
-                            <span>{country.flag}</span>
-                            <a href="#" className="text-black hover:underline">
-                              {country.name} Visa Document Checklist
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                    <CardFooter>
-                      <Button variant="outline" className="w-full">
-                        View All Checklists
-                      </Button>
-                    </CardFooter>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <BookOpen className="h-5 w-5 text-black" /> Interview Preparation
-                      </CardTitle>
-                      <CardDescription>
-                        Common interview questions and preparation strategies
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-3">
-                        <li>
-                          <a href="#" className="text-black hover:underline">
-                            50+ Common Visa Interview Questions
-                          </a>
-                        </li>
-                        <li>
-                          <a href="#" className="text-black hover:underline">
-                            How to Answer &quot;Ties to Home Country&quot; Questions
-                          </a>
-                        </li>
-                        <li>
-                          <a href="#" className="text-black hover:underline">
-                            Explaining Your Financial Support Documents
-                          </a>
-                        </li>
-                        <li>
-                          <a href="#" className="text-black hover:underline">
-                            Dress Code and Etiquette for Visa Interviews
-                          </a>
-                        </li>
-                      </ul>
-                    </CardContent>
-                    <CardFooter>
-                      <Button variant="outline" className="w-full">
-                        View All Guides
-                      </Button>
-                    </CardFooter>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Globe className="h-5 w-5 text-black" /> Embassy Information
-                      </CardTitle>
-                      <CardDescription>
-                        Contact details and appointment booking information
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-3">
-                        {countries.map((country) => (
-                          <li key={country.code} className="flex items-center gap-2">
-                            <span>{country.flag}</span>
-                            <a href="#" className="text-black hover:underline">
-                              {country.name} Embassy & Consulate Locations
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                    <CardFooter>
-                      <Button variant="outline" className="w-full">
-                        View All Embassy Info
-                      </Button>
-                    </CardFooter>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <MessageSquare className="h-5 w-5 text-black" /> Visa FAQs
-                      </CardTitle>
-                      <CardDescription>
-                        Answers to frequently asked questions about student visas
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-3">
-                        <li>
-                          <a href="#" className="text-black hover:underline">
-                            Working While Studying: What&apos;s Allowed?
-                          </a>
-                        </li>
-                        <li>
-                          <a href="#" className="text-black hover:underline">
-                            Visa Renewal and Extension Procedures
-                          </a>
-                        </li>
-                        <li>
-                          <a href="#" className="text-black hover:underline">
-                            Bringing Dependents on Student Visas
-                          </a>
-                        </li>
-                        <li>
-                          <a href="#" className="text-black hover:underline">
-                            Post-Graduation Work Options
-                          </a>
-                        </li>
-                      </ul>
-                    </CardContent>
-                    <CardFooter>
-                      <Button variant="outline" className="w-full">
-                        View All FAQs
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                </div>
-              </TabsContent>
+              </TabsContent>              
             </Tabs>
 
             {/* Experience Detail View */}

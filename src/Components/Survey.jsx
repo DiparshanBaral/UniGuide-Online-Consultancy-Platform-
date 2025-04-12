@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { Button } from "@/components/ui/button";

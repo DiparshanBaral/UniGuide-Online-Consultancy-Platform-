@@ -1,7 +1,4 @@
-"use client"
-
 import { CardFooter } from "@/components/ui/card"
-
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import API from "@/api"

@@ -1,4 +1,3 @@
-'use client';
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import API from '../api'; // Custom Axios instance
