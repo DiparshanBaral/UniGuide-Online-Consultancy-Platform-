@@ -22,7 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion } from 'framer-motion';
 import API from '../api';
 import { useNavigate } from 'react-router-dom';
-import Survey from '@/Components/Survey'; // Import the Survey component
+import Survey from '@/Components/Survey';
 import {
   Dialog,
   DialogTrigger,
@@ -31,6 +31,7 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
+import NoUniversities from '@/components/ui/no-university';
 
 function Universities() {
   const navigate = useNavigate();
@@ -40,6 +41,8 @@ function Universities() {
   const [filteredUniversities, setFilteredUniversities] = useState([]);
   const [surveyResults, setSurveyResults] = useState([]); // State to store survey results
   const [isSurveyOpen, setIsSurveyOpen] = useState(false);
+  const [searchPerformed, setSearchPerformed] = useState(false);
+  const [surveySubmitted, setSurveySubmitted] = useState(false);
 
   // Fetch top universities on initial render
   useEffect(() => {
@@ -79,6 +82,7 @@ function Universities() {
 
   // Full search when "Find Universities" button is clicked
   const handleSearch = () => {
+    setSearchPerformed(true);
     if (searchQuery.length > 0) {
       API.post('/universities/find', { query: searchQuery }) // Send query in the body
         .then((response) => {
@@ -87,7 +91,16 @@ function Universities() {
         .catch((error) => {
           console.error('Error finding universities:', error);
         });
+    } else {
+      setFilteredUniversities([]);
     }
+  };
+
+  // Handle survey submission
+  const handleSurveySubmit = (results) => {
+    setSurveySubmitted(true); // Mark that the survey has been submitted
+    setSurveyResults(results); // Update survey results
+    setIsSurveyOpen(false); // Close the survey dialog
   };
 
   return (
@@ -175,6 +188,7 @@ function Universities() {
         </section>
 
         {/* Display filtered universities */}
+        {searchPerformed && filteredUniversities.length === 0 && <NoUniversities />}
         {filteredUniversities.length > 0 && (
           <section className="mb-12 mt-12">
             <h2 className="text-2xl font-semibold text-gray-800 mb-6">Matching Universities</h2>
@@ -189,93 +203,6 @@ function Universities() {
                 >
                   <Card className="h-full hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-t from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                    <CardHeader className="space-y-4 pb-4">
-                      <div className="flex items-start gap-4">
-                        <div className="relative h-16 w-16 flex-shrink-0">
-                          <img
-                            src={university.image || 'https://via.placeholder.com/150'}
-                            alt={`${university.name} logo`}
-                            className="h-full w-full rounded-lg object-cover"
-                          />
-                          <Badge variant="secondary" className="absolute -top-2 -right-2">
-                            #{university.ranking || 'N/A'}
-                          </Badge>
-                        </div>
-                        <div className="space-y-1">
-                          <h3 className="font-semibold text-lg leading-tight">{university.name}</h3>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Globe2 className="h-4 w-4" />
-                            {university.country}
-                          </div>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <MapPin className="h-4 w-4" />
-                            {university.location}
-                          </div>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <p className="text-sm text-muted-foreground line-clamp-3">
-                        {university.description}
-                      </p>
-                      <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-sm">
-                            <Users className="h-4 w-4 text-primary" />
-                            <span className="font-medium">Acceptance Rate</span>
-                          </div>
-                          <Badge variant="secondary" className="w-full justify-center">
-                            {university.acceptanceRate}%
-                          </Badge>
-                        </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2 text-sm">
-                            <GraduationCap className="h-4 w-4 text-primary" />
-                            <span className="font-medium">Graduation Rate</span>
-                          </div>
-                          <Badge variant="secondary" className="w-full justify-center">
-                            {university.graduationRate}%
-                          </Badge>
-                        </div>
-                      </div>
-                      <div className="pt-4">
-                        <Button
-                          className="w-full text-white"
-                          onClick={() =>
-                            navigate(
-                              `/universityprofile/${university.country.toLowerCase()}/${
-                                university._id
-                              }`,
-                            )
-                          }
-                        >
-                          View Details
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Display survey results */}
-        {surveyResults.length > 0 && (
-          <section className="mb-12 mt-12">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
-              Filtered Universities Based on Survey:
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {surveyResults.map((university, index) => (
-                <motion.div
-                  key={university._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className="h-full"
-                >
-                  <Card className="h-full hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
                     <CardHeader className="space-y-4 pb-4">
                       <div className="flex items-start gap-4">
                         <div className="relative h-16 w-16 flex-shrink-0">
@@ -399,11 +326,99 @@ function Universities() {
 
             {/* Pass the onSubmit handler to the Survey component */}
             <Survey
-              onSubmit={(results) => setSurveyResults(results)}
+              onSubmit={handleSurveySubmit}
               onClose={() => setIsSurveyOpen(false)} // Close the dialog
             />
           </DialogContent>
         </Dialog>
+
+        {/* Display survey results */}
+        {surveySubmitted && surveyResults.length === 0 && <NoUniversities />}
+        {surveyResults.length > 0 && (
+          <section className="mb-12 mt-12">
+            <h2 className="text-2xl font-semibold text-gray-800 mb-6">
+              Filtered Universities Based on Survey:
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {surveyResults.map((university, index) => (
+                <motion.div
+                  key={university._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="h-full"
+                >
+                  <Card className="h-full hover:shadow-lg transition-all duration-300 group relative overflow-hidden">
+                    <CardHeader className="space-y-4 pb-4">
+                      <div className="flex items-start gap-4">
+                        <div className="relative h-16 w-16 flex-shrink-0">
+                          <img
+                            src={university.image || 'https://via.placeholder.com/150'}
+                            alt={`${university.name} logo`}
+                            className="h-full w-full rounded-lg object-cover"
+                          />
+                          <Badge variant="secondary" className="absolute -top-2 -right-2">
+                            #{university.ranking || 'N/A'}
+                          </Badge>
+                        </div>
+                        <div className="space-y-1">
+                          <h3 className="font-semibold text-lg leading-tight">{university.name}</h3>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Globe2 className="h-4 w-4" />
+                            {university.country}
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <MapPin className="h-4 w-4" />
+                            {university.location}
+                          </div>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <p className="text-sm text-muted-foreground line-clamp-3">
+                        {university.description}
+                      </p>
+                      <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm">
+                            <Users className="h-4 w-4 text-primary" />
+                            <span className="font-medium">Acceptance Rate</span>
+                          </div>
+                          <Badge variant="secondary" className="w-full justify-center">
+                            {university.acceptanceRate}%
+                          </Badge>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2 text-sm">
+                            <GraduationCap className="h-4 w-4 text-primary" />
+                            <span className="font-medium">Graduation Rate</span>
+                          </div>
+                          <Badge variant="secondary" className="w-full justify-center">
+                            {university.graduationRate}%
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className="pt-4">
+                        <Button
+                          className="w-full text-white"
+                          onClick={() =>
+                            navigate(
+                              `/universityprofile/${university.country.toLowerCase()}/${
+                                university._id
+                              }`,
+                            )
+                          }
+                        >
+                          View Details
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Top Universities Section */}
         <section className="mb-12 mt-12">
