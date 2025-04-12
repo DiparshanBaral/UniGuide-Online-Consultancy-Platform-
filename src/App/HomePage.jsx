@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Globe2, Users, MessageCircle, Stamp, Search, Star } from 'lucide-react';
+import { Globe2, Users, MessageCircle, Stamp, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import {
   Select,
@@ -10,8 +10,7 @@ import {
 } from '@/components/ui/select';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import API from '../api';
 import { motion } from 'framer-motion';
@@ -19,9 +18,6 @@ import { Separator } from "@/components/ui/separator";
 
 function HomePage() {
   const navigate = useNavigate();
-  const [mentors, setMentors] = useState([]);
-  const mentorIds = ['67a9fb9e902708715f3a8be5', '67b5889c669063e3459a69d0', '67b588b2669063e3459a69d3'];
-
   // State for search functionality
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCountry, setSelectedCountry] = useState('');
@@ -31,24 +27,6 @@ function HomePage() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [filteredUniversities, setFilteredUniversities] = useState([]); // Store filtered results
   const dropdownRef = useRef(null);
-
-  // Fetch mentors on initial render
-  useEffect(() => {
-    const fetchMentors = async () => {
-      try {
-        const mentorData = await Promise.all(
-          mentorIds.map((id) =>
-            API.get(`/mentor/${id}`).then((response) => response.data)
-          )
-        );
-        setMentors(mentorData);
-      } catch (error) {
-        console.error('Error fetching mentors:', error);
-      }
-    };
-    fetchMentors();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   // Real-time search suggestions
   useEffect(() => {
@@ -280,109 +258,6 @@ function HomePage() {
             </div>
           </section>
           )}
-
-        {/* Mentor Highlights */}
-        <section className="w-full py-12 mt-5 md:py-12 lg:py-12 bg-muted">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
-                  Meet Our Expert Mentors
-                </h2>
-                <p className="max-w-[900px] text-muted-foreground md:text-xl">
-                  Learn from experienced alumni and current students who have successfully navigated
-                  the international education journey.
-                </p>
-              </div>
-            </div>
-            <div className="grid gap-6 mt-8 md:grid-cols-2 lg:grid-cols-3">
-              {mentors.map((mentor) => (
-                <Card key={mentor._id}>
-                  <CardHeader className="flex flex-row items-center gap-4">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage
-                        src={`/placeholder.svg?height=40&width=40`} // You can replace this with an actual image URL if available
-                        alt="Mentor avatar"
-                      />
-                      <AvatarFallback>MN</AvatarFallback>
-                    </Avatar>
-                    <div className="flex flex-col">
-                      <CardTitle>{`${mentor.firstname} ${mentor.lastname}`}</CardTitle>
-                      <CardDescription>Harvard University, Class of 2022</CardDescription>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      <Badge variant="secondary">Computer Science</Badge>
-                      <Badge variant="secondary">MBA</Badge>
-                      <Badge variant="secondary">Scholarships</Badge>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      &quot;I help students navigate the complex admission process and secure
-                      scholarships for their dream universities.&quot;
-                    </p>
-                    <Button className="w-full mt-4">Connect with Mentor</Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <div className="flex justify-center mt-8">
-              <Button variant="outline" size="lg">
-                View All Mentors
-              </Button>
-            </div>
-          </div>
-        </section>
-
-        <Separator />
-        <Separator />
-
-        {/* Testimonials */}
-        <section className="w-full py-12 md:py-12 lg:py-12 bg-muted">
-          <div className="container px-4 md:px-6">
-            <div className="flex flex-col items-center justify-center space-y-4 text-center">
-              <div className="space-y-2">
-                <h2 className="text-3xl font-bold tracking-tighter md:text-4xl">
-                  Student Success Stories
-                </h2>
-                <p className="max-w-[900px] text-muted-foreground md:text-xl">
-                  Hear from students who achieved their international education goals with UniGuide.
-                </p>
-              </div>
-            </div>
-            <div className="grid gap-6 mt-8 md:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3].map((testimonial) => (
-                <Card key={testimonial}>
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-2 mb-4">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <Star key={star} className="h-4 w-4 fill-primary text-primary" />
-                      ))}
-                    </div>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      &quot;UniGuide&apos;s mentorship program was instrumental in helping me secure
-                      admission to my dream university. The personalized guidance made all the
-                      difference!&quot;
-                    </p>
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage
-                          src={`/placeholder.svg?height=40&width=40`}
-                          alt="Student avatar"
-                        />
-                        <AvatarFallback>ST</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <p className="text-sm font-medium">Alex Chen</p>
-                        <p className="text-sm text-muted-foreground">MIT, Class of 2023</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* Explore More Section */}
         <section className="mb-16 py-12">

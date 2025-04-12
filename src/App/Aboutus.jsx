@@ -154,7 +154,7 @@ function Aboutus() {
                 <span className="text-gray-500">▼</span>
               </button>
               <div id="faq1" className="px-4 py-3 text-gray-700 hidden">
-                To create an account, click on the &quot;Sign Up&quot; button on the homepage, fill
+                To create an account, click on the &quot;Login&quot; button on the top-right navbar, then go to signup page from there and fill
                 in your details, and submit.
               </div>
             </div>
@@ -185,22 +185,7 @@ function Aboutus() {
               </button>
               <div id="faq3" className="px-4 py-3 text-gray-700 hidden">
                 You can contact mentors through our platform by navigating to the
-                &quot;Mentors&quot; section and selecting one.
-              </div>
-            </div>
-
-            {/* Question 4 */}
-            <div className="border border-gray-200 rounded-lg shadow-sm">
-              <button
-                className="w-full text-left flex justify-between items-center px-4 py-3 text-gray-800 font-medium focus:outline-none"
-                onClick={() => document.getElementById('faq4').classList.toggle('hidden')}
-              >
-                <span>What is your privacy policy?</span>
-                <span className="text-gray-500">▼</span>
-              </button>
-              <div id="faq4" className="px-4 py-3 text-gray-700 hidden">
-                Please refer to our privacy policy page for detailed information on how we handle
-                user data.
+                &quot;Universities&quot; section and find mentors according to university of your choice.
               </div>
             </div>
           </div>

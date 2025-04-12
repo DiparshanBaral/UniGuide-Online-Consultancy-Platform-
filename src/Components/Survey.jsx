@@ -23,6 +23,7 @@ import { useForm } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import API from "../api";
+import { toast } from "sonner";
 
 export default function UniversitySurveyForm({ onSubmit, onClose }) {
   const [currentPage, setCurrentPage] = useState(1); // Tracks the current page of the form
@@ -68,7 +69,7 @@ export default function UniversitySurveyForm({ onSubmit, onClose }) {
       onClose();
     } catch (error) {
       console.error("Error submitting survey:", error.response?.data || error.message);
-      alert("An error occurred while submitting the survey. Please try again.");
+      toast.error("Failed to submit the survey. Please try again.");
     }
   };
 
@@ -264,7 +265,7 @@ export default function UniversitySurveyForm({ onSubmit, onClose }) {
                 if (form.formState.isValid) {
                   setCurrentPage(2);
                 } else {
-                  alert("Please fill in all required fields on this page.");
+                  toast.error("Please fill in all required fields before proceeding.");
                 }
               }}
             >
