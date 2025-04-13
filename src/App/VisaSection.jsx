@@ -137,7 +137,6 @@ export default function VisaSection() {
             Authorization: `Bearer ${session?.token}`,
           },
         });
-        console.log(response);
         // Check if response exists and is successful
         if (response && response.status === 200) {
           setExperiences(response.data || []);
@@ -737,7 +736,7 @@ export default function VisaSection() {
                                   <div className="bg-gray-200 rounded-full p-1 mr-2">
                                     <User className="h-4 w-4 text-gray-700" />
                                   </div>
-                                  <CardDescription>By {exp.authorName}</CardDescription>
+                                  <CardDescription>By {exp.author.name}</CardDescription>
                                 </div>
                               </CardHeader>
                               <CardContent>
@@ -831,7 +830,7 @@ export default function VisaSection() {
                                     <div className="bg-gray-200 rounded-full p-1 mr-2">
                                       <User className="h-4 w-4 text-gray-700" />
                                     </div>
-                                    <CardDescription>By {exp.authorName}</CardDescription>
+                                    <CardDescription>By {exp.author.name}</CardDescription>
                                   </div>
                                 </CardHeader>
                                 <CardContent>
@@ -1058,7 +1057,7 @@ export default function VisaSection() {
                       <div className="bg-white rounded-full p-1 mr-2">
                         <User className="h-4 w-4 text-black" />
                       </div>
-                      <span className="text-gray-300">By {selectedExperience.authorName}</span>
+                      <span className="text-gray-300">By {selectedExperience.author.name}</span>
                     </div>
                   </div>
 

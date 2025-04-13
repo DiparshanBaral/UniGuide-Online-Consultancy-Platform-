@@ -67,7 +67,7 @@ const ExperienceDetail = ({ experience, onBack, onLike, onDelete }) => {
               <div className="bg-white rounded-full p-1 mr-2">
                 <User className="h-4 w-4 text-black" />
               </div>
-              <span className="text-gray-300">By {experience.authorName}</span>
+              <span className="text-gray-300">By {experience.author.name}</span>
             </div>
           </div>
 
@@ -122,7 +122,7 @@ ExperienceDetail.propTypes = {
     date: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     excerpt: PropTypes.string.isRequired,
-    authorName: PropTypes.string.isRequired,
+    author: PropTypes.string.isRequired,
     likes: PropTypes.number,
     postid: PropTypes.string.isRequired,
   }).isRequired,

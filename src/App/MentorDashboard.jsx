@@ -51,8 +51,8 @@ export default function MentorDashboard() {
     try {
       const session = JSON.parse(localStorage.getItem('session'));
       const response = await API.put(
-        `/connections/${id}/status`,
-        { status },
+        `/connections/status`,
+        { id, status },
         {
           headers: { Authorization: `Bearer ${session.token}` },
         },
