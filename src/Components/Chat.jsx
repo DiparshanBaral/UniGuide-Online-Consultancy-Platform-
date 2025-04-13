@@ -3,7 +3,7 @@ import { io } from 'socket.io-client'; // Import Socket.IO client
 import API from '../api';
 import { useParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { MessageSquare } from "lucide-react";
+import { MessageSquare } from 'lucide-react';
 
 const Chat = () => {
   const [messages, setMessages] = useState([]);
@@ -91,7 +91,10 @@ const Chat = () => {
     // Handle incoming messages via Socket.IO
     socketInstance.on('receiveMessage', (message) => {
       if (!messages.some((msg) => msg._id === message._id)) {
-        setMessages((prevMessages) => [...prevMessages, message]);
+        setMessages((prevMessages) => [
+          ...prevMessages,
+          { ...message, message: message.content }, // Normalize the message structure
+        ]);
       }
     });
 
@@ -187,25 +190,23 @@ const Chat = () => {
   }
 
   return (
-    <Card className="max-w-7xl mx-auto shadow-lg"> {/* Increased width to max-w-5xl */}
+    <Card className="max-w-7xl mx-auto shadow-lg">
+      {' '}
+      {/* Increased width to max-w-5xl */}
       {/* Header */}
       <CardHeader className="border-b pb-4">
         <div className="flex items-center gap-2">
           <MessageSquare className="h-6 w-6 text-primary" />
-          <CardTitle className="text-lg font-semibold">
-            Chat 
-          </CardTitle>
+          <CardTitle className="text-lg font-semibold">Chat</CardTitle>
         </div>
       </CardHeader>
-  
       {/* Chat Content */}
       <CardContent className="p-0">
-        <div className="flex flex-col h-[570px] bg-gray-100 border rounded-lg overflow-hidden"> {/* Reduced height to h-[500px] */}
+        <div className="flex flex-col h-[570px] bg-gray-100 border rounded-lg overflow-hidden">
+          {' '}
+          {/* Reduced height to h-[500px] */}
           {/* Chat Messages */}
-          <div
-            ref={chatContainerRef}
-            className="flex-1 overflow-y-auto p-4 space-y-2"
-          >
+          <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4 space-y-2">
             {messages.length === 0 ? (
               <div className="text-center text-gray-500">
                 No messages yet. Start the conversation!
@@ -229,7 +230,6 @@ const Chat = () => {
               ))
             )}
           </div>
-  
           {/* Message Input */}
           <div className="flex items-center p-4 border-t border-gray-300 bg-white">
             <input
