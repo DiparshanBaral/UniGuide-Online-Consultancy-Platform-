@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import API from '../api';
 import { toast } from 'sonner';
 
@@ -31,6 +32,8 @@ const UniversityProfile = () => {
   const [showModal, setShowModal] = useState(false);
   const [document, setDocument] = useState(null);
   const [description, setDescription] = useState('');
+  const [expectedFee, setExpectedFee] = useState('');
+  const [currency, setCurrency] = useState('USD');
   const [session, setSession] = useState(null);
   const [mentors, setMentors] = useState([]);
 
@@ -94,8 +97,8 @@ const UniversityProfile = () => {
   };
 
   const handleApply = async () => {
-    if (!document || !description) {
-      toast.error('Please upload a document and provide a description.');
+    if (!document || !description || !expectedFee || !currency) {
+      toast.error('Please fill all required fields');
       return;
     }
 
@@ -110,6 +113,8 @@ const UniversityProfile = () => {
     formData.append('universityId', university._id);
     formData.append('universityLocation', university.country);
     formData.append('description', description);
+    formData.append('expectedConsultationFee', expectedFee);
+    formData.append('currency', currency);
 
     try {
       const config = {
@@ -337,6 +342,43 @@ const UniversityProfile = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
             />
+            
+            <div className="space-y-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Expected Consultation Fee *
+                  </label>
+                  <Input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={expectedFee}
+                    onChange={(e) => setExpectedFee(e.target.value)}
+                    placeholder="Enter your expected fee"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Currency *
+                  </label>
+                  <Select value={currency} onValueChange={setCurrency}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select currency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="USD">USD ($)</SelectItem>
+                      <SelectItem value="GBP">GBP (£)</SelectItem>
+                      <SelectItem value="CAD">CAD (C$)</SelectItem>
+                      <SelectItem value="AUD">AUD (A$)</SelectItem>
+                      <SelectItem value="NRS">NRS (रू)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+            
             <div className="flex justify-end mt-4">
               <Button onClick={handleApply}>Submit</Button>
               <Button variant="outline" onClick={() => setShowModal(false)} className="ml-2">

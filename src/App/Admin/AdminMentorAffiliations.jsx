@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -27,8 +27,11 @@ import {
   Search,
   Filter,
   ArrowUpDown,
+  DollarSign,
+  Coins,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -57,6 +60,67 @@ export default function AdminMentorAffiliations() {
   const [filteredPending, setFilteredPending] = useState([]);
   const [filteredApproved, setFilteredApproved] = useState([]);
   const [selectedUniversity, setSelectedUniversity] = useState('all');
+  const [negotiatedFee, setNegotiatedFee] = useState('');
+  const [negotiationMessage, setNegotiationMessage] = useState('');
+  const [selectedAffiliation, setSelectedAffiliation] = useState(null);
+  const [isNegotiating, setIsNegotiating] = useState(false);
+  const [session, setSession] = useState(null);
+
+  // Get session data
+  useEffect(() => {
+    const sessionData = JSON.parse(localStorage.getItem('session'));
+    if (sessionData) {
+      setSession(sessionData);
+    }
+  }, []);
+
+  // Add a function to handle fee negotiation
+  const handleNegotiateFee = async (affiliationId) => {
+    if (!negotiatedFee || isNaN(parseFloat(negotiatedFee)) || parseFloat(negotiatedFee) <= 0) {
+      toast.error('Please enter a valid fee amount');
+      return;
+    }
+
+    setIsNegotiating(true);
+    try {
+      // Get the payment ID from the affiliation
+      const affiliationDetails = await API.get(`/affiliations/${affiliationId}`, {
+        headers: {
+          Authorization: `Bearer ${session.token}`,
+        },
+      });
+
+      const paymentId = affiliationDetails.data.affiliation.paymentId;
+      
+      if (!paymentId) {
+        toast.error('Payment information not found for this affiliation');
+        return;
+      }
+
+      // Update the negotiated fee
+      const response = await API.put(`/payment/${paymentId}/negotiate`, {
+        negotiatedConsultationFee: parseFloat(negotiatedFee),
+        message: negotiationMessage,
+      }, {
+        headers: {
+          Authorization: `Bearer ${session.token}`,
+        },
+      });
+
+      if (response.data.success) {
+        toast.success('Fee negotiation sent to mentor successfully');
+        setNegotiatedFee('');
+        setNegotiationMessage('');
+        setSelectedAffiliation(null);
+        fetchPendingRequests(); // Refresh the data
+      }
+    } catch (error) {
+      console.error('Error negotiating fee:', error);
+      toast.error('Failed to negotiate fee');
+    } finally {
+      setIsNegotiating(false);
+    }
+  };
 
   // Fetch pending affiliation requests
   const fetchPendingRequests = async () => {
@@ -384,9 +448,9 @@ export default function AdminMentorAffiliations() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {filteredPending.map((request) => (
+                  {filteredPending.map((affiliation) => (
                     <Card
-                      key={request._id}
+                      key={affiliation._id}
                       className="overflow-hidden border border-gray-200 dark:border-gray-700"
                     >
                       <div className="flex flex-col md:flex-row">
@@ -394,7 +458,7 @@ export default function AdminMentorAffiliations() {
                           <div className="relative">
                             <img
                               src={
-                                request.mentorId?.profilePic
+                                affiliation.mentorId?.profilePic
                               }
                               alt="Mentor Profile"
                               className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-sm"
@@ -404,8 +468,8 @@ export default function AdminMentorAffiliations() {
                             </Badge>
                           </div>
                           <h3 className="font-semibold text-lg mt-4 text-center">
-                            {request.mentorId
-                              ? `${request.mentorId.firstname} ${request.mentorId.lastname}`
+                            {affiliation.mentorId
+                              ? `${affiliation.mentorId.firstname} ${affiliation.mentorId.lastname}`
                               : 'N/A'}
                           </h3>
                         </div>
@@ -415,18 +479,18 @@ export default function AdminMentorAffiliations() {
                             <div>
                               <h4 className="text-lg font-medium flex items-center">
                                 <Building2 className="h-4 w-4 mr-2 text-primary" />
-                                {request.universityId.name}
+                                {affiliation.universityId.name}
                               </h4>
                               <p className="text-sm text-muted-foreground">
                                 Affiliation request submitted on{' '}
-                                {new Date(request.createdAt).toLocaleDateString()}
+                                {new Date(affiliation.createdAt).toLocaleDateString()}
                               </p>
                             </div>
                             <Button
                               variant="outline"
                               size="sm"
                               className="mt-2 md:mt-0"
-                              onClick={() => openCertificate(request.documentUrl)}
+                              onClick={() => openCertificate(affiliation.documentUrl)}
                             >
                               <FileText className="h-4 w-4 mr-2" />
                               View Certificate
@@ -439,19 +503,115 @@ export default function AdminMentorAffiliations() {
                             <h5 className="text-sm font-medium text-muted-foreground mb-2">
                               Description
                             </h5>
-                            <p className="text-sm">{request.description}</p>
+                            <p className="text-sm">{affiliation.description}</p>
+                          </div>
+
+                          {/* Payment Information Section */}
+                          <div className="mt-4 p-4 bg-blue-50 rounded-md">
+                            <div className="flex items-center mb-2">
+                              <Coins className="h-5 w-5 mr-2 text-blue-600" />
+                              <h3 className="text-sm font-semibold">Payment Information</h3>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 text-sm">
+                              <div>
+                                <p className="text-gray-500">Expected Fee:</p>
+                                <p className="font-medium">
+                                  {affiliation.payment?.expectedConsultationFee || 'N/A'} {affiliation.payment?.currency || 'USD'}
+                                </p>
+                              </div>
+                              {affiliation.payment?.negotiatedConsultationFee && (
+                                <div>
+                                  <p className="text-gray-500">Negotiated Fee:</p>
+                                  <p className="font-medium">
+                                    {affiliation.payment.negotiatedConsultationFee} {affiliation.payment.currency}
+                                  </p>
+                                </div>
+                              )}
+                            </div>
+                            
+                            {/* Add negotiation history if available */}
+                            {affiliation.payment?.negotiationHistory && affiliation.payment.negotiationHistory.length > 0 && (
+                              <div className="mt-3">
+                                <p className="text-xs font-medium text-gray-500">Negotiation History:</p>
+                                <div className="max-h-24 overflow-y-auto mt-1">
+                                  {affiliation.payment.negotiationHistory.map((entry, index) => (
+                                    <div key={index} className="text-xs py-1 border-b border-gray-100">
+                                      <div className="flex justify-between">
+                                        <span>
+                                          {entry.proposedBy === 'admin' ? 'Admin' : 'Mentor'}:
+                                        </span>
+                                        <span className="font-medium">
+                                          {entry.amount} {affiliation.payment.currency}
+                                        </span>
+                                      </div>
+                                      {entry.message && <p className="text-gray-500 mt-0.5">{entry.message}</p>}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
                           </div>
 
                           <div className="flex flex-col sm:flex-row gap-3 mt-6">
+                            {/* Add the negotiation dialog button */}
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button 
+                                  variant="outline" 
+                                  className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                                  onClick={() => setSelectedAffiliation(affiliation)}
+                                >
+                                  <DollarSign className="h-4 w-4 mr-2" />
+                                  Negotiate Fee
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Negotiate Affiliation Fee</DialogTitle>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                  <div>
+                                    <label className="text-sm font-medium mb-1 block">
+                                      Mentor&apos;s Expected Fee: {selectedAffiliation?.payment?.expectedConsultationFee || 'N/A'} {selectedAffiliation?.payment?.currency || 'USD'}
+                                    </label>
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      step="0.01"
+                                      value={negotiatedFee}
+                                      onChange={(e) => setNegotiatedFee(e.target.value)}
+                                      placeholder="Enter negotiated fee amount"
+                                    />
+                                  </div>
+                                  <div>
+                                    <label className="text-sm font-medium mb-1 block">Message (Optional)</label>
+                                    <Textarea
+                                      value={negotiationMessage}
+                                      onChange={(e) => setNegotiationMessage(e.target.value)}
+                                      placeholder="Explain your fee offer..."
+                                    />
+                                  </div>
+                                </div>
+                                <DialogFooter>
+                                  <Button 
+                                    onClick={() => handleNegotiateFee(selectedAffiliation?._id)}
+                                    disabled={isNegotiating}
+                                  >
+                                    {isNegotiating ? 'Sending...' : 'Send Fee Offer'}
+                                  </Button>
+                                </DialogFooter>
+                              </DialogContent>
+                            </Dialog>
+
                             <Button
-                              onClick={() => approveRequest(request._id)}
+                              onClick={() => approveRequest(affiliation._id)}
                               className="bg-green-600 hover:bg-green-700 text-white flex-1 flex items-center justify-center gap-2"
                             >
                               <Check className="h-4 w-4" />
                               Approve
                             </Button>
                             <Button
-                              onClick={() => rejectRequest(request._id)}
+                              onClick={() => rejectRequest(affiliation._id)}
                               variant="destructive"
                               className="flex-1 flex items-center justify-center gap-2"
                             >
@@ -514,6 +674,11 @@ export default function AdminMentorAffiliations() {
                             <ArrowUpDown className="ml-2 h-4 w-4" />
                           </div>
                         </TableHead>
+                        <TableHead>
+                          <div className="flex items-center">
+                            Fee
+                          </div>
+                        </TableHead>
                         <TableHead>Certificate</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                       </TableRow>
@@ -538,6 +703,11 @@ export default function AdminMentorAffiliations() {
                           </TableCell>
                           <TableCell>{request.universityId?.name}</TableCell>
                           <TableCell>{new Date(request.updatedAt).toLocaleDateString()}</TableCell>
+                          <TableCell>
+                            {request.payment?.finalConsultationFee ? 
+                              `${request.payment.finalConsultationFee} ${request.payment.currency}` : 
+                              'N/A'}
+                          </TableCell>
                           <TableCell>
                             <Button
                               variant="ghost"

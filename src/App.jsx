@@ -21,6 +21,7 @@ import StudentPortal from '@/App/StudentPortal';
 import MentorPortal from '@/App/MentorPortal';
 import NotificationsPage from './App/NotificationsPage';
 import AdminRoutes from '@/App/Admin';
+import PaymentPage from './App/PaymentPage';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
 
@@ -63,6 +64,7 @@ function App() {
             <Route path="/mentorportal/:portalid" element={<MentorPortal />} />
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/admin/*" element={<AdminRoutes />} />
+            <Route path="/payments" element={<PaymentPage />} />
             <Route path="*" element={<h1 className="text-center text-2xl">404 Not Found</h1>} />
           </Routes>
         </div>

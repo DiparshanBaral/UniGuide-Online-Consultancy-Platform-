@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAtom } from 'jotai';
 import { sessionAtom } from '@/atoms/session';
-import { Bell, GraduationCap, LogOut, Menu, User } from 'lucide-react';
+import { Bell, GraduationCap, LogOut, Menu, User, CreditCard } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -272,11 +272,7 @@ export default function Navbar() {
           {/* Logo */}
           <div className="flex items-center">
             <Link to="/" className="flex items-center space-x-3">
-              <img
-                src={logo}
-                alt="UniGuide Logo"
-                className="h-14 w-14"
-              />
+              <img src={logo} alt="UniGuide Logo" className="h-14 w-14" />
               <span className="text-xl font-bold ">UniGuide</span>
             </Link>
           </div>
@@ -437,6 +433,14 @@ export default function Navbar() {
                       <GraduationCap className="mr-2 h-4 w-4" />
                       <span className="text-sm">Dashboard</span>
                     </DropdownMenuItem>
+                    {session && session.role === 'mentor' && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/payments" className="cursor-pointer w-full">
+                          <CreditCard className="mr-2 h-4 w-4" />
+                          <span>Payment</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onSelect={handleLogout}>
