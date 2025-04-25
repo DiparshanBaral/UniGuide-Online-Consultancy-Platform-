@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import API from "../api"
 import { sessionAtom } from "@/atoms/session"
+import GoogleAuthButton from '@/Components/GoogleAuthButton';
 
 export default function LoginForm() {
   const [email, setEmail] = useState("")
@@ -133,6 +134,19 @@ export default function LoginForm() {
           </CardHeader>
 
           <CardContent>
+            <div className="mb-4">
+              <GoogleAuthButton role="student" />
+            </div>
+            
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t"></span>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
+            
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>

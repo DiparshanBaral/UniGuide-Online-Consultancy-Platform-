@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { AlertCircle, BookOpen, School, UserRound, Edit, CheckCircle2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import StudentProfileForm from "@/components/Student-form"
-import PasswordUpdateForm from "@/components/PasswordUpdateForm" 
+import PasswordUpdateForm from "@/components/PasswordUpdateForm"
 
 function Profile() {
   const navigate = useNavigate()
@@ -173,7 +173,7 @@ function Profile() {
               <div className="relative flex justify-center">
                 <div className="h-32 w-32 rounded-full border-4 border-background overflow-hidden bg-background flex items-center justify-center">
                   <AvatarUpload
-                    currentAvatar={user.profilePic}
+                    currentAvatar={user.profilePic || '/placeholder.svg'}
                     onImageSelect={(file) => setProfilePic(file)}
                     onRemove={() => setProfilePic(null)}
                     isEditing={isEditing}
@@ -182,7 +182,7 @@ function Profile() {
                 {user.profileCompleted && (
                   <Badge className="absolute bottom-0 right-0 bg-green-500 text-white border-0 flex items-center gap-1 px-2 py-1">
                     <CheckCircle2 className="h-3 w-3" />
-                    Verified
+                    Complete
                   </Badge>
                 )}
               </div>

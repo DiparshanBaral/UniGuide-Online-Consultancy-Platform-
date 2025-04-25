@@ -22,6 +22,7 @@ import MentorPortal from '@/App/MentorPortal';
 import NotificationsPage from './App/NotificationsPage';
 import AdminRoutes from '@/App/Admin';
 import PaymentPage from './App/PaymentPage';
+import AuthSuccess from '@/App/AuthSuccess';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
 
@@ -65,6 +66,7 @@ function App() {
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/admin/*" element={<AdminRoutes />} />
             <Route path="/payments" element={<PaymentPage />} />
+            <Route path="/auth/success" element={<AuthSuccess />} />
             <Route path="*" element={<h1 className="text-center text-2xl">404 Not Found</h1>} />
           </Routes>
         </div>

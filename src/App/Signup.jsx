@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import API from "../api"
+import GoogleAuthButton from '@/Components/GoogleAuthButton';
 
 export default function SignupForm() {
   const [formData, setFormData] = useState({
@@ -109,6 +110,19 @@ export default function SignupForm() {
           </CardHeader>
 
           <CardContent>
+            <div className="mb-4">
+              <GoogleAuthButton role={formData.role} />
+            </div>
+            
+            <div className="relative mb-4">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t"></span>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+              </div>
+            </div>
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
