@@ -15,7 +15,6 @@ import {
   CheckCircle2,
   Briefcase,
   Globe,
-  DollarSign,
   MessageSquare,
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -153,10 +152,10 @@ function MentorProfilePersonal() {
       formData.append('email', updatedUser.email);
       formData.append('bio', updatedUser.bio || '');
       formData.append('expertise', JSON.stringify(updatedUser.expertise || []));
-      formData.append('university', updatedUser.university || '');
+      // University field removed as it's determined through affiliation
       formData.append('degree', updatedUser.degree || '');
       formData.append('yearsOfExperience', updatedUser.yearsOfExperience || 0);
-      formData.append('paymentInformation', JSON.stringify(updatedUser.paymentInformation || {}));
+      // Consultation fee fields removed as they're determined through negotiation
       formData.append('languages', JSON.stringify(updatedUser.languages || []));
       if (profilePic) {
         formData.append('profilePic', profilePic);
@@ -365,20 +364,6 @@ function MentorProfilePersonal() {
                       </div>
                     </CardContent>
                   </Card>
-                  <Card className="border-primary/10">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <DollarSign className="h-5 w-5 text-primary" />
-                        Consultation Fee
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-xl font-semibold">
-                        {user.paymentInformation?.amount || 0}{' '}
-                        {user.paymentInformation?.currency || 'USD'}
-                      </p>
-                    </CardContent>
-                  </Card>
                 </div>
               ) : (
                 <div className="space-y-6">
@@ -425,16 +410,6 @@ function MentorProfilePersonal() {
                   </div>
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <label className="text-sm font-medium">University</label>
-                      <input
-                        type="text"
-                        name="university"
-                        value={updatedUser.university || ''}
-                        onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
-                      />
-                    </div>
-                    <div className="space-y-2">
                       <label className="text-sm font-medium">Degree</label>
                       <input
                         type="text"
@@ -455,28 +430,6 @@ function MentorProfilePersonal() {
                         onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
                       />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium">Consultation Fee</label>
-                      <div className="flex gap-2">
-                        <input
-                          type="number"
-                          name="paymentInformation.amount"
-                          value={updatedUser.paymentInformation?.amount || 0}
-                          onChange={handleInputChange}
-                          className="w-full px-3 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
-                        />
-                        <select
-                          name="paymentInformation.currency"
-                          value={updatedUser.paymentInformation?.currency || 'USD'}
-                          onChange={handleInputChange}
-                          className="w-24 px-3 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/30"
-                        >
-                          <option value="USD">USD</option>
-                          <option value="EUR">EUR</option>
-                          <option value="NRS">NRS</option>
-                        </select>
-                      </div>
                     </div>
                   </div>
                   <div className="space-y-2">

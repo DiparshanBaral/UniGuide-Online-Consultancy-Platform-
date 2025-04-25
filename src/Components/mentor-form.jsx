@@ -2,7 +2,7 @@ import PropTypes from "prop-types"; // Import PropTypes
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { UserRound, BookOpen, School, Briefcase, Globe, DollarSign } from 'lucide-react';
+import { UserRound, BookOpen, Briefcase, Globe } from 'lucide-react';
 import API from "../api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,13 +20,8 @@ function MentorProfileForm({ isOpen, onClose, userId }) {
   const [formData, setFormData] = useState({
     bio: "",
     expertise: [],
-    university: "",
     degree: "",
     yearsOfExperience: 0,
-    paymentInformation: {
-      amount: 0,
-      currency: "USD"
-    },
     languages: [],
     currentExpertise: "",
     currentLanguage: ""
@@ -34,21 +29,10 @@ function MentorProfileForm({ isOpen, onClose, userId }) {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setFormData((prev) => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value
-        }
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const addExpertise = () => {
@@ -87,7 +71,7 @@ function MentorProfileForm({ isOpen, onClose, userId }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.bio || !formData.university || !formData.degree || formData.expertise.length === 0) {
+    if (!formData.bio || !formData.degree || formData.expertise.length === 0) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -102,10 +86,8 @@ function MentorProfileForm({ isOpen, onClose, userId }) {
       const formDataToSend = new FormData();
       formDataToSend.append("bio", formData.bio);
       formDataToSend.append("expertise", JSON.stringify(formData.expertise));
-      formDataToSend.append("university", formData.university);
       formDataToSend.append("degree", formData.degree);
       formDataToSend.append("yearsOfExperience", formData.yearsOfExperience);
-      formDataToSend.append("paymentInformation", JSON.stringify(formData.paymentInformation));
       formDataToSend.append("languages", JSON.stringify(formData.languages));
       if (profilePic) {
         formDataToSend.append("profilePic", profilePic);
@@ -169,92 +151,41 @@ function MentorProfileForm({ isOpen, onClose, userId }) {
                   required
                 />
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="university" className="text-base">
-                    <div className="flex items-center gap-2">
-                      <School className="h-4 w-4 text-primary" />
-                      University/Institution
-                    </div>
-                  </Label>
-                  <Input
-                    id="university"
-                    name="university"
-                    placeholder="e.g., Harvard University"
-                    value={formData.university}
-                    onChange={handleInputChange}
-                    className="border-primary/20 focus-visible:ring-primary/30"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="degree" className="text-base">
-                    <div className="flex items-center gap-2">
-                      <BookOpen className="h-4 w-4 text-primary" />
-                      Degree
-                    </div>
-                  </Label>
-                  <Input
-                    id="degree"
-                    name="degree"
-                    placeholder="e.g., Master of Computer Science"
-                    value={formData.degree}
-                    onChange={handleInputChange}
-                    className="border-primary/20 focus-visible:ring-primary/30"
-                    required
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="yearsOfExperience" className="text-base">
-                    <div className="flex items-center gap-2">
-                      <Briefcase className="h-4 w-4 text-primary" />
-                      Years of Experience
-                    </div>
-                  </Label>
-                  <Input
-                    id="yearsOfExperience"
-                    name="yearsOfExperience"
-                    type="number"
-                    min="0"
-                    placeholder="e.g., 5"
-                    value={formData.yearsOfExperience}
-                    onChange={handleInputChange}
-                    className="border-primary/20 focus-visible:ring-primary/30"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="paymentInformation.amount" className="text-base">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-primary" />
-                      Consultation Fee
-                    </div>
-                  </Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="paymentInformation.amount"
-                      name="paymentInformation.amount"
-                      type="number"
-                      min="0"
-                      placeholder="e.g., 50"
-                      value={formData.paymentInformation.amount}
-                      onChange={handleInputChange}
-                      className="border-primary/20 focus-visible:ring-primary/30"
-                    />
-                    <select
-                      name="paymentInformation.currency"
-                      value={formData.paymentInformation.currency}
-                      onChange={handleInputChange}
-                      className="w-24 rounded-md border border-primary/20 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
-                    >
-                      <option value="USD">USD</option>
-                      <option value="EUR">EUR</option>
-                      <option value="GBP">GBP</option>
-                    </select>
+              <div className="space-y-2">
+                <Label htmlFor="degree" className="text-base">
+                  <div className="flex items-center gap-2">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                    Degree
                   </div>
-                </div>
+                </Label>
+                <Input
+                  id="degree"
+                  name="degree"
+                  placeholder="e.g., Master of Computer Science"
+                  value={formData.degree}
+                  onChange={handleInputChange}
+                  className="border-primary/20 focus-visible:ring-primary/30"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="yearsOfExperience" className="text-base">
+                  <div className="flex items-center gap-2">
+                    <Briefcase className="h-4 w-4 text-primary" />
+                    Years of Experience
+                  </div>
+                </Label>
+                <Input
+                  id="yearsOfExperience"
+                  name="yearsOfExperience"
+                  type="number"
+                  min="0"
+                  placeholder="e.g., 5"
+                  value={formData.yearsOfExperience}
+                  onChange={handleInputChange}
+                  className="border-primary/20 focus-visible:ring-primary/30"
+                  required
+                />
               </div>
               <div className="space-y-3">
                 <Label className="text-base">

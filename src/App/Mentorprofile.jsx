@@ -201,7 +201,7 @@ function MentorProfile() {
                       <span>Consultation Fee</span>
                     </div>
                     <span className="font-medium">
-                      {mentor.paymentInformation?.amount || 0} {mentor.paymentInformation?.currency || "USD"}
+                      {mentor.consultationFee || 0} {mentor.currency || "USD"}
                     </span>
                   </div>
                 </div>
