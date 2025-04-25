@@ -2,23 +2,21 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAtom } from 'jotai';
 import { sessionAtom } from '@/atoms/session';
-import { ArrowLeft, Check, X, RefreshCw, AlertCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import { ArrowLeft, RefreshCw, DollarSign, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
+import NegotiationCard from '@/Components/NegotiationCard';
+import EmptyState from '@/Components/EmptyState';
+import LoadingSkeletons from '@/Components/LoadingSkeletons';
 import API from '../api';
 
 export default function PaymentPage() {
   const [session] = useAtom(sessionAtom);
   const [negotiations, setNegotiations] = useState([]);
+  const [payments, setPayments] = useState([]); // For future use with student payments
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
   const [counterOffer, setCounterOffer] = useState('');
@@ -31,44 +29,48 @@ export default function PaymentPage() {
 
     setIsLoading(true);
     try {
-      const response = await API.get(`/affiliations/mentor/${session._id}`, {
+      // Use the direct paymentnegotiation endpoint to get mentor's negotiations
+      const response = await API.get(`/paymentnegotiation/mentor/${session._id}`, {
         headers: { Authorization: `Bearer ${session.token}` },
       });
 
-      if (response.data && response.data.length > 0) {
-        const affiliationsWithPayment = response.data.filter(aff => aff.paymentId);
-
-        const paymentPromises = affiliationsWithPayment.map(aff => 
-          API.get(`/affiliations/${aff._id}`, {
-            headers: { Authorization: `Bearer ${session.token}` },
-          })
-        );
-
-        const paymentResponses = await Promise.all(paymentPromises);
-        const negotiationData = paymentResponses
-          .filter(res => res.data.affiliation && res.data.affiliation.paymentId)
-          .map(res => res.data.affiliation.payment);
-
-        setNegotiations(negotiationData);
+      if (response.data && response.data.success) {
+        setNegotiations(response.data.negotiations || []);
       } else {
         setNegotiations([]);
       }
     } catch (error) { 
       console.error('Error fetching negotiations:', error);
       toast.error('Failed to load negotiation history');
+      setNegotiations([]);
     } finally {
       setIsLoading(false);
     }
   }, [session]);
 
+  // Function to fetch payments (to be implemented in the future)
+  const fetchPayments = useCallback(async () => {
+    if (!session || !session._id) return;
+    
+    // This is a placeholder for future implementation
+    // Will connect to payment endpoints when they're created
+    setPayments([]);
+  }, [session]);
+
   useEffect(() => {
-    if (!session || !session._id || session.role !== 'mentor') {
+    if (!session || !session._id) {
       navigate('/login');
       return;
     }
 
-    fetchNegotiations();
-  }, [session, navigate, fetchNegotiations]);
+    if (activeTab === 'all' || activeTab === 'negotiations') {
+      fetchNegotiations();
+    }
+    
+    if (activeTab === 'all' || activeTab === 'payments') {
+      fetchPayments();
+    }
+  }, [session, navigate, fetchNegotiations, fetchPayments, activeTab]);
 
   const handleTabChange = (value) => {
     setActiveTab(value);
@@ -89,7 +91,7 @@ export default function PaymentPage() {
     }
   };
 
-  const handleCounterOffer = async (paymentId) => {
+  const handleCounterOffer = async (negotiationId) => {
     if (!counterOffer || isNaN(parseFloat(counterOffer)) || parseFloat(counterOffer) <= 0) {
       toast.error('Please enter a valid counter offer amount');
       return;
@@ -97,7 +99,7 @@ export default function PaymentPage() {
 
     setIsNegotiating(true);
     try {
-      const response = await API.put(`/payment/${paymentId}/respond`, {
+      const response = await API.put(`/paymentnegotiation/${negotiationId}/respond`, {
         response: 'counter',
         counterOffer: parseFloat(counterOffer),
         message: counterMessage,
@@ -119,34 +121,27 @@ export default function PaymentPage() {
     }
   };
 
-  const handleNegotiationResponse = async (paymentId, response) => {
+  const handleNegotiationResponse = async (negotiationId, responseType) => {
     setIsNegotiating(true);
     try {
-      const apiResponse = await API.put(`/payment/${paymentId}/respond`, {
-        response,
+      // Use the correct endpoint from paymentNegotiationRoutes.js
+      const apiResponse = await API.put(`/paymentnegotiation/${negotiationId}/respond`, {
+        response: responseType,
       }, {
         headers: { Authorization: `Bearer ${session.token}` },
       });
 
       if (apiResponse.data.success) {
-        toast.success(`You have ${response === 'accept' ? 'accepted' : 'rejected'} the fee offer`);
+        toast.success(`You have ${responseType === 'accept' ? 'accepted' : 'rejected'} the fee offer`);
         fetchNegotiations();
       }
     } catch (error) {
-      console.error(`Error ${response} offer:`, error);
-      toast.error(`Failed to ${response} offer`);
+      console.error(`Error ${responseType} offer:`, error);
+      toast.error(`Failed to ${responseType} offer`);
     } finally {
       setIsNegotiating(false);
     }
   };
-
-  const filteredNegotiations = negotiations.filter(negotiation => {
-    if (activeTab === 'all') return true;
-    if (activeTab === 'pending') return negotiation.status === 'pending';
-    if (activeTab === 'awaiting') return negotiation.status === 'admin_approved';
-    if (activeTab === 'approved') return negotiation.status === 'mentor_approved';
-    return false;
-  });
 
   return (
     <div className="mt-[50px] container mx-auto py-8 px-4 md:px-6">
@@ -155,203 +150,134 @@ export default function PaymentPage() {
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-2xl font-bold">Fee Negotiations</h1>
+          <h1 className="text-2xl font-bold">Fee Payment and Negotiations</h1>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchNegotiations} disabled={isLoading}>
+        <Button variant="outline" size="sm" onClick={() => activeTab === 'payments' ? fetchPayments() : fetchNegotiations()} disabled={isLoading}>
           <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
       </div>
 
       <Tabs defaultValue="all" value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="grid grid-cols-4 mb-6">
+        <TabsList className="grid grid-cols-3 mb-6">
           <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="pending">Pending</TabsTrigger>
-          <TabsTrigger value="awaiting">Awaiting Response</TabsTrigger>
-          <TabsTrigger value="approved">Approved</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
+          {session?.role === 'mentor' && (
+            <TabsTrigger value="negotiations">Negotiations</TabsTrigger>
+          )}
         </TabsList>
 
-        <TabsContent value={activeTab} className="mt-0">
+        <TabsContent value="all" className="mt-0">
           {isLoading ? (
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <Card key={i} className="mb-4">
-                  <CardHeader className="pb-4">
-                    <Skeleton className="h-5 w-1/3" />
-                    <Skeleton className="h-4 w-1/4 mt-2" />
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-2 gap-4">
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-full" />
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-4 w-3/4" />
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : filteredNegotiations.length === 0 ? (
-            <div className="text-center py-8">
-              <AlertCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-medium mb-2">No negotiations found</h3>
-              <p className="text-gray-500">
-                {activeTab === 'all' 
-                  ? "You don't have any fee negotiations at the moment."
-                  : activeTab === 'awaiting'
-                  ? "No negotiations awaiting your response."
-                  : `No ${activeTab} negotiations available.`}
-              </p>
-            </div>
+            <LoadingSkeletons />
           ) : (
-            <div className="space-y-4">
-              {filteredNegotiations.map((negotiation) => (
-                <Card key={negotiation._id} className="mb-4">
-                  <CardHeader className="pb-4">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle>Affiliation Fee Negotiation</CardTitle>
-                        <CardDescription>
-                          {negotiation.createdAt && 
-                            `Started on ${format(new Date(negotiation.createdAt), 'MMM dd, yyyy')}`}
-                        </CardDescription>
-                      </div>
-                      {getStatusBadge(negotiation.status)}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Your Initial Proposal</p>
-                        <p className="font-semibold">
-                          {negotiation.expectedConsultationFee} {negotiation.currency}
-                        </p>
-                      </div>
-                      
-                      {negotiation.negotiatedConsultationFee && (
-                        <div>
-                          <p className="text-sm font-medium text-gray-500">Admin&apos;s Proposal</p>
-                          <p className="font-semibold">
-                            {negotiation.negotiatedConsultationFee} {negotiation.currency}
-                          </p>
-                        </div>
-                      )}
-                      
-                      {negotiation.finalConsultationFee && (
-                        <div>
-                          <p className="text-sm font-medium text-gray-500">Final Agreed Fee</p>
-                          <p className="font-semibold text-green-600">
-                            {negotiation.finalConsultationFee} {negotiation.currency}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+            <div className="space-y-8">
+              {/* Payments Section - if any */}
+              {payments.length > 0 && (
+                <div>
+                  <h2 className="text-xl font-semibold mb-4 flex items-center">
+                    <DollarSign className="h-5 w-5 mr-2 text-primary" />
+                    Payments
+                  </h2>
+                  <div className="space-y-4">
+                    {/* Payment cards would go here in the future */}
+                    <p className="text-muted-foreground text-center p-4">
+                      Payment functionality will be available soon.
+                    </p>
+                  </div>
+                </div>
+              )}
 
-                    {negotiation.status === 'admin_approved' && (
-                      <div className="mt-6 bg-blue-50 p-4 rounded-md">
-                        <h4 className="text-sm font-semibold mb-2">Admin has proposed a fee of {negotiation.negotiatedConsultationFee} {negotiation.currency}</h4>
-                        <div className="flex flex-col sm:flex-row gap-2 mt-2">
-                          <Button 
-                            onClick={() => handleNegotiationResponse(negotiation._id, 'accept')}
-                            disabled={isNegotiating}
-                            className="bg-green-600 hover:bg-green-700"
-                          >
-                            <Check className="h-4 w-4 mr-2" />
-                            Accept Offer
-                          </Button>
-                          
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" className="border-amber-500 text-amber-600 hover:bg-amber-50">
-                                <RefreshCw className="h-4 w-4 mr-2" />
-                                Counter Offer
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Make a Counter Offer</DialogTitle>
-                                <DialogDescription>
-                                  The admin proposed {negotiation.negotiatedConsultationFee} {negotiation.currency}. You can counter with your own offer.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="grid gap-4 py-4">
-                                <div>
-                                  <label className="text-sm font-medium mb-1 block">Your Counter Offer ({negotiation.currency})</label>
-                                  <Input
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    value={counterOffer}
-                                    onChange={(e) => setCounterOffer(e.target.value)}
-                                    placeholder="Enter your counter offer"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="text-sm font-medium mb-1 block">Message (Optional)</label>
-                                  <Textarea
-                                    value={counterMessage}
-                                    onChange={(e) => setCounterMessage(e.target.value)}
-                                    placeholder="Explain your counter offer..."
-                                  />
-                                </div>
-                              </div>
-                              <DialogFooter>
-                                <Button 
-                                  type="submit" 
-                                  onClick={() => handleCounterOffer(negotiation._id)}
-                                  disabled={isNegotiating}
-                                >
-                                  Submit Counter Offer
-                                </Button>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
-                          
-                          <Button 
-                            variant="destructive"
-                            onClick={() => handleNegotiationResponse(negotiation._id, 'reject')}
-                            disabled={isNegotiating}
-                          >
-                            <X className="h-4 w-4 mr-2" />
-                            Reject Offer
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-
-                    {negotiation.negotiationHistory && negotiation.negotiationHistory.length > 0 && (
-                      <div className="mt-6">
-                        <h4 className="text-sm font-semibold mb-2">Negotiation History</h4>
-                        <div className="space-y-3 max-h-80 overflow-y-auto">
-                          {negotiation.negotiationHistory.map((entry, index) => (
-                            <div key={index} className={`p-3 rounded-md text-sm ${
-                              entry.proposedBy === 'admin' ? 'bg-gray-100' : 'bg-blue-50'
-                            }`}>
-                              <div className="flex justify-between">
-                                <span className="font-medium">
-                                  {entry.proposedBy === 'admin' ? 'Admin' : 'You'} proposed:
-                                </span>
-                                <span className="font-bold">
-                                  {entry.amount} {negotiation.currency}
-                                </span>
-                              </div>
-                              {entry.message && (
-                                <p className="text-gray-600 mt-1">{entry.message}</p>
-                              )}
-                              <p className="text-xs text-gray-500 mt-1">
-                                {entry.timestamp && format(new Date(entry.timestamp), 'MMM dd, yyyy - h:mm a')}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
+              {/* Negotiations Section */}
+              {session?.role === 'mentor' && (
+                <div>
+                  <h2 className="text-xl font-semibold mb-4 flex items-center">
+                    <Clock className="h-5 w-5 mr-2 text-primary" />
+                    Fee Negotiations
+                  </h2>
+                  {negotiations.length === 0 ? (
+                    <EmptyState
+                      type="negotiations"
+                      message="You don't have any fee negotiations at the moment."
+                    />
+                  ) : (
+                    <div className="space-y-4">
+                      {negotiations.map((negotiation) => (
+                        <NegotiationCard
+                          key={negotiation._id}
+                          negotiation={negotiation}
+                          handleNegotiationResponse={handleNegotiationResponse}
+                          handleCounterOffer={handleCounterOffer}
+                          counterOffer={counterOffer}
+                          setCounterOffer={setCounterOffer}
+                          counterMessage={counterMessage}
+                          setCounterMessage={setCounterMessage}
+                          isNegotiating={isNegotiating}
+                          getStatusBadge={getStatusBadge}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              
+              {payments.length === 0 && negotiations.length === 0 && (
+                <EmptyState
+                  type="all"
+                  message="You don't have any payments or negotiations at the moment."
+                />
+              )}
             </div>
           )}
         </TabsContent>
+
+        <TabsContent value="payments" className="mt-0">
+          {isLoading ? (
+            <LoadingSkeletons />
+          ) : payments.length === 0 ? (
+            <EmptyState
+              type="payments"
+              message="You don't have any payments at the moment."
+            />
+          ) : (
+            <div className="space-y-4">
+              {/* Payment cards would go here in the future */}
+              <p className="text-muted-foreground text-center p-4">
+                Payment functionality will be available soon.
+              </p>
+            </div>
+          )}
+        </TabsContent>
+
+        {session?.role === 'mentor' && (
+          <TabsContent value="negotiations" className="mt-0">
+            {isLoading ? (
+              <LoadingSkeletons />
+            ) : negotiations.length === 0 ? (
+              <EmptyState
+                type="negotiations"
+                message="You don't have any fee negotiations at the moment."
+              />
+            ) : (
+              <div className="space-y-4">
+                {negotiations.map((negotiation) => (
+                  <NegotiationCard
+                    key={negotiation._id}
+                    negotiation={negotiation}
+                    handleNegotiationResponse={handleNegotiationResponse}
+                    handleCounterOffer={handleCounterOffer}
+                    counterOffer={counterOffer}
+                    setCounterOffer={setCounterOffer}
+                    counterMessage={counterMessage}
+                    setCounterMessage={setCounterMessage}
+                    isNegotiating={isNegotiating}
+                    getStatusBadge={getStatusBadge}
+                  />
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   );

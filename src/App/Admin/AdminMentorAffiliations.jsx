@@ -6,7 +6,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import {
   Table,
   TableBody,
@@ -75,37 +82,41 @@ export default function AdminMentorAffiliations() {
   }, []);
 
   // Add a function to handle fee negotiation
-  const handleNegotiateFee = async (affiliationId) => {
+  const handleNegotiateFee = async () => {
     if (!negotiatedFee || isNaN(parseFloat(negotiatedFee)) || parseFloat(negotiatedFee) <= 0) {
       toast.error('Please enter a valid fee amount');
+      return;
+    }
+    
+    if (!selectedAffiliation || !selectedAffiliation.paymentNegotiationId) {
+      toast.error('Payment negotiation information not found for this affiliation');
       return;
     }
 
     setIsNegotiating(true);
     try {
-      // Get the payment ID from the affiliation
-      const affiliationDetails = await API.get(`/affiliations/${affiliationId}`, {
-        headers: {
-          Authorization: `Bearer ${session.token}`,
-        },
-      });
+      // Get the payment negotiation ID directly from the selected affiliation object
+      const paymentNegotiationId = selectedAffiliation.paymentNegotiationId._id;
+    
 
-      const paymentId = affiliationDetails.data.affiliation.paymentId;
-      
-      if (!paymentId) {
-        toast.error('Payment information not found for this affiliation');
+      if (!paymentNegotiationId) {
+        toast.error('Payment negotiation ID is missing');
         return;
       }
 
-      // Update the negotiated fee
-      const response = await API.put(`/payment/${paymentId}/negotiate`, {
-        negotiatedConsultationFee: parseFloat(negotiatedFee),
-        message: negotiationMessage,
-      }, {
-        headers: {
-          Authorization: `Bearer ${session.token}`,
+      // Make the negotiate request to the correct endpoint
+      const response = await API.put(
+        `/paymentnegotiation/${paymentNegotiationId}/negotiate`,
+        {
+          negotiatedConsultationFee: parseFloat(negotiatedFee),
+          message: negotiationMessage,
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${session.token}`,
+          },
+        },
+      );
 
       if (response.data.success) {
         toast.success('Fee negotiation sent to mentor successfully');
@@ -116,7 +127,7 @@ export default function AdminMentorAffiliations() {
       }
     } catch (error) {
       console.error('Error negotiating fee:', error);
-      toast.error('Failed to negotiate fee');
+      toast.error(`Failed to negotiate fee: ${error.response?.data?.error || error.message}`);
     } finally {
       setIsNegotiating(false);
     }
@@ -175,6 +186,14 @@ export default function AdminMentorAffiliations() {
     fetchPendingRequests();
     fetchApprovedRequests();
   }, []);
+
+  // Auto-scroll negotiation history containers to bottom
+  useEffect(() => {
+    const historyContainers = document.querySelectorAll('.negotiation-history-container');
+    historyContainers.forEach(container => {
+      container.scrollTop = container.scrollHeight;
+    });
+  }, [filteredPending]); // Run when pending requests change
 
   // Filter requests based on search query and selected university
   useEffect(() => {
@@ -457,9 +476,7 @@ export default function AdminMentorAffiliations() {
                         <div className="md:w-1/4 bg-gray-50 dark:bg-gray-800/50 p-6 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-700">
                           <div className="relative">
                             <img
-                              src={
-                                affiliation.mentorId?.profilePic
-                              }
+                              src={affiliation.mentorId?.profilePic}
                               alt="Mentor Profile"
                               className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-gray-800 shadow-sm"
                             />
@@ -516,48 +533,62 @@ export default function AdminMentorAffiliations() {
                               <div>
                                 <p className="text-gray-500">Expected Fee:</p>
                                 <p className="font-medium">
-                                  {affiliation.payment?.expectedConsultationFee || 'N/A'} {affiliation.payment?.currency || 'USD'}
+                                  {affiliation.paymentNegotiationId?.expectedConsultationFee ||
+                                    'N/A'}{' '}
+                                  {affiliation.paymentNegotiationId?.currency || 'USD'}
                                 </p>
                               </div>
-                              {affiliation.payment?.negotiatedConsultationFee && (
+                              {affiliation.paymentNegotiationId?.negotiatedConsultationFee && (
                                 <div>
                                   <p className="text-gray-500">Negotiated Fee:</p>
                                   <p className="font-medium">
-                                    {affiliation.payment.negotiatedConsultationFee} {affiliation.payment.currency}
+                                    {affiliation.paymentNegotiationId.negotiatedConsultationFee}{' '}
+                                    {affiliation.paymentNegotiationId.currency}
                                   </p>
                                 </div>
                               )}
                             </div>
-                            
+
                             {/* Add negotiation history if available */}
-                            {affiliation.payment?.negotiationHistory && affiliation.payment.negotiationHistory.length > 0 && (
-                              <div className="mt-3">
-                                <p className="text-xs font-medium text-gray-500">Negotiation History:</p>
-                                <div className="max-h-24 overflow-y-auto mt-1">
-                                  {affiliation.payment.negotiationHistory.map((entry, index) => (
-                                    <div key={index} className="text-xs py-1 border-b border-gray-100">
-                                      <div className="flex justify-between">
-                                        <span>
-                                          {entry.proposedBy === 'admin' ? 'Admin' : 'Mentor'}:
-                                        </span>
-                                        <span className="font-medium">
-                                          {entry.amount} {affiliation.payment.currency}
-                                        </span>
-                                      </div>
-                                      {entry.message && <p className="text-gray-500 mt-0.5">{entry.message}</p>}
-                                    </div>
-                                  ))}
+                            {affiliation.paymentNegotiationId?.negotiationHistory &&
+                              affiliation.paymentNegotiationId.negotiationHistory.length > 0 && (
+                                <div className="mt-3">
+                                  <p className="text-xs font-medium text-gray-500">
+                                    Negotiation History:
+                                  </p>
+                                  <div className="max-h-24 overflow-y-auto mt-1 negotiation-history-container">
+                                    {affiliation.paymentNegotiationId.negotiationHistory.map(
+                                      (entry, index) => (
+                                        <div
+                                          key={index}
+                                          className="text-xs py-1 border-b border-gray-100"
+                                        >
+                                          <div className="flex justify-between">
+                                            <span>
+                                              {entry.proposedBy === 'admin' ? 'Admin' : 'Mentor'}:
+                                            </span>
+                                            <span className="font-medium">
+                                              {entry.amount}{' '}
+                                              {affiliation.paymentNegotiationId.currency}
+                                            </span>
+                                          </div>
+                                          {entry.message && (
+                                            <p className="text-gray-500 mt-0.5">{entry.message}</p>
+                                          )}
+                                        </div>
+                                      ),
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
                           </div>
 
                           <div className="flex flex-col sm:flex-row gap-3 mt-6">
                             {/* Add the negotiation dialog button */}
                             <Dialog>
                               <DialogTrigger asChild>
-                                <Button 
-                                  variant="outline" 
+                                <Button
+                                  variant="outline"
                                   className="border-blue-500 text-blue-600 hover:bg-blue-50"
                                   onClick={() => setSelectedAffiliation(affiliation)}
                                 >
@@ -572,7 +603,10 @@ export default function AdminMentorAffiliations() {
                                 <div className="grid gap-4 py-4">
                                   <div>
                                     <label className="text-sm font-medium mb-1 block">
-                                      Mentor&apos;s Expected Fee: {selectedAffiliation?.payment?.expectedConsultationFee || 'N/A'} {selectedAffiliation?.payment?.currency || 'USD'}
+                                      Mentor&apos;s Expected Fee:{' '}
+                                      {selectedAffiliation?.paymentNegotiationId
+                                        ?.expectedConsultationFee || 'N/A'}{' '}
+                                      {selectedAffiliation?.paymentNegotiationId?.currency || 'USD'}
                                     </label>
                                     <Input
                                       type="number"
@@ -584,7 +618,9 @@ export default function AdminMentorAffiliations() {
                                     />
                                   </div>
                                   <div>
-                                    <label className="text-sm font-medium mb-1 block">Message (Optional)</label>
+                                    <label className="text-sm font-medium mb-1 block">
+                                      Message (Optional)
+                                    </label>
                                     <Textarea
                                       value={negotiationMessage}
                                       onChange={(e) => setNegotiationMessage(e.target.value)}
@@ -593,7 +629,7 @@ export default function AdminMentorAffiliations() {
                                   </div>
                                 </div>
                                 <DialogFooter>
-                                  <Button 
+                                  <Button
                                     onClick={() => handleNegotiateFee(selectedAffiliation?._id)}
                                     disabled={isNegotiating}
                                   >
@@ -675,9 +711,7 @@ export default function AdminMentorAffiliations() {
                           </div>
                         </TableHead>
                         <TableHead>
-                          <div className="flex items-center">
-                            Fee
-                          </div>
+                          <div className="flex items-center">Fee</div>
                         </TableHead>
                         <TableHead>Certificate</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
@@ -704,9 +738,11 @@ export default function AdminMentorAffiliations() {
                           <TableCell>{request.universityId?.name}</TableCell>
                           <TableCell>{new Date(request.updatedAt).toLocaleDateString()}</TableCell>
                           <TableCell>
-                            {request.payment?.finalConsultationFee ? 
-                              `${request.payment.finalConsultationFee} ${request.payment.currency}` : 
-                              'N/A'}
+                            {request.mentorId?.consultationFee ? 
+                              `${request.mentorId.consultationFee} ${request.mentorId.currency || 'USD'}` : 
+                              (request.paymentNegotiationId?.finalConsultationFee ? 
+                                `${request.paymentNegotiationId.finalConsultationFee} ${request.paymentNegotiationId.currency}` : 
+                                'N/A')}
                           </TableCell>
                           <TableCell>
                             <Button
