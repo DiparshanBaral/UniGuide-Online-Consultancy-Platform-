@@ -135,7 +135,7 @@ export default function LoginForm() {
 
           <CardContent>
             <div className="mb-4">
-              <GoogleAuthButton role="student" />
+              <GoogleAuthButton isSignup={false} />
             </div>
             
             <div className="relative mb-4">

@@ -111,7 +111,7 @@ export default function SignupForm() {
 
           <CardContent>
             <div className="mb-4">
-              <GoogleAuthButton role={formData.role} />
+              <GoogleAuthButton isSignup={true} />
             </div>
             
             <div className="relative mb-4">
