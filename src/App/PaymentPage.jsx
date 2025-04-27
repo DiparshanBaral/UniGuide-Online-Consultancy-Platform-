@@ -8,7 +8,14 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+  CardFooter,
+} from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import NegotiationCard from '@/Components/NegotiationCard';
 import EmptyState from '@/Components/EmptyState';
@@ -23,7 +30,9 @@ export default function PaymentPage() {
   const [completedPayments, setCompletedPayments] = useState([]);
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState(session?.role === 'student' ? 'pendingPayments' : 'studentPayments');
+  const [activeTab, setActiveTab] = useState(
+    session?.role === 'student' ? 'pendingPayments' : 'studentPayments',
+  );
   const [counterOffer, setCounterOffer] = useState('');
   const [counterMessage, setCounterMessage] = useState('');
   const [isNegotiating, setIsNegotiating] = useState(false);
@@ -60,29 +69,35 @@ export default function PaymentPage() {
 
       if (response.data) {
         const connections = response.data;
-        
+
         // Get payment status for each connection
         const connectionPayments = await Promise.all(
           connections.map(async (connection) => {
             try {
               // Get payment status
-              const paymentResponse = await API.get(`/payment/connection-status/${connection._id}`, {
-                headers: { Authorization: `Bearer ${session.token}` },
-              });
-              
+              const paymentResponse = await API.get(
+                `/payment/connection-status/${connection._id}`,
+                {
+                  headers: { Authorization: `Bearer ${session.token}` },
+                },
+              );
+
               // Try to get negotiated fee
               let fee = connection.mentorId.consultationFee;
               let currency = connection.mentorId.currency;
-              
+
               try {
-                const negotiationResponse = await API.get(`/paymentnegotiation/mentor/${connection.mentorId._id}`, {
-                  headers: { Authorization: `Bearer ${session.token}` },
-                });
-                
-                const approvedNegotiation = negotiationResponse.data.negotiations.find(
-                  neg => neg.status === 'mentor_approved' && neg.finalConsultationFee
+                const negotiationResponse = await API.get(
+                  `/paymentnegotiation/mentor/${connection.mentorId._id}`,
+                  {
+                    headers: { Authorization: `Bearer ${session.token}` },
+                  },
                 );
-                
+
+                const approvedNegotiation = negotiationResponse.data.negotiations.find(
+                  (neg) => neg.status === 'mentor_approved' && neg.finalConsultationFee,
+                );
+
                 if (approvedNegotiation) {
                   fee = approvedNegotiation.finalConsultationFee;
                   currency = approvedNegotiation.currency;
@@ -91,13 +106,13 @@ export default function PaymentPage() {
                 console.error('Error fetching negotiation data:', error);
                 console.log('No negotiation found for mentor:', connection.mentorId._id);
               }
-              
+
               return {
                 ...connection,
                 paymentStatus: paymentResponse.data.status || 'pending',
                 payment: paymentResponse.data.payment,
                 negotiatedFee: fee,
-                feeCurrency: currency
+                feeCurrency: currency,
               };
             } catch (error) {
               console.error('Error fetching payment status:', error);
@@ -105,24 +120,22 @@ export default function PaymentPage() {
                 ...connection,
                 paymentStatus: 'pending',
                 payment: null,
-                negotiatedFee: connection.mentorId.consultationFee,
-                feeCurrency: connection.mentorId.currency
               };
             }
-          })
+          }),
         );
-        
+
         setConnections(connectionPayments);
-        
+
         // Filter pending payments
         const pending = connectionPayments.filter(
-          connection => connection.paymentStatus === 'pending'
+          (connection) => connection.paymentStatus === 'pending',
         );
         setPendingPayments(pending);
 
         // Filter completed payments
         const completed = connectionPayments.filter(
-          connection => connection.paymentStatus === 'paid'
+          (connection) => connection.paymentStatus === 'paid',
         );
         setCompletedPayments(completed);
       }
@@ -147,33 +160,67 @@ export default function PaymentPage() {
 
       if (response.data) {
         const connections = response.data;
-        
-        // Get payment status for each connection
+
+        // Get payment status and negotiation data for each connection
         const connectionPayments = await Promise.all(
           connections.map(async (connection) => {
             try {
               // Get payment status
-              const paymentResponse = await API.get(`/payment/connection-status/${connection._id}`, {
-                headers: { Authorization: `Bearer ${session.token}` },
-              });
-              
+              const paymentResponse = await API.get(
+                `/payment/connection-status/${connection._id}`,
+                {
+                  headers: { Authorization: `Bearer ${session.token}` },
+                },
+              );
+
+              // Try to get negotiated fee
+              let fee = connection.mentorId.consultationFee;
+              let currency = connection.mentorId.currency;
+
+              try {
+                // Check for student-specific negotiations
+                const negotiationResponse = await API.get(
+                  `/paymentnegotiation/connection/${connection._id}`,
+                  {
+                    headers: { Authorization: `Bearer ${session.token}` },
+                  },
+                );
+
+                if (negotiationResponse.data && negotiationResponse.data.negotiations) {
+                  const approvedNegotiation = negotiationResponse.data.negotiations.find(
+                    (neg) => neg.status === 'mentor_approved' && neg.finalConsultationFee
+                  );
+
+                  if (approvedNegotiation) {
+                    fee = approvedNegotiation.finalConsultationFee;
+                    currency = approvedNegotiation.currency;
+                  }
+                }
+              } catch (error) {
+                console.error('Error fetching negotiation data:', error);
+                console.log('No negotiation found for connection:', connection._id);
+              }
+
               return {
                 ...connection,
                 paymentStatus: paymentResponse.data.status || 'pending',
-                payment: paymentResponse.data.payment
+                payment: paymentResponse.data.payment,
+                negotiatedFee: fee,
+                feeCurrency: currency
               };
             } catch (error) {
               console.error('Error fetching payment status:', error);
-              toast.error('Failed to load payment status');
               return {
                 ...connection,
                 paymentStatus: 'pending',
-                payment: null
+                payment: null,
+                negotiatedFee: connection.mentorId.consultationFee,
+                feeCurrency: connection.mentorId.currency
               };
             }
-          })
+          }),
         );
-        
+
         setConnections(connectionPayments);
       }
     } catch (error) {
@@ -199,7 +246,7 @@ export default function PaymentPage() {
       } else {
         setNegotiations([]);
       }
-    } catch (error) { 
+    } catch (error) {
       console.error('Error fetching negotiations:', error);
       toast.error('Failed to load negotiation history');
       setNegotiations([]);
@@ -221,7 +268,14 @@ export default function PaymentPage() {
       fetchMentorConnections();
       fetchNegotiations();
     }
-  }, [session, navigate, fetchConnections, fetchNegotiations, fetchMentorConnections, fetchPaymentHistory]);
+  }, [
+    session,
+    navigate,
+    fetchConnections,
+    fetchNegotiations,
+    fetchMentorConnections,
+    fetchPaymentHistory,
+  ]);
 
   const handleTabChange = (value) => {
     setActiveTab(value);
@@ -230,13 +284,29 @@ export default function PaymentPage() {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-800">Pending</Badge>;
+        return (
+          <Badge variant="outline" className="bg-yellow-100 text-yellow-800">
+            Pending
+          </Badge>
+        );
       case 'paid':
-        return <Badge variant="outline" className="bg-green-100 text-green-800">Paid</Badge>;
+        return (
+          <Badge variant="outline" className="bg-green-100 text-green-800">
+            Paid
+          </Badge>
+        );
       case 'admin_approved':
-        return <Badge variant="outline" className="bg-blue-100 text-blue-800">Awaiting Your Response</Badge>;
+        return (
+          <Badge variant="outline" className="bg-blue-100 text-blue-800">
+            Awaiting Your Response
+          </Badge>
+        );
       case 'mentor_approved':
-        return <Badge variant="outline" className="bg-green-100 text-green-800">Approved</Badge>;
+        return (
+          <Badge variant="outline" className="bg-green-100 text-green-800">
+            Approved
+          </Badge>
+        );
       case 'rejected':
         return <Badge variant="destructive">Rejected</Badge>;
       default:
@@ -249,7 +319,7 @@ export default function PaymentPage() {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
-      day: 'numeric'
+      day: 'numeric',
     });
   };
 
@@ -266,13 +336,17 @@ export default function PaymentPage() {
 
     setIsNegotiating(true);
     try {
-      const response = await API.put(`/paymentnegotiation/${negotiationId}/respond`, {
-        response: 'counter',
-        counterOffer: parseFloat(counterOffer),
-        message: counterMessage,
-      }, {
-        headers: { Authorization: `Bearer ${session.token}` },
-      });
+      const response = await API.put(
+        `/paymentnegotiation/${negotiationId}/respond`,
+        {
+          response: 'counter',
+          counterOffer: parseFloat(counterOffer),
+          message: counterMessage,
+        },
+        {
+          headers: { Authorization: `Bearer ${session.token}` },
+        },
+      );
 
       if (response.data.success) {
         toast.success('Counter offer submitted successfully');
@@ -291,14 +365,20 @@ export default function PaymentPage() {
   const handleNegotiationResponse = async (negotiationId, responseType) => {
     setIsNegotiating(true);
     try {
-      const apiResponse = await API.put(`/paymentnegotiation/${negotiationId}/respond`, {
-        response: responseType,
-      }, {
-        headers: { Authorization: `Bearer ${session.token}` },
-      });
+      const apiResponse = await API.put(
+        `/paymentnegotiation/${negotiationId}/respond`,
+        {
+          response: responseType,
+        },
+        {
+          headers: { Authorization: `Bearer ${session.token}` },
+        },
+      );
 
       if (apiResponse.data.success) {
-        toast.success(`You have ${responseType === 'accept' ? 'accepted' : 'rejected'} the fee offer`);
+        toast.success(
+          `You have ${responseType === 'accept' ? 'accepted' : 'rejected'} the fee offer`,
+        );
         fetchNegotiations();
       }
     } catch (error) {
@@ -324,7 +404,12 @@ export default function PaymentPage() {
         </div>
       </div>
 
-      <Tabs defaultValue={activeTab} value={activeTab} onValueChange={handleTabChange} className="w-full">
+      <Tabs
+        defaultValue={activeTab}
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="w-full"
+      >
         <TabsList className="flex justify-center gap-4 mb-6 w-auto mx-auto">
           {session?.role === 'student' && (
             <>
@@ -370,12 +455,22 @@ export default function PaymentPage() {
                       <div className="flex justify-between items-start">
                         <div className="flex items-center gap-2">
                           <Avatar>
-                            <AvatarImage src={connection.mentorId.profilePic} alt={connection.mentorId.firstname} />
-                            <AvatarFallback>{connection.mentorId.firstname[0]}{connection.mentorId.lastname[0]}</AvatarFallback>
+                            <AvatarImage
+                              src={connection.mentorId.profilePic}
+                              alt={connection.mentorId.firstname}
+                            />
+                            <AvatarFallback>
+                              {connection.mentorId.firstname[0]}
+                              {connection.mentorId.lastname[0]}
+                            </AvatarFallback>
                           </Avatar>
                           <div>
-                            <CardTitle className="text-base">{connection.mentorId.firstname} {connection.mentorId.lastname}</CardTitle>
-                            <CardDescription className="text-xs">{connection.mentorId.university}</CardDescription>
+                            <CardTitle className="text-base">
+                              {connection.mentorId.firstname} {connection.mentorId.lastname}
+                            </CardTitle>
+                            <CardDescription className="text-xs">
+                              {connection.mentorId.university}
+                            </CardDescription>
                           </div>
                         </div>
                         {getStatusBadge('pending')}
@@ -383,14 +478,24 @@ export default function PaymentPage() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-sm space-y-2">
-                        <p><strong>Expertise:</strong> {connection.mentorId.expertise || 'General'}</p>
-                        <p><strong>Fee:</strong> {formatCurrency(connection.negotiatedFee, connection.feeCurrency)}</p>
-                        <p><strong>Connection Date:</strong> {formatDate(connection.createdAt)}</p>
-                        <p><strong>Payment Status:</strong> <span className="text-yellow-600 font-semibold">Payment Required</span></p>
+                        <p>
+                          <strong>Expertise:</strong> {connection.mentorId.expertise || 'General'}
+                        </p>
+                        <p>
+                          <strong>Fee:</strong>{' '}
+                          {formatCurrency(connection.negotiatedFee, connection.feeCurrency)}
+                        </p>
+                        <p>
+                          <strong>Connection Date:</strong> {formatDate(connection.createdAt)}
+                        </p>
+                        <p>
+                          <strong>Payment Status:</strong>{' '}
+                          <span className="text-yellow-600 font-semibold">Payment Required</span>
+                        </p>
                       </div>
                     </CardContent>
                     <CardFooter className="pt-0">
-                      <Button 
+                      <Button
                         onClick={() => handleProceedToPayment(connection._id)}
                         className="w-full"
                       >
@@ -411,10 +516,7 @@ export default function PaymentPage() {
             {isLoading ? (
               <LoadingSkeletons />
             ) : paymentHistory.length === 0 ? (
-              <EmptyState
-                type="payments"
-                message="You don't have any payment history yet."
-              />
+              <EmptyState type="payments" message="You don't have any payment history yet." />
             ) : (
               <div className="space-y-6">
                 <div className="bg-white p-4 rounded-lg shadow">
@@ -424,7 +526,9 @@ export default function PaymentPage() {
                       <thead>
                         <tr className="border-b">
                           <th className="text-left py-3 px-4">Date</th>
-                          <th className="text-left py-3 px-4">{session.role === 'student' ? 'Mentor' : 'Student'}</th>
+                          <th className="text-left py-3 px-4">
+                            {session.role === 'student' ? 'Mentor' : 'Student'}
+                          </th>
                           <th className="text-left py-3 px-4">Amount</th>
                           <th className="text-left py-3 px-4">Status</th>
                           <th className="text-left py-3 px-4">Payment ID</th>
@@ -435,18 +539,33 @@ export default function PaymentPage() {
                           <tr key={payment._id} className="border-b hover:bg-gray-50">
                             <td className="py-3 px-4">{formatDate(payment.createdAt)}</td>
                             <td className="py-3 px-4">
-                              {session.role === 'student' 
-                                ? `${payment.mentorId?.firstname || ''} ${payment.mentorId?.lastname || ''}` 
-                                : `${payment.studentId?.firstname || ''} ${payment.studentId?.lastname || ''}`}
-                            </td>
-                            <td className="py-3 px-4">{formatCurrency(payment.amount, payment.currency)}</td>
+                              {session.role === 'student'
+                                ? payment.mentorId &&
+                                  typeof payment.mentorId === 'object' &&
+                                  payment.mentorId.firstname &&
+                                  payment.mentorId.lastname
+                                  ? `${payment.mentorId.firstname} ${payment.mentorId.lastname}`
+                                  : 'Mentor info unavailable'
+                                : payment.studentId &&
+                                  typeof payment.studentId === 'object' &&
+                                  payment.studentId.firstname &&
+                                  payment.studentId.lastname
+                                ? `${payment.studentId.firstname} ${payment.studentId.lastname}`
+                                : 'Student info unavailable'}
+                            </td> 
                             <td className="py-3 px-4">
-                              <span className={`px-2 py-1 rounded-full text-xs ${
-                                payment.paymentStatus === 'paid' 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                {payment.paymentStatus.charAt(0).toUpperCase() + payment.paymentStatus.slice(1)}
+                              {formatCurrency(payment.amount, payment.currency)}
+                            </td>
+                            <td className="py-3 px-4">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs ${
+                                  payment.paymentStatus === 'paid'
+                                    ? 'bg-green-100 text-green-800'
+                                    : 'bg-yellow-100 text-yellow-800'
+                                }`}
+                              >
+                                {payment.paymentStatus.charAt(0).toUpperCase() +
+                                  payment.paymentStatus.slice(1)}
                               </span>
                             </td>
                             <td className="py-3 px-4 font-mono text-xs">{payment.payment_uuid}</td>
@@ -464,24 +583,32 @@ export default function PaymentPage() {
                         <div className="flex justify-between items-start">
                           <div className="flex items-center gap-2">
                             <Avatar>
-                              <AvatarImage 
-                                src={session.role === 'student' ? connection.mentorId.profilePic : connection.studentId.profilePic} 
-                                alt={session.role === 'student' ? connection.mentorId.firstname : connection.studentId.firstname} 
+                              <AvatarImage
+                                src={
+                                  session.role === 'student'
+                                    ? connection.mentorId.profilePic
+                                    : connection.studentId.profilePic
+                                }
+                                alt={
+                                  session.role === 'student'
+                                    ? connection.mentorId.firstname
+                                    : connection.studentId.firstname
+                                }
                               />
                               <AvatarFallback>
-                                {session.role === 'student' 
+                                {session.role === 'student'
                                   ? `${connection.mentorId.firstname[0]}${connection.mentorId.lastname[0]}`
                                   : `${connection.studentId.firstname[0]}${connection.studentId.lastname[0]}`}
                               </AvatarFallback>
                             </Avatar>
                             <div>
                               <CardTitle className="text-base">
-                                {session.role === 'student' 
+                                {session.role === 'student'
                                   ? `${connection.mentorId.firstname} ${connection.mentorId.lastname}`
                                   : `${connection.studentId.firstname} ${connection.studentId.lastname}`}
                               </CardTitle>
                               <CardDescription className="text-xs">
-                                {session.role === 'student' 
+                                {session.role === 'student'
                                   ? connection.mentorId.university
                                   : connection.studentId.major || 'Student'}
                               </CardDescription>
@@ -493,23 +620,41 @@ export default function PaymentPage() {
                       <CardContent>
                         <div className="text-sm space-y-2">
                           {session.role === 'student' && (
-                            <p><strong>Expertise:</strong> {connection.mentorId.expertise || 'General'}</p>
+                            <p>
+                              <strong>Expertise:</strong>{' '}
+                              {connection.mentorId.expertise || 'General'}
+                            </p>
                           )}
-                          <p><strong>Fee:</strong> {formatCurrency(connection.negotiatedFee || connection.mentorId?.consultationFee, connection.feeCurrency || connection.mentorId?.currency)}</p>
-                          <p><strong>Connection Date:</strong> {formatDate(connection.createdAt)}</p>
-                          <p><strong>Payment Date:</strong> {formatDate(connection.payment?.createdAt)}</p>
-                          <p><strong>Payment Status:</strong> <span className="text-green-600 font-semibold">Completed</span></p>
+                          <p>
+                            <strong>Fee:</strong>{' '}
+                            {formatCurrency(
+                              connection.negotiatedFee,
+                              connection.feeCurrency 
+                            )}
+                          </p>
+                          <p>
+                            <strong>Connection Date:</strong> {formatDate(connection.createdAt)}
+                          </p>
+                          <p>
+                            <strong>Payment Date:</strong>{' '}
+                            {formatDate(connection.payment?.createdAt)}
+                          </p>
+                          <p>
+                            <strong>Payment Status:</strong>{' '}
+                            <span className="text-green-600 font-semibold">Completed</span>
+                          </p>
                           {connection.payment && (
-                            <p><strong>Payment ID:</strong> <span className="font-mono text-xs">{connection.payment.payment_uuid}</span></p>
+                            <p>
+                              <strong>Payment ID:</strong>{' '}
+                              <span className="font-mono text-xs">
+                                {connection.payment.payment_uuid}
+                              </span>
+                            </p>
                           )}
                         </div>
                       </CardContent>
                       <CardFooter className="pt-0">
-                        <Button 
-                          variant="outline"
-                          className="w-full"
-                          disabled
-                        >
+                        <Button variant="outline" className="w-full" disabled>
                           <Check className="mr-2 h-4 w-4" />
                           Payment Complete
                         </Button>
@@ -536,24 +681,38 @@ export default function PaymentPage() {
               <div className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {connections.map((connection) => (
-                    <Card 
-                      key={connection._id} 
+                    <Card
+                      key={connection._id}
                       className={`overflow-hidden ${
-                        connection.paymentStatus === 'paid' ? 'border-green-100' : 'border-yellow-100'
+                        connection.paymentStatus === 'paid'
+                          ? 'border-green-100'
+                          : 'border-yellow-100'
                       }`}
                     >
-                      <CardHeader className={`pb-2 ${
-                        connection.paymentStatus === 'paid' ? 'bg-green-50' : 'bg-yellow-50'
-                      }`}>
+                      <CardHeader
+                        className={`pb-2 ${
+                          connection.paymentStatus === 'paid' ? 'bg-green-50' : 'bg-yellow-50'
+                        }`}
+                      >
                         <div className="flex justify-between items-start">
                           <div className="flex items-center gap-2">
                             <Avatar>
-                              <AvatarImage src={connection.studentId.profilePic} alt={connection.studentId.firstname} />
-                              <AvatarFallback>{connection.studentId.firstname[0]}{connection.studentId.lastname[0]}</AvatarFallback>
+                              <AvatarImage
+                                src={connection.studentId.profilePic}
+                                alt={connection.studentId.firstname}
+                              />
+                              <AvatarFallback>
+                                {connection.studentId.firstname[0]}
+                                {connection.studentId.lastname[0]}
+                              </AvatarFallback>
                             </Avatar>
                             <div>
-                              <CardTitle className="text-base">{connection.studentId.firstname} {connection.studentId.lastname}</CardTitle>
-                              <CardDescription className="text-xs">{connection.studentId.major || 'Student'}</CardDescription>
+                              <CardTitle className="text-base">
+                                {connection.studentId.firstname} {connection.studentId.lastname}
+                              </CardTitle>
+                              <CardDescription className="text-xs">
+                                {connection.studentId.major || 'Student'}
+                              </CardDescription>
                             </div>
                           </div>
                           {getStatusBadge(connection.paymentStatus)}
@@ -561,14 +720,27 @@ export default function PaymentPage() {
                       </CardHeader>
                       <CardContent>
                         <div className="text-sm space-y-2">
-                          <p><strong>University:</strong> {connection.studentId.university || 'N/A'}</p>
-                          <p><strong>Connection Date:</strong> {formatDate(connection.createdAt)}</p>
-                          <p><strong>Fee Amount:</strong> {formatCurrency(connection.mentorId.consultationFee, connection.mentorId.currency)}</p>
-                          <p><strong>Fee Status:</strong> {connection.paymentStatus === 'paid' ? 'Payment received' : 'Payment pending'}</p>
+                          <p>
+                            <strong>Connection Date:</strong> {formatDate(connection.createdAt)}
+                          </p>
+                          <p>
+                            <strong>Fee Status:</strong>{' '}
+                            {connection.paymentStatus === 'paid'
+                              ? 'Payment received'
+                              : 'Payment pending'}
+                          </p>
                           {connection.paymentStatus === 'paid' && connection.payment && (
                             <>
-                              <p><strong>Payment Date:</strong> {formatDate(connection.payment.createdAt)}</p>
-                              <p><strong>Payment ID:</strong> <span className="font-mono text-xs">{connection.payment.payment_uuid}</span></p>
+                              <p>
+                                <strong>Payment Date:</strong>{' '}
+                                {formatDate(connection.payment.createdAt)}
+                              </p>
+                              <p>
+                                <strong>Payment ID:</strong>{' '}
+                                <span className="font-mono text-xs">
+                                  {connection.payment.payment_uuid}
+                                </span>
+                              </p>
                             </>
                           )}
                         </div>
@@ -587,13 +759,13 @@ export default function PaymentPage() {
                     <div className="bg-green-50 p-4 rounded-lg">
                       <p className="text-sm text-green-800">Paid Students</p>
                       <p className="text-2xl font-bold">
-                        {connections.filter(c => c.paymentStatus === 'paid').length}
+                        {connections.filter((c) => c.paymentStatus === 'paid').length}
                       </p>
                     </div>
                     <div className="bg-yellow-50 p-4 rounded-lg">
                       <p className="text-sm text-yellow-800">Pending Payments</p>
                       <p className="text-2xl font-bold">
-                        {connections.filter(c => c.paymentStatus === 'pending').length}
+                        {connections.filter((c) => c.paymentStatus === 'pending').length}
                       </p>
                     </div>
                   </div>
