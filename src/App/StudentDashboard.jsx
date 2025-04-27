@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import API from "../api";
 import {
@@ -11,13 +12,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, CheckCircle, UserPlus } from "lucide-react";
+import { Loader2, CheckCircle, UserPlus, CircleDollarSign } from "lucide-react";
 
 export default function StudentDashboard() {
   const [pendingConnections, setPendingConnections] = useState([]);
   const [connectedMentors, setConnectedMentors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("connectedMentors");
+  const navigate = useNavigate();
 
   // Fetch data on component mount
   useEffect(() => {
@@ -30,7 +32,31 @@ export default function StudentDashboard() {
         const connectedResponse = await API.get(`/connections/student/approvedconnections?studentId=${studentId}`, {
           headers: { Authorization: `Bearer ${session.token}` },
         });
-        setConnectedMentors(connectedResponse.data);
+        
+        // Get payment status for each connection
+        const connectionsWithPaymentStatus = await Promise.all(
+          connectedResponse.data.map(async (connection) => {
+            try {
+              // Get payment status
+              const paymentResponse = await API.get(`/payment/connection-status/${connection._id}`, {
+                headers: { Authorization: `Bearer ${session.token}` },
+              });
+              
+              return {
+                ...connection,
+                paymentStatus: paymentResponse.data.status || 'pending'
+              };
+            } catch (error) {
+              console.error('Error fetching payment status:', error);
+              return {
+                ...connection,
+                paymentStatus: 'pending'
+              };
+            }
+          })
+        );
+        
+        setConnectedMentors(connectionsWithPaymentStatus);
 
         // Fetch pending connections
         const pendingResponse = await API.get(`/connections/student/pendingconnections?studentId=${studentId}`, {
@@ -47,6 +73,21 @@ export default function StudentDashboard() {
 
     fetchConnections();
   }, []);
+
+  const handlePortalAccess = (connection) => {
+    // Check if payment is completed
+    if (connection.paymentStatus === 'paid') {
+      navigate(`/studentportal/${connection.portalId}`);
+    } else {
+      // Redirect to access denied page with connection info
+      navigate(`/access-denied/${connection._id}`, {
+        state: {
+          mentorName: `${connection.mentorId.firstname} ${connection.mentorId.lastname}`,
+          connectionId: connection._id
+        }
+      });
+    }
+  };
 
   return (
     <div className="mt-[50px] flex min-h-screen bg-gray-100">
@@ -90,9 +131,8 @@ export default function StudentDashboard() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 px-4">
                     {connectedMentors.length > 0 ? (
                       connectedMentors.map((connection) => (
-                        <a
+                        <div
                           key={connection._id}
-                          href={`/studentportal/${connection.portalId}`}
                           className="block bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-200 hover:scale-[1.02]"
                         >
                           <div className="p-4">
@@ -119,15 +159,43 @@ export default function StudentDashboard() {
                               <Badge variant="outline" className="text-sm">
                                 {connection.mentorId.university || "N/A"}
                               </Badge>
-                              <p className="text-sm text-gray-700 mt-2">
-                                <strong>Degree:</strong> {connection.mentorId.degree || "N/A"}
-                              </p>
+                              <div className="flex items-center justify-between mt-2">
+                                <p className="text-sm text-gray-700">
+                                  <strong>Degree:</strong> {connection.mentorId.degree || "N/A"}
+                                </p>
+                                <Badge
+                                  variant={connection.paymentStatus === 'paid' ? 'success' : 'destructive'}
+                                  className="text-xs"
+                                >
+                                  {connection.paymentStatus === 'paid' ? 'Paid' : 'Payment Required'}
+                                </Badge>
+                              </div>
                               <p className="text-sm text-gray-700">
                                 <strong>Experience:</strong> {connection.mentorId.yearsOfExperience || 0} years
                               </p>
                             </div>
+                            
+                            <div className="mt-4 flex flex-col gap-2">
+                              <Button 
+                                onClick={() => handlePortalAccess(connection)}
+                                className="w-full"
+                              >
+                                Access Portal
+                              </Button>
+                              
+                              {connection.paymentStatus !== 'paid' && (
+                                <Button
+                                  variant="outline"
+                                  onClick={() => navigate(`/payments/${connection._id}`)}
+                                  className="w-full"
+                                >
+                                  <CircleDollarSign className="mr-2 h-4 w-4" />
+                                  Pay Now
+                                </Button>
+                              )}
+                            </div>
                           </div>
-                        </a>
+                        </div>
                       ))
                     ) : (
                       <p className="text-gray-500 text-center col-span-full">
@@ -139,6 +207,7 @@ export default function StudentDashboard() {
               </Card>
             )}
 
+            {/* Pending Requests Tab - unchanged */}
             {activeTab === "pendingRequests" && (
               <Card>
                 <CardHeader>

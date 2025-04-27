@@ -25,6 +25,8 @@ import PaymentPage from './App/PaymentPage';
 import AuthSuccess from '@/App/AuthSuccess';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import Payment from './Components/StripePayment';
+import AccessDenied from './Components/AccessDenied';
 
 function App() {
   const location = useLocation();
@@ -66,7 +68,9 @@ function App() {
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/admin/*" element={<AdminRoutes />} />
             <Route path="/payments" element={<PaymentPage />} />
+            <Route path="/payments/:connectionId" element={<Payment />} />
             <Route path="/auth/success" element={<AuthSuccess />} />
+            <Route path="/access-denied/:connectionId" element={<AccessDenied />} />
             <Route path="*" element={<h1 className="text-center text-2xl">404 Not Found</h1>} />
           </Routes>
         </div>

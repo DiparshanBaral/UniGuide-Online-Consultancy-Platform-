@@ -263,7 +263,7 @@ export default function Navbar() {
   return (
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300 h-19',
+        'fixed top-0 left-0 right-0 z-50 border transition-all duration-300 h-19',
         isScrolled ? 'bg-white/90 backdrop-blur-lg shadow-md' : 'bg-white/60 backdrop-blur-md',
       )}
     >
@@ -433,14 +433,12 @@ export default function Navbar() {
                       <GraduationCap className="mr-2 h-4 w-4" />
                       <span className="text-sm">Dashboard</span>
                     </DropdownMenuItem>
-                    {session && session.role === 'mentor' && (
-                      <DropdownMenuItem asChild>
-                        <Link to="/payments" className="cursor-pointer w-full">
-                          <CreditCard className="mr-2 h-4 w-4" />
-                          <span>Payment</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
+                    <DropdownMenuItem asChild>
+                      <Link to="/payments" className="cursor-pointer w-full">
+                        <CreditCard className="mr-2 h-4 w-4" />
+                        <span>Payment</span>
+                      </Link>
+                    </DropdownMenuItem>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onSelect={handleLogout}>
