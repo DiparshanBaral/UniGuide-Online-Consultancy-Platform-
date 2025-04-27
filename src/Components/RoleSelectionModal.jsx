@@ -6,7 +6,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { GraduationCap, Briefcase } from 'lucide-react';
 
-export default function RoleSelectionModal({ isOpen, onClose, onRoleSelect }) {
+export default function RoleSelectionModal({ isOpen, onClose, onRoleSelect, isSignup = false }) {
   const [selectedRole, setSelectedRole] = useState(null);
 
   const handleContinue = () => {
@@ -21,7 +21,9 @@ export default function RoleSelectionModal({ isOpen, onClose, onRoleSelect }) {
         <DialogHeader>
           <DialogTitle className="text-center text-xl font-bold">Choose Your Role</DialogTitle>
           <DialogDescription className="text-center">
-            Select your role to continue with Google authentication
+            {isSignup 
+              ? "Select your role to continue with Google signup" 
+              : "Select your account type to continue with Google login"}
           </DialogDescription>
         </DialogHeader>
         
@@ -49,7 +51,9 @@ export default function RoleSelectionModal({ isOpen, onClose, onRoleSelect }) {
         
         <div className="flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>Cancel</Button>
-          <Button onClick={handleContinue} disabled={!selectedRole}>Continue</Button>
+          <Button onClick={handleContinue} disabled={!selectedRole}>
+            {isSignup ? "Sign Up" : "Log In"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
@@ -57,7 +61,8 @@ export default function RoleSelectionModal({ isOpen, onClose, onRoleSelect }) {
 }
 
 RoleSelectionModal.propTypes = {
-  isOpen: PropTypes.bool.isRequired, // Whether the modal is open
-  onClose: PropTypes.func.isRequired, // Function to close the modal
-  onRoleSelect: PropTypes.func.isRequired, // Function to handle role selection
+  isOpen: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  onRoleSelect: PropTypes.func.isRequired,
+  isSignup: PropTypes.bool,
 };

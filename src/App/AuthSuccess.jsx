@@ -17,6 +17,16 @@ export default function AuthSuccess() {
     const errorParam = queryParams.get('error');
 
     if (errorParam) {
+      // Check for no_account_found error
+      if (errorParam === 'no_account_found') {
+        setError('Account not found');
+        toast.error('No account found with this email. Please sign up first.', {
+          duration: 5000
+        });
+        setTimeout(() => navigate('/signup'), 2000);
+        return;
+      }
+
       setError(errorParam);
       toast.error('Authentication failed. Please try again.');
       setTimeout(() => navigate('/login'), 3000);

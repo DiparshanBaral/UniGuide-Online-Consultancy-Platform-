@@ -1,5 +1,5 @@
-import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { toast } from "sonner"
 import { Eye, EyeOff, UserRound, Mail, Lock } from "lucide-react"
 import logo from "@/assets/UniGuide_logo.png"
@@ -26,6 +26,23 @@ export default function SignupForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation();
+
+  useEffect(() => {
+    // Check for error parameters in URL when component mounts
+    const queryParams = new URLSearchParams(location.search);
+    const errorParam = queryParams.get('error');
+    
+    if (errorParam === 'no_account_found') {
+      toast.error('You need to create an account first. Please sign up to continue.', {
+        duration: 5000,
+        position: 'top-center',
+      });
+      
+      // Optionally clear the URL parameter after showing toast
+      navigate('/signup', { replace: true });
+    }
+  }, [location.search, navigate]);
 
   const handleChange = (e) => {
     const { id, value } = e.target

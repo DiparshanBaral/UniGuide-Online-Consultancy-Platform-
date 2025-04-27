@@ -1,23 +1,23 @@
-import { Button } from "@/components/ui/button";
-import PropTypes from "prop-types";
-import { useState } from "react";
-import RoleSelectionModal from "@/components/RoleSelectionModal";
+import { Button } from '@/components/ui/button';
+import PropTypes from 'prop-types';
+import { useState } from 'react';
+import RoleSelectionModal from '@/components/RoleSelectionModal';
 
 export default function GoogleAuthButton({ isSignup = false }) {
   const [showRoleModal, setShowRoleModal] = useState(false);
 
   const handleGoogleClick = () => {
     if (isSignup) {
+      // For signup, show role selection modal
       setShowRoleModal(true);
     } else {
-      // For login, we'll ask for role selection directly
-      initiateGoogleAuth("student"); // Default to student for login
+      // For login, skip role selection and use auto-detection
+      initiateGoogleAuth("auto");
     }
   };
 
   const initiateGoogleAuth = (role) => {
-    const action = isSignup ? "signup" : "login";
-    // Add email scope explicitly to fix Google auth issues
+    const action = isSignup ? 'signup' : 'login';
     window.location.href = `http://localhost:5000/auth/google/${role}?action=${action}`;
   };
 
@@ -50,11 +50,15 @@ export default function GoogleAuthButton({ isSignup = false }) {
         Continue with Google
       </Button>
 
-      <RoleSelectionModal 
-        isOpen={showRoleModal} 
-        onClose={() => setShowRoleModal(false)} 
-        onRoleSelect={initiateGoogleAuth} 
-      />
+      {/* Only show role selection modal during signup */}
+      {isSignup && (
+        <RoleSelectionModal
+          isOpen={showRoleModal}
+          onClose={() => setShowRoleModal(false)}
+          onRoleSelect={initiateGoogleAuth}
+          isSignup={true}
+        />
+      )}
     </>
   );
 }
