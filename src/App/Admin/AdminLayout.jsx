@@ -16,7 +16,7 @@ import {
   SidebarProvider,
 } from '@/Components/ui/sidebar';
 import { Button } from '@/Components/ui/button';
-import logo from '@/assets/UniGuide_logo.png';
+import logo from '@/assets/UniGuide_logo.PNG';
 
 export default function AdminLayout() {
   const navigate = useNavigate();
