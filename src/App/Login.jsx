@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useAtom } from 'jotai';
-import logo from '@/assets/UniGuide_logo.png';
+import logo from '@/assets/UniGuide_logo.PNG';
 
 import { Button } from '@/Components/ui/button';
 import {

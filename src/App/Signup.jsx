@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Eye, EyeOff, UserRound, Mail, Lock } from 'lucide-react';
-import logo from '@/assets/UniGuide_logo.png';
+import logo from '@/assets/UniGuide_logo.PNG';
 
 import { Button } from '@/Components/ui/button';
 import {
