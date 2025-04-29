@@ -7,7 +7,7 @@ import { Bell, Trash2, ArrowLeft } from 'lucide-react';
 
 import { Button } from '@/Components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Badge } from '@/Components/ui/badge';
 import { Skeleton } from '@/Components/ui/skeleton';
 import { cn } from '@/lib/utils';
