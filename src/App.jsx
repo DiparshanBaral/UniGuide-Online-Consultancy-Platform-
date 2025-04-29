@@ -27,6 +27,9 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
 import Payment from './Components/StripePayment';
 import AccessDenied from './Components/AccessDenied';
+import ForgotPassword from '@/Components/ForgotPassword';
+import ResetPassword from '@/Components/ResetPassword';
+import EnterOTP from '@/Components/EnterOTP';
 
 function App() {
   const location = useLocation();
@@ -71,6 +74,9 @@ function App() {
             <Route path="/payments/:connectionId" element={<Payment />} />
             <Route path="/auth/success" element={<AuthSuccess />} />
             <Route path="/access-denied/:connectionId" element={<AccessDenied />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/verify-otp" element={<EnterOTP />} />
             <Route path="*" element={<h1 className="text-center text-2xl">404 Not Found</h1>} />
           </Routes>
         </div>

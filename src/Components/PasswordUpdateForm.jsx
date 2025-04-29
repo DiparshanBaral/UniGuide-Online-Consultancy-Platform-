@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import API from '../api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { EyeIcon, EyeOffIcon, LockIcon } from 'lucide-react';
+import { EyeIcon, EyeOffIcon, LockIcon, ExternalLinkIcon } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function PasswordUpdateForm() {
   const [formData, setFormData] = useState({
@@ -17,6 +18,36 @@ export default function PasswordUpdateForm() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [isGoogleUser, setIsGoogleUser] = useState(false);
+  const [checkingAuthType, setCheckingAuthType] = useState(true);
+
+  useEffect(() => {
+    // Check if user is a Google-authenticated user
+    const checkAuthType = async () => {
+      try {
+        const session = JSON.parse(localStorage.getItem('session'));
+        if (!session || !session.token || !session._id || !session.email) {
+          toast.error('Session information is incomplete');
+          return;
+        }
+
+        // Call API to check if user has password (i.e., not a Google-only user)
+        const response = await API.get(`/auth/check-auth-type`, {
+          params: { email: session.email },
+          headers: { Authorization: `Bearer ${session.token}` }
+        });
+
+        setIsGoogleUser(response.data.isGoogleUser);
+      } catch (error) {
+        console.error('Error checking authentication type:', error);
+        toast.error('Unable to determine account type');
+      } finally {
+        setCheckingAuthType(false);
+      }
+    };
+
+    checkAuthType();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -67,47 +98,33 @@ export default function PasswordUpdateForm() {
         return;
       }
 
-      // Determine the API endpoint based on the user's role
-      const endpoint =
-        session.role === 'mentor' ? '/mentor/password' : '/student/password';
-
-      // Prepare the request payload
-      const payload = {
-        oldPassword: formData.oldPassword,
-        newPassword: formData.newPassword,
-      };
-
-      // Add the correct ID field based on the role
-      if (session.role === 'mentor') {
-        payload.mentorId = session._id; // Use mentorId for mentors
-      } else {
-        payload.studentId = session._id; // Use studentId for students
-      }
-
-      const response = await API.put(endpoint, payload, {
-        headers: { Authorization: `Bearer ${session.token}` },
+      // First verify the current password
+      const verifyResponse = await API.post("/auth/verify-password", {
+        email: session.email,
+        password: formData.oldPassword,
+        role: session.role
       });
-
-      if (response.status === 200) {
-        toast.success('Password updated successfully');
-        // Reset form
-        setFormData({
-          oldPassword: '',
-          newPassword: '',
-          confirmPassword: '',
+      
+      if (verifyResponse.status === 200) {
+        // Store email and new password in localStorage
+        localStorage.setItem("passwordUpdate", JSON.stringify({
+          email: session.email,
+          newPassword: formData.newPassword
+        }));
+        
+        // Send OTP for verification
+        const otpResponse = await API.post("/auth/verify-email", { 
+          email: session.email 
         });
+        
+        if (otpResponse.status === 200) {
+          // Navigate to OTP verification
+          window.location.href = "/verify-otp?action=update";
+        }
       }
     } catch (error) {
       console.error('Error updating password:', error);
-
-      if (error.response && error.response.status === 400) {
-        toast.error('Current password is incorrect');
-        setErrors((prev) => ({ ...prev, oldPassword: 'Current password is incorrect' }));
-      } else if (error.response && error.response.status === 404) {
-        toast.error('User not found');
-      } else {
-        toast.error('Failed to update password. Please try again.');
-      }
+      toast.error(error.response?.data?.message || 'Incorrect current password');
     } finally {
       setIsLoading(false);
     }
@@ -128,6 +145,42 @@ export default function PasswordUpdateForm() {
         break;
     }
   };
+
+  if (checkingAuthType) {
+    return (
+      <div className="flex justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (isGoogleUser) {
+    return (
+      <div className="space-y-6">
+        <Alert className="bg-blue-50 border-blue-200">
+          <LockIcon className="h-4 w-4" />
+          <AlertTitle>Google Account Detected</AlertTitle>
+          <AlertDescription>
+            You signed up using Google authentication. To change your password, you&apos;ll need to update it through your Google Account settings.
+          </AlertDescription>
+        </Alert>
+        
+        <div className="flex flex-col items-center space-y-4">
+          <p className="text-sm text-muted-foreground text-center">
+            Your password is managed by Google. Please visit your Google Account settings to make any changes.
+          </p>
+          
+          <Button
+            onClick={() => window.open("https://myaccount.google.com/signinoptions/password", "_blank")}
+            className="flex items-center gap-2"
+          >
+            Go to Google Password Settings
+            <ExternalLinkIcon className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

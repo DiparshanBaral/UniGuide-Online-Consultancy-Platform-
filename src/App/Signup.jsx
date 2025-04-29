@@ -1,63 +1,76 @@
-import { useState, useEffect } from "react"
-import { Link, useNavigate, useLocation } from "react-router-dom"
-import { toast } from "sonner"
-import { Eye, EyeOff, UserRound, Mail, Lock } from "lucide-react"
-import logo from "@/assets/UniGuide_logo.png"
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { toast } from 'sonner';
+import { Eye, EyeOff, UserRound, Mail, Lock } from 'lucide-react';
+import logo from '@/assets/UniGuide_logo.png';
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import API from "../api"
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import API from '../api';
 import GoogleAuthButton from '@/Components/GoogleAuthButton';
 
 export default function SignupForm() {
   const [formData, setFormData] = useState({
-    firstname: "",
-    lastname: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    role: "student",
-  })
+    firstname: '',
+    lastname: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    role: 'student',
+  });
 
-  const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     // Check for error parameters in URL when component mounts
     const queryParams = new URLSearchParams(location.search);
     const errorParam = queryParams.get('error');
-    
+
     if (errorParam === 'no_account_found') {
       toast.error('You need to create an account first. Please sign up to continue.', {
         duration: 5000,
         position: 'top-center',
       });
-      
+
       // Optionally clear the URL parameter after showing toast
       navigate('/signup', { replace: true });
     }
   }, [location.search, navigate]);
 
   const handleChange = (e) => {
-    const { id, value } = e.target
+    const { id, value } = e.target;
     setFormData((prevData) => ({
       ...prevData,
       [id]: value,
-    }))
-  }
+    }));
+  };
 
   const handleRoleChange = (value) => {
     setFormData((prevData) => ({
       ...prevData,
       role: value,
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -66,53 +79,58 @@ export default function SignupForm() {
 
     // Ensure passwords match
     if (password.trim() !== confirmPassword.trim()) {
-      toast.error("Passwords do not match!");
+      toast.error('Passwords do not match!');
       return;
     }
 
     // Check for empty fields
     if (!firstname || !lastname || !email || !password || !confirmPassword) {
-      toast.error("Please fill in all fields!");
+      toast.error('Please fill in all fields!');
+      return;
+    }
+
+    // Validate email format - accept Gmail and educational domains
+    const emailParts = email.split('@');
+    const domain = emailParts.length === 2 ? emailParts[1].toLowerCase() : '';
+
+    if (!(domain === 'gmail.com' || domain.endsWith('.edu') || domain.includes('.edu.') || domain.includes('.org'))) {
+      toast.error('Please enter a valid Gmail address or educational email (.edu)!');
       return;
     }
 
     setLoading(true);
 
     try {
-      const route = role === "student" ? "/student/signup" : "/mentor/signup";
+      // First verify the email address by sending an OTP
+      const verifyResponse = await API.post('/auth/verify-email', { email });
 
-      const response = await API.post(route, {
-        firstname,
-        lastname,
-        email,
-        password,
-        confirmPassword,
-      });
+      if (verifyResponse.status === 200) {
+        // Store registration data in localStorage to use after OTP verification
+        localStorage.setItem(
+          'pendingRegistration',
+          JSON.stringify({
+            firstname,
+            lastname,
+            email,
+            password,
+            confirmPassword,
+            role,
+          }),
+        );
 
-      if (response.status === 201) {
-        toast.success("Registration successful!");
-        setFormData({
-          firstname: "",
-          lastname: "",
-          email: "",
-          password: "",
-          confirmPassword: "",
-          role: "student",
-        });
-
-        // Navigate to login page after successful signup
-        navigate("/login");
+        // Navigate to OTP verification page
+        navigate('/verify-otp?action=signup');
       }
     } catch (error) {
-      toast.error(error.response?.data?.message || "Server error");
-    } finally {
+      toast.error(
+        error.response?.data?.message || 'Error sending verification code. Please try again.',
+      );
       setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen w-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-primary/5 to-background">
-
       <div className="w-full max-w-md relative z-10">
         <div className="absolute inset-0 bg-white/30 rounded-2xl blur-xl -z-10 transform -rotate-3" />
         <div className="absolute inset-0 bg-white/30 rounded-2xl blur-xl -z-10 transform rotate-3" />
@@ -120,17 +138,19 @@ export default function SignupForm() {
         <Card className="w-full border border-primary/20 shadow-xl bg-card/95">
           <CardHeader className="space-y-1 pb-6">
             <div className="flex justify-center mb-4">
-              <img src={logo || "/placeholder.svg"} alt="UniGuide Logo" className="h-16 w-auto" />
+              <img src={logo || '/placeholder.svg'} alt="UniGuide Logo" className="h-16 w-auto" />
             </div>
             <CardTitle className="text-2xl font-bold text-center">Create an Account</CardTitle>
-            <CardDescription className="text-center">Enter your information to get started</CardDescription>
+            <CardDescription className="text-center">
+              Enter your information to get started
+            </CardDescription>
           </CardHeader>
 
           <CardContent>
             <div className="mb-4">
               <GoogleAuthButton isSignup={true} />
             </div>
-            
+
             <div className="relative mb-4">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t"></span>
@@ -139,7 +159,7 @@ export default function SignupForm() {
                 <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
               </div>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -194,7 +214,7 @@ export default function SignupForm() {
                   <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password"
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     value={formData.password}
                     onChange={handleChange}
@@ -209,7 +229,9 @@ export default function SignupForm() {
                     onClick={() => setShowPassword(!showPassword)}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
+                    <span className="sr-only">
+                      {showPassword ? 'Hide password' : 'Show password'}
+                    </span>
                   </Button>
                 </div>
               </div>
@@ -220,7 +242,7 @@ export default function SignupForm() {
                   <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
+                    type={showConfirmPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     value={formData.confirmPassword}
                     onChange={handleChange}
@@ -234,8 +256,14 @@ export default function SignupForm() {
                     className="absolute right-0 top-0 h-10 w-10"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
-                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    <span className="sr-only">{showConfirmPassword ? "Hide password" : "Show password"}</span>
+                    {showConfirmPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                    <span className="sr-only">
+                      {showConfirmPassword ? 'Hide password' : 'Show password'}
+                    </span>
                   </Button>
                 </div>
               </div>
@@ -258,14 +286,14 @@ export default function SignupForm() {
                 className="w-full mt-6 transition-all hover:shadow-lg hover:shadow-primary/25"
                 disabled={loading}
               >
-                {loading ? "Creating Account..." : "Sign Up"}
+                {loading ? 'Creating Account...' : 'Sign Up'}
               </Button>
             </form>
           </CardContent>
 
           <CardFooter className="flex justify-center pb-6">
             <p className="text-sm text-muted-foreground">
-              Already have an account?{" "}
+              Already have an account?{' '}
               <Link to="/login" className="text-primary font-medium hover:underline">
                 Log in
               </Link>
@@ -277,5 +305,5 @@ export default function SignupForm() {
         <div className="absolute -top-4 -left-4 h-20 w-20 bg-primary/10 rounded-full blur-xl -z-10" />
       </div>
     </div>
-  )
+  );
 }
