@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs"
 import { Badge } from "@/Components/ui/badge"
 import { AlertCircle, BookOpen, School, UserRound, Edit, CheckCircle2 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/Components/ui/alert"
-import StudentProfileForm from "@/Components/Student-form"
+import StudentProfileForm from "@/Components/student-form"
 import PasswordUpdateForm from "@/Components/PasswordUpdateForm"
 
 function Profile() {

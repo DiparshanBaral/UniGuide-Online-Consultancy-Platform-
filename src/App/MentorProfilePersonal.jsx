@@ -18,7 +18,7 @@ import {
   MessageSquare,
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
-import MentorProfileForm from '@/Components/Mentor-form';
+import MentorProfileForm from '@/Components/mentor-form';
 import MentorReviewsList from '@/Components/mentor-reviews-list';
 import RatingStars from '@/Components/ui/rating-stars';
 import PasswordUpdateForm from "@/Components/PasswordUpdateForm";
