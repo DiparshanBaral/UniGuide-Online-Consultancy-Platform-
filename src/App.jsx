@@ -15,7 +15,7 @@ import MentorDashboard from '@/App/MentorDashboard';
 import StudentDashboard from '@/App/StudentDashboard';
 import UniversitiesList from '@/App/UniversitiesList';
 import UniversityProfile from '@/App/UniversityProfile';
-import MentorProfilePersonal from '@/App/Mentorprofilepersonal';
+import MentorProfilePersonal from '@/App/MentorProfilePersonal';
 import PublicStudentProfile from '@/App/PublicStudentProfile';
 import StudentPortal from '@/App/StudentPortal';
 import MentorPortal from '@/App/MentorPortal';
