@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import PropTypes from "prop-types";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/Components/ui/button";
 import { Camera, X } from "lucide-react";
 
 export function AvatarUpload({ currentAvatar, onImageSelect, onRemove, isEditing }) {
