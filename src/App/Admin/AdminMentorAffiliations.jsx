@@ -4,7 +4,7 @@ import API from '@/api';
 import { Button } from '@/Components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Badge } from '@/Components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { Separator } from '@/Components/ui/separator';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
 import {
   Dialog,
