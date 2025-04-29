@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import API from '../api';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/Components/ui/card';
+import { Button } from '@/Components/ui/button';
+import { Avatar, AvatarImage, AvatarFallback } from '@/Components/ui/avatar';
+import { ScrollArea } from '@/Components/ui/scroll-area';
 import { Loader2, CheckCircle, XCircle, UserPlus } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/Components/ui/badge';
 
 export default function MentorDashboard() {
   const [pendingRequests, setPendingRequests] = useState([]);

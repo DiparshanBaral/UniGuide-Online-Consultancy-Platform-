@@ -5,7 +5,7 @@ import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useAtom } from 'jotai';
 import logo from '@/assets/UniGuide_logo.png';
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/Components/ui/button';
 import {
   Card,
   CardContent,
@@ -13,9 +13,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from '@/Components/ui/card';
+import { Input } from '@/Components/ui/input';
+import { Label } from '@/Components/ui/label';
 import API from '../api';
 import { sessionAtom } from '@/atoms/session';
 import GoogleAuthButton from '@/Components/GoogleAuthButton';

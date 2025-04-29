@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react"
 import { toast } from "sonner"
 import API from "@/api"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "@/Components/ui/button"
+import { Input } from "@/Components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card"
+import { Badge } from "@/Components/ui/badge"
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/components/ui/dialog"
+} from "@/Components/ui/dialog"
 import { Users, GraduationCap, UserCircle, Search, Filter, ArrowUpDown, Mail, Phone, Calendar, MapPin, Trash2, AlertCircle } from 'lucide-react'
 import {
   DropdownMenu,
@@ -23,8 +23,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+} from "@/Components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar"
 
 export default function AdminUsers() {
   const [students, setStudents] = useState([])

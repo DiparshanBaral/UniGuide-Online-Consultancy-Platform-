@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import PortalNavigation from '@/components/PortalNavigation';
-import Tasks from '@/components/Tasks';
-import Chat from '@/components/Chat';
-import PortalDocuments from '@/components/PortalDocuments';
+import PortalNavigation from '@/Components/PortalNavigation';
+import Tasks from '@/Components/Tasks';
+import Chat from '@/Components/Chat';
+import PortalDocuments from '@/Components/PortalDocuments';
 
 const MentorPortal = () => {
   const [activeTab, setActiveTab] = useState('tasks');

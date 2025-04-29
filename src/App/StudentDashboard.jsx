@@ -8,10 +8,10 @@ import {
   CardTitle,
   CardDescription,
   CardContent,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+} from "@/Components/ui/card";
+import { Button } from "@/Components/ui/button";
+import { Avatar, AvatarImage, AvatarFallback } from "@/Components/ui/avatar";
+import { Badge } from "@/Components/ui/badge";
 import { Loader2, CheckCircle, UserPlus, CircleDollarSign } from "lucide-react";
 
 export default function StudentDashboard() {

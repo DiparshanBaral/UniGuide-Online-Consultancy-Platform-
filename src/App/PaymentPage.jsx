@@ -5,9 +5,9 @@ import { sessionAtom } from '@/atoms/session';
 import { ArrowLeft, Check, CircleDollarSign, Users, Clock, History } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Badge } from '@/Components/ui/badge';
 import {
   Card,
   CardContent,
@@ -15,8 +15,8 @@ import {
   CardHeader,
   CardTitle,
   CardFooter,
-} from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+} from '@/Components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import NegotiationCard from '@/Components/NegotiationCard';
 import EmptyState from '@/Components/EmptyState';
 import LoadingSkeletons from '@/Components/LoadingSkeletons';

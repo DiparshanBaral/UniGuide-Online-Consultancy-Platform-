@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import { Badge } from '@/Components/ui/badge';
 import {
   Search,
   ClipboardList,
@@ -17,8 +17,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+} from '@/Components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { motion } from 'framer-motion';
 import API from '../api';
 import { useNavigate } from 'react-router-dom';
@@ -29,9 +29,9 @@ import {
   DialogContent,
   DialogTitle,
   DialogDescription,
-} from '@/components/ui/dialog';
+} from '@/Components/ui/dialog';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
-import NoUniversities from '@/components/ui/no-university';
+import NoUniversities from '@/Components/ui/no-university';
 
 function Universities() {
   const navigate = useNavigate();

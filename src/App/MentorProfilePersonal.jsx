@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import API from '../api';
-import { Button } from '@/components/ui/button';
-import { AvatarUpload } from '@/components/ui/avatarupload';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Button } from '@/Components/ui/button';
+import { AvatarUpload } from '@/Components/ui/avatarupload';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/Components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Badge } from '@/Components/ui/badge';
 import {
   AlertCircle,
   BookOpen,
@@ -17,11 +17,11 @@ import {
   Globe,
   MessageSquare,
 } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import MentorProfileForm from '@/components/Mentor-form';
-import MentorReviewsList from '@/components/mentor-reviews-list';
+import { Alert, AlertDescription, AlertTitle } from '@/Components/ui/alert';
+import MentorProfileForm from '@/Components/Mentor-form';
+import MentorReviewsList from '@/Components/mentor-reviews-list';
 import RatingStars from '@/Components/ui/rating-stars';
-import PasswordUpdateForm from "@/components/PasswordUpdateForm";
+import PasswordUpdateForm from "@/Components/PasswordUpdateForm";
 
 function MentorProfilePersonal() {
   const [user, setUser] = useState(null);

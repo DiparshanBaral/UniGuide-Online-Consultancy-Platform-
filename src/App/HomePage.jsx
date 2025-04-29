@@ -7,14 +7,14 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/Components/ui/select';
 import { Button } from '@/Components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Input } from '@/Components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle} from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
 import API from '../api';
 import { motion } from 'framer-motion';
-import { Separator } from "@/components/ui/separator";
+import { Separator } from "@/Components/ui/separator";
 
 function HomePage() {
   const navigate = useNavigate();

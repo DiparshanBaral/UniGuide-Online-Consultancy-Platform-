@@ -14,8 +14,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-} from '@/components/ui/sidebar';
-import { Button } from '@/components/ui/button';
+} from '@/Components/ui/sidebar';
+import { Button } from '@/Components/ui/button';
 import logo from '@/assets/UniGuide_logo.png';
 
 export default function AdminLayout() {

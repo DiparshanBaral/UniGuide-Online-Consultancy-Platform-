@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import API from '../api';
 import { Button } from '@/Components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/Components/ui/badge';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/Components/ui/card';
 import { Globe2, MapPin, Users, GraduationCap } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { useNavigate } from 'react-router-dom';
 
 const UniversitiesList = () => {

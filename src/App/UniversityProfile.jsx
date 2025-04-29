@@ -2,10 +2,10 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/Components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { StatCard } from '@/components/ui/stat-card';
-import { InfoSection } from '@/components/ui/info-section';
-import { Card } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/Components/ui/dialog';
+import { StatCard } from '@/Components/ui/stat-card';
+import { InfoSection } from '@/Components/ui/info-section';
+import { Card } from '@/Components/ui/card';
 import {
   GraduationCap,
   MapPin,
@@ -18,9 +18,9 @@ import {
   BookOpen,
   DollarSign,
 } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/Components/ui/input';
+import { Textarea } from '@/Components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
 import API from '../api';
 import { toast } from 'sonner';
 

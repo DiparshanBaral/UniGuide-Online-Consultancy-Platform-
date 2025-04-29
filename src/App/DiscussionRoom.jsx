@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import API from '../api'; // Custom Axios instance
 import { ArrowUp, ArrowDown, MessageSquare, Plus, Users, Tag } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Comment } from '@/components/comment';
-import { CreatePost } from '@/components/create-post';
+import { Button } from '@/Components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/Components/ui/card';
+import { Tabs, TabsList, TabsTrigger } from '@/Components/ui/tabs';
+import { Comment } from '@/Components/comment';
+import { CreatePost } from '@/Components/create-post';
 import { toast } from 'sonner';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from '@/Components/ui/badge';
 
 // Utility function to format relative time
 const formatRelativeTime = (timestamp) => {

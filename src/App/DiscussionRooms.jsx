@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Badge } from '@/Components/ui/badge';
+import { Button } from '@/Components/ui/button';
 import {
   Card,
   CardContent,
@@ -8,11 +8,11 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+} from '@/Components/ui/card';
+import { Input } from '@/Components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/Components/ui/tabs';
 import { Users, MessageSquare, Plus, TrendingUp } from 'lucide-react';
-import { CreateRoom } from '@/components/create-room';
+import { CreateRoom } from '@/Components/create-room';
 import API from '../api';
 import { toast } from 'sonner';
 import { useNavigate } from 'react-router-dom';
