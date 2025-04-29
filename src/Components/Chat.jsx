@@ -83,7 +83,7 @@ const Chat = () => {
     }
 
     // Initialize Socket.IO connection
-    const socketInstance = io('http://localhost:5000', {
+    const socketInstance = io('https://uniguide-backend-six.vercel.app', {
       query: { userId: senderId, userRole: senderRole },
     });
     setSocket(socketInstance);

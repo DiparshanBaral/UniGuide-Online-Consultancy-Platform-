@@ -2,7 +2,8 @@ import axios from 'axios';
 
 // Set up the base URL for your backend API
 const API = axios.create({
-  baseURL: 'http://localhost:5000', // Replace with your backend URL
+  // baseURL: 'http://localhost:5000',
+  baseURL: import.meta.env.VITE_BACKEND_URL || 'https://uniguide-backend-six.vercel.app',
   withCredentials: true,
 });
 
