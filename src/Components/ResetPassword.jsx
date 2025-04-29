@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/Components/ui/card";
-import logo from "@/assets/UniGuide_logo.png";
+import logo from "@/assets/UniGuide_logo.PNG";
 
 export default function ResetPassword() {
   const [formData, setFormData] = useState({

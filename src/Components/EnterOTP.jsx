@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from "@/Components/ui/card";
 import { KeyRound, RefreshCw } from "lucide-react";
-import logo from "@/assets/UniGuide_logo.png";
+import logo from "@/assets/UniGuide_logo.PNG";
 
 export default function EnterOTP() {
   const [otp, setOtp] = useState("");
