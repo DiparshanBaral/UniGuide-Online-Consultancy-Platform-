@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types';
 import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/Components/ui/button';
 import { CheckCircle, FileText, MessageCircle, ArrowLeft } from 'lucide-react';
 import { Link, useParams, useLocation } from 'react-router-dom'; // Import useLocation
 import API from '../api'; // Import your API utility
-import logo from '@/assets/UniGuide_logo.png';
+import logo from '@/assets/UniGuide_logo.PNG';
 
 const PortalNavigation = ({ activeTab, setActiveTab }) => {
   const [session, setSession] = useState(null);

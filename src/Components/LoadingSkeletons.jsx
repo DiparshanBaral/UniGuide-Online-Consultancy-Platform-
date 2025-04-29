@@ -1,5 +1,5 @@
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/Components/ui/skeleton';
 
 const LoadingSkeletons = () => (
   <div className="space-y-4">

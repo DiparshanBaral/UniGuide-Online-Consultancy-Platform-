@@ -1,9 +1,9 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/Components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/Components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/Components/ui/radio-group";
+import { Label } from "@/Components/ui/label";
 import { GraduationCap, Briefcase } from 'lucide-react';
 
 export default function RoleSelectionModal({ isOpen, onClose, onRoleSelect, isSignup = false }) {

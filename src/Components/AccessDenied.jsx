@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { CircleDollarSign, ShieldAlert } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/Components/ui/button';
 import PropTypes from 'prop-types';
 
 const AccessDenied = ({ connectionId, mentorName, redirectPath = '/payments' }) => {

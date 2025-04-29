@@ -4,13 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { UserRound, BookOpen, Briefcase, Globe } from 'lucide-react';
 import API from "../api";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AvatarUpload } from "@/components/ui/avatarupload";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Textarea } from "@/Components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
+import { AvatarUpload } from "@/Components/ui/avatarupload";
+import { Badge } from "@/Components/ui/badge";
 import { X } from 'lucide-react';
 
 function MentorProfileForm({ isOpen, onClose, userId }) {

@@ -1,9 +1,9 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { ImageIcon, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Textarea } from "@/Components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -11,8 +11,8 @@ import {
   DialogTitle,
   DialogFooter,
   DialogDescription,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+} from "@/Components/ui/dialog";
+import { Label } from "@/Components/ui/label";
 
 export function CreatePost({ onClose, onSubmit }) {
   const [title, setTitle] = useState("");

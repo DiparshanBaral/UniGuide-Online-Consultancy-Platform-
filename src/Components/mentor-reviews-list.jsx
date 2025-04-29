@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react"
 import PropTypes from "prop-types"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import RatingStars from "@/components/ui/rating-stars"
+import { Avatar, AvatarFallback, AvatarImage } from "@/Components/ui/avatar"
+import RatingStars from "@/Components/ui/rating-stars"
 import API from "../api"
 import { toast } from "sonner"
 

@@ -1,9 +1,9 @@
 import { useState } from "react"
 import { toast } from "sonner"
 import PropTypes from "prop-types" // Import PropTypes
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/Components/ui/button"
+import { Textarea } from "@/Components/ui/textarea"
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/Components/ui/card"
 import { Star } from "lucide-react"
 import API from "../api"
 

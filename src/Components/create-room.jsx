@@ -1,12 +1,12 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import { X, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Textarea } from "@/Components/ui/textarea";
+import { Badge } from "@/Components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/Components/ui/dialog";
+import { Label } from "@/Components/ui/label";
 
 export function CreateRoom({ initialData = { title: "", description: "", tags: [] }, onClose, onSubmit, isLoading = false }) {
   const [title, setTitle] = useState(initialData.title || "");

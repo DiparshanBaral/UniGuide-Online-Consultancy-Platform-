@@ -5,12 +5,12 @@ import { toast } from "sonner";
 import { UserRound, School } from 'lucide-react';
 import API from "../api";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { AvatarUpload } from "@/components/ui/avatarupload";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
+import { Textarea } from "@/Components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/Components/ui/dialog";
+import { AvatarUpload } from "@/Components/ui/avatarupload";
 
 function StudentProfileForm({ isOpen, onClose, userId }) {
   const navigate = useNavigate();

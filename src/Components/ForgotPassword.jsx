@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Mail } from "lucide-react";
 import API from "../api";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/Components/ui/button";
+import { Input } from "@/Components/ui/input";
+import { Label } from "@/Components/ui/label";
 import {
   Card,
   CardContent,
@@ -13,8 +13,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import logo from "@/assets/UniGuide_logo.png";
+} from "@/Components/ui/card";
+import logo from "@/assets/UniGuide_logo.PNG";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");

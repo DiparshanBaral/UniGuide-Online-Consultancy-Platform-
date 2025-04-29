@@ -3,9 +3,9 @@ import PropTypes from "prop-types"
 import { motion } from "framer-motion"
 import { format } from "date-fns"
 import { ArrowLeft, Calendar, User, Heart, Share2, Trash2, Edit } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card } from "@/components/ui/card"
+import { Button } from "@/Components/ui/button"
+import { Badge } from "@/Components/ui/badge"
+import { Card } from "@/Components/ui/card"
 
 // Define prop types for the component
 const ExperienceDetail = ({ experience, onBack, onLike, onDelete }) => {

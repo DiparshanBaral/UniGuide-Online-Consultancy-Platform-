@@ -1,7 +1,7 @@
-import { Button } from '@/components/ui/button';
+import { Button } from '@/Components/ui/button';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
-import RoleSelectionModal from '@/components/RoleSelectionModal';
+import RoleSelectionModal from '@/Components/RoleSelectionModal';
 
 export default function GoogleAuthButton({ isSignup = false }) {
   const [showRoleModal, setShowRoleModal] = useState(false);

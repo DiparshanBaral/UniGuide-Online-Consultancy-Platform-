@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/Components/ui/card';
 import API from '../api';
 import { useParams } from 'react-router-dom';
 import { Toaster, toast } from 'sonner'; // Import Sonner for toasts
 import { FilePlus, UploadCloud } from 'lucide-react'; // Import LucideReact icons
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'; // Import Shadcn Dialog for preview
+import { Dialog, DialogContent, DialogTrigger } from '@/Components/ui/dialog'; // Import Shadcn Dialog for preview
 
 const PortalDocuments = () => {
   const [session, setSession] = useState(null);
