@@ -1,4 +1,4 @@
-import logo from '@/assets/UniGuide_logo.png';
+import logo from '@/assets/UniGuide_logo.PNG';
 
 function Footer() {
   return (
