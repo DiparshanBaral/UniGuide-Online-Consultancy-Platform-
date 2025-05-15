@@ -90,7 +90,7 @@ export default function VisaSection() {
       code: 'us',
       flag: '🇺🇸',
       visaTypes: ['F-1 Student Visa', 'J-1 Exchange Visitor'],
-      processingTime: '3-5 weeks',
+      processingTime: 'Instant (Interview Based)',
     },
     {
       name: 'United Kingdom',
