@@ -65,7 +65,20 @@ export default {
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
   			}
-  		}
+  		},
+      animation: {
+        'bounce-subtle': 'bounce-subtle 2s infinite',
+      },
+      keyframes: {
+        'bounce-subtle': {
+          '0%, 100%': {
+            transform: 'translateY(0)',
+          },
+          '50%': {
+            transform: 'translateY(-5px)',
+          },
+        },
+      },
   	}
   },
   plugins: [tailwindcssAnimate],

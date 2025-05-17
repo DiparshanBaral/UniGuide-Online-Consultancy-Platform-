@@ -30,6 +30,7 @@ import AccessDenied from './Components/AccessDenied';
 import ForgotPassword from '@/Components/ForgotPassword';
 import ResetPassword from '@/Components/ResetPassword';
 import EnterOTP from '@/Components/EnterOTP';
+import CallPage from './Components/Call/CallPage';
 
 function App() {
   const location = useLocation();
@@ -38,7 +39,8 @@ function App() {
   const isExcludedRoute = 
     location.pathname.startsWith('/studentportal') || 
     location.pathname.startsWith('/mentorportal') || 
-    location.pathname.startsWith('/admin');
+    location.pathname.startsWith('/admin') ||
+    location.pathname.startsWith('/call/') ;
 
   return (
     <>
@@ -48,7 +50,7 @@ function App() {
         {!isExcludedRoute && <Navbar />}
 
         {/* Main Content */}
-        <div className="flex-grow pt-[10px]">
+        <div className={`flex-grow ${!isExcludedRoute ? 'pt-[10px]' : ''}`}>
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/signup" element={<Signup />} />
@@ -77,6 +79,7 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/verify-otp" element={<EnterOTP />} />
+            <Route path="/call/:callId" element={<CallPage />} />
             <Route path="*" element={<h1 className="text-center text-2xl">404 Not Found</h1>} />
           </Routes>
         </div>
