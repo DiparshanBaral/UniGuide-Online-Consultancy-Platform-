@@ -12,7 +12,6 @@ import { sessionAtom } from '@/atoms/session';
 import { useAtom } from 'jotai';
 import '@stream-io/video-react-sdk/dist/css/styles.css';
 import { Mic, MicOff, Video as VideoIcon, VideoOff, PhoneOff } from 'lucide-react';
-import { ParticipantView } from '@stream-io/video-react-sdk';
 import { SpeakerLayout, PaginatedGridLayout } from '@stream-io/video-react-sdk';
 import { useCall } from '@stream-io/video-react-sdk';
 
@@ -92,23 +91,6 @@ const CallUI = () => {
           <PaginatedGridLayout />
         </SpeakerLayout>
       </div>
-
-      {/* Local participant badge in corner */}
-      {localParticipant && (
-        <div className="absolute top-4 left-4 w-60 h-36 bg-gray-800 rounded-lg overflow-hidden shadow-lg z-10">
-          <ParticipantView
-            participant={localParticipant}
-            enableScreenshare={false}
-            showMicIndicator={true}
-            showName={false}
-            micAndCameraState={{
-              microphone: isMicEnabled ? 'enabled' : 'disabled',
-              camera: isCameraEnabled ? 'enabled' : 'disabled',
-            }}
-          />
-          <div className="absolute bottom-0 left-0 p-2 bg-black bg-opacity-50 text-white">You</div>
-        </div>
-      )}
 
       {/* Call controls */}
       <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-4">
