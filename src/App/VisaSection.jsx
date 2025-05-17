@@ -280,7 +280,7 @@ export default function VisaSection() {
             }
 
             // Fetch updated recent experiences
-            const recentResponse = await API.get('/visa/recent-experiences', {
+            const recentResponse = await API.get('/visa/experiences/recent', {
               headers: {
                 Authorization: `Bearer ${session.token}`,
               },
@@ -907,9 +907,7 @@ export default function VisaSection() {
                                     </span>
                                   </div>
                                   <div className="flex space-x-2">
-                                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                                      <Edit className="h-4 w-4" />
-                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">                                    </Button>
                                     <Button
                                       variant="ghost"
                                       size="icon"

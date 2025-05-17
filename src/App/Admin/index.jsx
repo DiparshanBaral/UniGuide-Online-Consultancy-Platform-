@@ -5,6 +5,7 @@ import AdminUniversities from "./AdminUniversities"
 import AdminMentorAffiliations from "./AdminMentorAffiliations"
 import AdminDiscussionRoom from "./AdminDiscussionRoom"
 import AdminUsers from "./AdminUsers"
+import AdminWallet from "./AdminWallet" // Add this import
 
 export default function AdminRoutes() {
   return (
@@ -15,6 +16,7 @@ export default function AdminRoutes() {
         <Route path="affiliations" element={<AdminMentorAffiliations />} />
         <Route path="discussion-rooms" element={<AdminDiscussionRoom />} />
         <Route path="users" element={<AdminUsers />} />
+        <Route path="wallet" element={<AdminWallet />} /> {/* Add this route */}
       </Route>
     </Routes>
   )

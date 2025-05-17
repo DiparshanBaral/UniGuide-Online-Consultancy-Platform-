@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAtom } from 'jotai';
 import { sessionAtom } from '@/atoms/session';
-import { ArrowLeft, Check, CircleDollarSign, Users, Clock, History } from 'lucide-react';
+import { ArrowLeft, Check, CircleDollarSign, Users, Clock, History, Wallet as WalletIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/Components/ui/button';
@@ -20,6 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import NegotiationCard from '@/Components/NegotiationCard';
 import EmptyState from '@/Components/EmptyState';
 import LoadingSkeletons from '@/Components/LoadingSkeletons';
+import WalletDisplay from '@/Components/WalletDisplay';
 import API from '../api';
 
 export default function PaymentPage() {
@@ -186,9 +187,10 @@ export default function PaymentPage() {
                   },
                 );
 
-                if (negotiationResponse.data && negotiationResponse.data.negotiations) {
+                if (negotiationResponse.data?.success && 
+                    Array.isArray(negotiationResponse.data?.negotiations)) {
                   const approvedNegotiation = negotiationResponse.data.negotiations.find(
-                    (neg) => neg.status === 'mentor_approved' && neg.finalConsultationFee
+                    neg => neg.status === 'mentor_approved' && neg.finalConsultationFee
                   );
 
                   if (approvedNegotiation) {
@@ -198,7 +200,7 @@ export default function PaymentPage() {
                 }
               } catch (error) {
                 console.error('Error fetching negotiation data:', error);
-                console.log('No negotiation found for connection:', connection._id);
+                console.log(`Using default fee for connection ${connection._id}`);
               }
 
               return {
@@ -432,6 +434,10 @@ export default function PaymentPage() {
               <TabsTrigger value="negotiations">
                 <Users className="mr-2 h-4 w-4" />
                 Negotiations
+              </TabsTrigger>
+              <TabsTrigger value="wallet">
+                <WalletIcon className="mr-2 h-4 w-4" />
+                My Wallet
               </TabsTrigger>
             </>
           )}
@@ -803,6 +809,17 @@ export default function PaymentPage() {
                 ))}
               </div>
             )}
+          </TabsContent>
+        )}
+
+        {/* Mentor: Wallet Tab */}
+        {session?.role === 'mentor' && (
+          <TabsContent value="wallet" className="mt-0">
+            <div className="space-y-6">
+              <div className="max-w-3xl mx-auto">
+                <WalletDisplay />
+              </div>
+            </div>
           </TabsContent>
         )}
       </Tabs>

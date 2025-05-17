@@ -1,6 +1,6 @@
 import { useNavigate, Outlet } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Building2, Home, GraduationCap, MessageSquare, LogOut, Users } from 'lucide-react';
+import { Building2, Home, GraduationCap, MessageSquare, LogOut, Users, Wallet } from 'lucide-react';
 
 import {
   Sidebar,
@@ -100,6 +100,18 @@ export default function AdminLayout() {
                       <div className="flex items-center">
                         <Users className="h-4 w-4 mr-2" />
                         <span>Users</span>
+                      </div>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      tooltip="Platform Wallet"
+                      onClick={() => navigate('/admin/wallet')}
+                    >
+                      <div className="flex items-center">
+                        <Wallet className="h-4 w-4 mr-2" />
+                        <span>Platform Wallet</span>
                       </div>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

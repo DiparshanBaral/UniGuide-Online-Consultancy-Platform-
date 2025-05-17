@@ -59,7 +59,7 @@ export function CreatePost({ onClose, onSubmit }) {
     }
 
     try {
-      const roomId = "67dfb2b99a39446d9a238050"; // Replace with actual room ID logic
+      const roomId = "67dfb2b99a39446d9a238050";
       const postData = {
         roomId,
         title,

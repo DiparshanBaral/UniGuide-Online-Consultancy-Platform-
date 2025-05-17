@@ -32,6 +32,7 @@ function MentorProfile() {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [description, setDescription] = useState("")
   const [averageRating, setAverageRating] = useState(0)
+  const [paymentInfo, setPaymentInfo] = useState(null)
   const session = JSON.parse(localStorage.getItem("session"))
 
   useEffect(() => {
@@ -41,6 +42,7 @@ function MentorProfile() {
         const response = await API.get(`/mentor/${id}`)
         setMentor(response.data)
         fetchAverageRating()
+        fetchPaymentInfo()
       } catch (error) {
         console.error("Error fetching mentor data:", error)
         toast.error("Failed to fetch mentor data.")
@@ -66,6 +68,34 @@ function MentorProfile() {
       console.error("Error fetching average rating:", error)
     }
   }
+
+  const fetchPaymentInfo = async () => {
+    try {
+      if (!session?.token || !id) return;
+      
+      const response = await API.get(`/paymentnegotiation/mentor/${id}`, {
+        headers: {
+          Authorization: `Bearer ${session.token}`,
+        },
+      });
+      
+      if (response.data.success && response.data.negotiations.length > 0) {
+        // Find the most recent approved negotiation
+        const approvedNegotiation = response.data.negotiations.find(
+          neg => neg.status === 'mentor_approved' && neg.finalConsultationFee
+        );
+        
+        if (approvedNegotiation) {
+          setPaymentInfo({
+            consultationFee: approvedNegotiation.finalConsultationFee,
+            currency: approvedNegotiation.currency
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching payment information:", error);
+    }
+  };
 
   // Handle connection request submission
   const handleApplyForConnection = async () => {
@@ -201,7 +231,7 @@ function MentorProfile() {
                       <span>Consultation Fee</span>
                     </div>
                     <span className="font-medium">
-                      {mentor.consultationFee || 0} {mentor.currency || "USD"}
+                      {paymentInfo?.consultationFee || mentor.consultationFee || 0} {paymentInfo?.currency || mentor.currency || "USD"}
                     </span>
                   </div>
                 </div>

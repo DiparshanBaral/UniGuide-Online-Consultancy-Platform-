@@ -347,7 +347,7 @@ const UniversityProfile = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Expected Consultation Fee *
+                    Expected Consultation Fee * (This fee will be split with the platform according to 80/20 split)
                   </label>
                   <Input
                     type="number"

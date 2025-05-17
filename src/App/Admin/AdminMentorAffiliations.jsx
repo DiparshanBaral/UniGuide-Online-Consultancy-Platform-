@@ -72,6 +72,7 @@ export default function AdminMentorAffiliations() {
   const [selectedAffiliation, setSelectedAffiliation] = useState(null);
   const [isNegotiating, setIsNegotiating] = useState(false);
   const [session, setSession] = useState(null);
+  const [mentorNegotiations, setMentorNegotiations] = useState({});
 
   // Get session data
   useEffect(() => {
@@ -87,7 +88,7 @@ export default function AdminMentorAffiliations() {
       toast.error('Please enter a valid fee amount');
       return;
     }
-    
+
     if (!selectedAffiliation || !selectedAffiliation.paymentNegotiationId) {
       toast.error('Payment negotiation information not found for this affiliation');
       return;
@@ -97,7 +98,6 @@ export default function AdminMentorAffiliations() {
     try {
       // Get the payment negotiation ID directly from the selected affiliation object
       const paymentNegotiationId = selectedAffiliation.paymentNegotiationId._id;
-    
 
       if (!paymentNegotiationId) {
         toast.error('Payment negotiation ID is missing');
@@ -160,6 +160,32 @@ export default function AdminMentorAffiliations() {
     }
   };
 
+  // function to fetch negotiations for each mentor
+  const fetchMentorNegotiations = async (mentorId) => {
+    try {
+      const sessionData = JSON.parse(localStorage.getItem('session'));
+      const token = sessionData ? sessionData.token : null;
+
+      if (!token) throw new Error('No token found');
+
+      const response = await API.get(`/paymentnegotiation/mentor/${mentorId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.data.success && response.data.negotiations.length > 0) {
+        // Store negotiations by mentor ID
+        setMentorNegotiations((prev) => ({
+          ...prev,
+          [mentorId]: response.data.negotiations,
+        }));
+        return response.data.negotiations;
+      }
+    } catch (error) {
+      console.error(`Error fetching negotiations for mentor ${mentorId}:`, error);
+      return null;
+    }
+  };
+
   // Fetch approved affiliation requests
   const fetchApprovedRequests = async () => {
     try {
@@ -172,8 +198,16 @@ export default function AdminMentorAffiliations() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setApprovedRequests(response.data);
-      setFilteredApproved(response.data);
+      const approvedReqs = response.data;
+      setApprovedRequests(approvedReqs);
+      setFilteredApproved(approvedReqs);
+
+      // Fetch negotiations for each mentor
+      for (const request of approvedReqs) {
+        if (request.mentorId && request.mentorId._id) {
+          await fetchMentorNegotiations(request.mentorId._id);
+        }
+      }
     } catch (error) {
       toast.error('Error fetching approved requests.');
       console.error(error);
@@ -190,7 +224,7 @@ export default function AdminMentorAffiliations() {
   // Auto-scroll negotiation history containers to bottom
   useEffect(() => {
     const historyContainers = document.querySelectorAll('.negotiation-history-container');
-    historyContainers.forEach(container => {
+    historyContainers.forEach((container) => {
       container.scrollTop = container.scrollHeight;
     });
   }, [filteredPending]); // Run when pending requests change
@@ -285,17 +319,53 @@ export default function AdminMentorAffiliations() {
         throw new Error('No token found');
       }
 
+      // First, get the affiliation details to access the paymentNegotiationId
+      const affiliation = filteredPending.find(aff => aff._id === id);
+      
+      if (!affiliation || !affiliation.paymentNegotiationId) {
+        toast.error('Payment negotiation information not found for this affiliation');
+        return;
+      }
+
+      const paymentNegotiationId = affiliation.paymentNegotiationId._id;
+      
+      // Get the fee to approve - either from negotiation history or expected fee
+      let feeToApprove;
+      
+      // If there's a negotiation history, get the last mentor offer
+      if (affiliation.paymentNegotiationId.negotiationHistory && 
+          affiliation.paymentNegotiationId.negotiationHistory.length > 0) {
+        // Find the latest entry from mentor
+        const mentorEntries = affiliation.paymentNegotiationId.negotiationHistory
+          .filter(entry => entry.proposedBy === 'mentor')
+          .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+        
+        if (mentorEntries.length > 0) {
+          feeToApprove = mentorEntries[0].amount;
+        }
+      }
+      
+      // If no mentor entries found, use the expected consultation fee
+      if (!feeToApprove) {
+        feeToApprove = affiliation.paymentNegotiationId.expectedConsultationFee;
+      }
+
+      // Use the negotiateFee endpoint with isApproval: true
       await API.put(
-        `/affiliations/${id}/status`,
-        { status: 'Approved' },
+        `/paymentnegotiation/${paymentNegotiationId}/negotiate`,
+        {
+          negotiatedConsultationFee: feeToApprove,
+          message: "Affiliation and fee approved by admin",
+          isApproval: true // This is the key parameter that sets finalConsultationFee
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        },
+        }
       );
 
-      toast.success('Affiliation approved successfully!');
+      toast.success('Affiliation and fee approved successfully!');
       fetchPendingRequests();
       fetchApprovedRequests();
     } catch (error) {
@@ -738,11 +808,26 @@ export default function AdminMentorAffiliations() {
                           <TableCell>{request.universityId?.name}</TableCell>
                           <TableCell>{new Date(request.updatedAt).toLocaleDateString()}</TableCell>
                           <TableCell>
-                            {request.mentorId?.consultationFee ? 
-                              `${request.mentorId.consultationFee} ${request.mentorId.currency || 'USD'}` : 
-                              (request.paymentNegotiationId?.finalConsultationFee ? 
-                                `${request.paymentNegotiationId.finalConsultationFee} ${request.paymentNegotiationId.currency}` : 
-                                'N/A')}
+                            {request.mentorId?.consultationFee
+                              ? `${request.mentorId.consultationFee} ${
+                                  request.mentorId.currency || 'USD'
+                                }`
+                              : request.paymentNegotiationId?.finalConsultationFee
+                              ? `${request.paymentNegotiationId.finalConsultationFee} ${request.paymentNegotiationId.currency}`
+                              : // Check if we have negotiations data for this mentor
+                              mentorNegotiations[request.mentorId?._id]
+                              ? (() => {
+                                  // Find the matching negotiation for this affiliation
+                                  const negotiation = mentorNegotiations[request.mentorId._id].find(
+                                    (n) =>
+                                      n.affiliationId === request._id ||
+                                      n._id === request.paymentNegotiationId?._id,
+                                  );
+                                  return negotiation?.finalConsultationFee
+                                    ? `${negotiation.finalConsultationFee} ${negotiation.currency}`
+                                    : 'N/A';
+                                })()
+                              : 'N/A'}
                           </TableCell>
                           <TableCell>
                             <Button

@@ -137,9 +137,9 @@ const CallPage = () => {
       try {
         console.log('Fetching Stream token for user:', session);
 
-        // Fetch the Stream token from the backend
+        // Add timestamp to URL to prevent caching
         const response = await fetch(
-          `http://localhost:5000/auth/stream-token?userId=${session._id}&userName=${session.firstname} ${session.lastname}`,
+          `http://localhost:5000/auth/stream-token?userId=${session._id}&userName=${session.firstname} ${session.lastname}&_t=${Date.now()}`,
         );
 
         if (!response.ok) {
@@ -148,6 +148,18 @@ const CallPage = () => {
 
         const { token } = await response.json();
         console.log('Fetched Stream token:', token);
+        
+        // Decode and validate token
+        const tokenParts = token.split('.');
+        if (tokenParts.length === 3) {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          console.log('Token payload:', payload);
+          console.log('Current time:', Math.floor(Date.now() / 1000));
+          
+          if (payload.iat > Math.floor(Date.now() / 1000)) {
+            console.error('⚠️ Token iat is in the future! Server clock might be wrong.');
+          }
+        }
 
         // Initialize the StreamVideoClient
         const streamClient = getStreamVideoClient({
