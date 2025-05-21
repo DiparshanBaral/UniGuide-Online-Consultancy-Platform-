@@ -1,10 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { Reply } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/Components/ui/avatar';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import API from '../api';
 
 // Utility function to format relative time
 const formatRelativeTime = (timestamp) => {
@@ -34,77 +33,17 @@ export function Comment({
   postId,
   roomId,
   onUpdateComments,
+  onAddReply,
   depth = 0, // Default parameter
   parentComments = [], // Default parameter
 }) {
   const [isReplying, setIsReplying] = useState(false);
   const [replyContent, setReplyContent] = useState('');
-  const [session, setSession] = useState(null);
 
-  // Fetch session data from localStorage on initial render
-    useEffect(() => {
-      const savedSession = localStorage.getItem('session');
-      if (savedSession) {
-        setSession(JSON.parse(savedSession));
-      }
-    }, []);
 
-  // Add a reply to this comment
-  const handleAddReply = async () => {
-    if (!replyContent.trim()) return;
-  
-    try {
-      const replyAuthor = {
-        name: `${session?.firstname || ''} ${session?.lastname || ''}`.trim() || 'Anonymous',
-        avatar: session?.profilePic || '/placeholder.svg',
-      };
-  
-      const response = await API.post('/room/reply/comment', {
-        roomId,
-        postId,
-        commentid: comment.id,
-        replycontent: replyContent,
-        replyauthor: replyAuthor,
-      });
-  
-      if (response.data && response.data.reply) {
-        const newReply = response.data.reply;
-  
-        const updatedComment = {
-          ...comment,
-          replies: [...(Array.isArray(comment.replies) ? comment.replies : []), newReply],
-        };
-  
-        // Update the parent comments state
-        if (parentComments.length > 0) {
-          const updateNestedComment = (comments, targetId, updatedComment) => {
-            return comments.map((c) =>
-              c.id === targetId
-                ? updatedComment
-                : c.replies && c.replies.length > 0
-                ? {
-                    ...c,
-                    replies: updateNestedComment(c.replies, targetId, updatedComment),
-                  }
-                : c,
-            );
-          };
-  
-          const updatedComments = updateNestedComment(parentComments, comment.id, updatedComment);
-          onUpdateComments(updatedComments);
-        } else {
-          onUpdateComments((prevComments) =>
-            prevComments.map((c) => (c.id === comment.id ? updatedComment : c)),
-          );
-        }
-  
-        setReplyContent('');
-        setIsReplying(false);
-      } else {
-        console.error('Unexpected response structure:', response.data);
-      }
-    } catch (error) {
-      console.error('Error adding reply:', error);
+  const handleReplySubmit = (commentId, replyContent) => {
+    if (onAddReply) {
+      onAddReply(commentId, replyContent);
     }
   };
 
@@ -147,17 +86,27 @@ export function Comment({
               </div>
               {/* Reply form */}
               {isReplying && (
-                <div className="mt-3 flex gap-2">
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (replyContent.trim()) {
+                      handleReplySubmit(comment.id, replyContent);
+                      setReplyContent('');
+                      setIsReplying(false);
+                    }
+                  }}
+                  className="mt-3 flex gap-2"
+                >
                   <Input
                     placeholder="Write a reply..."
                     value={replyContent}
                     onChange={(e) => setReplyContent(e.target.value)}
                     className="text-sm"
                   />
-                  <Button size="sm" onClick={handleAddReply} disabled={!replyContent.trim()}>
+                  <Button size="sm" type="submit" disabled={!replyContent.trim()}>
                     Reply
                   </Button>
-                </div>
+                </form>
               )}
             </div>
           </div>
@@ -211,6 +160,7 @@ export function Comment({
                       );
                     }
                   }}
+                  onAddReply={onAddReply}
                 />
               ))}
             </div>
@@ -251,6 +201,7 @@ Comment.propTypes = {
   postId: PropTypes.string.isRequired,
   roomId: PropTypes.string.isRequired,
   onUpdateComments: PropTypes.func.isRequired,
+  onAddReply: PropTypes.func,
   depth: PropTypes.number,
   parentComments: PropTypes.arrayOf(
     PropTypes.shape({

@@ -232,7 +232,7 @@ function MentorProfilePersonal() {
                 {user.profileCompleted && (
                   <Badge className="absolute bottom-0 right-0 bg-green-500 text-white border-0 flex items-center gap-1 px-2 py-1">
                     <CheckCircle2 className="h-3 w-3" />
-                    Verified
+                    Complete
                   </Badge>
                 )}
               </div>

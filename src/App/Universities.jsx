@@ -297,7 +297,7 @@ function Universities() {
                   <div className="flex items-center justify-center gap-4">
                     <ClipboardList className="h-12 w-12 text-primary" />
                     <div className="text-left">
-                      <p className="font-medium">5-Minute Survey</p>
+                      <p className="font-medium">Survey</p>
                       <p className="text-sm text-muted-foreground">
                         Get personalized university recommendations
                       </p>

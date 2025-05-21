@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { useAtom } from 'jotai';
+import { sessionAtom } from '@/atoms/session';
 import { Badge } from '@/Components/ui/badge';
 import { Button } from '@/Components/ui/button';
 import {
@@ -23,16 +25,9 @@ export default function DiscussionRooms() {
   const [rooms, setRooms] = useState([]); // State to store fetched rooms
   const [joinedRooms, setJoinedRooms] = useState([]); // State to store joined rooms
   const [loading, setLoading] = useState(true); // Loading state for API call
-  const [session, setSession] = useState(null);
+  const [session] = useAtom(sessionAtom); // Use Jotai's sessionAtom instead of local state
   const navigate = useNavigate();
 
-  // Retrieve session from localStorage
-  useEffect(() => {
-    const savedSession = localStorage.getItem('session');
-    if (savedSession) {
-      setSession(JSON.parse(savedSession)); // Set session from localStorage if it exists
-    }
-  }, []);
   // Fetch all rooms from the backend API
   useEffect(() => {
     const fetchRooms = async () => {
@@ -55,26 +50,29 @@ export default function DiscussionRooms() {
   useEffect(() => {
     const fetchJoinedRooms = async () => {
       try {
+        // Still keep this check for safety
+        if (!session || !session._id) {
+          console.log('Session not loaded yet, skipping joined rooms fetch');
+          return;
+        }
+
         const response = await API.get(`/discussion/joined?userId=${session._id}`, {
           headers: {
-            Authorization: `Bearer ${session?.token}`,
+            Authorization: `Bearer ${session.token}`,
           },
         });
 
-        // Check if the response contains data
-        if (!response.data.success) {
-          console.error('API Error:', response.data.message || 'Failed to fetch joined rooms');
-          toast.error('Failed to fetch joined rooms. Please try again.');
-          return;
+        // Process response...
+        if (response.data.success) {
+          setJoinedRooms(response.data.data);
         }
-        // Update the state with the fetched rooms
-        setJoinedRooms(response.data.data);
       } catch (error) {
-        console.error('Error fetching joined rooms:', error.message);
+        console.error('Error fetching joined rooms:', error);
       }
     };
+
     fetchJoinedRooms();
-  }, [session]);
+  }, [session]); // Keep session as dependency
 
   // Handle room creation
   const handleCreateRoom = async (roomData) => {
@@ -86,9 +84,9 @@ export default function DiscussionRooms() {
       });
       if (!response.data.success) {
         throw new Error('Failed to create room');
-      }else{
-        toast.success("Room created successfully. Waiting for admin's approval!")
-      };
+      } else {
+        toast.success("Room created successfully. Waiting for admin's approval!");
+      }
       setShowCreateRoom(false); // Close the modal after successful creation
     } catch (error) {
       console.error('Error creating room:', error);

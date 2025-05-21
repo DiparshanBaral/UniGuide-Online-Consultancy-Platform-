@@ -140,9 +140,11 @@ export default function DiscussionRoom() {
   // Sort posts based on selected criteria
   const sortedPosts = [...(sortBy === 'myposts' ? myPosts : posts)].sort((a, b) => {
     if (sortBy === 'popular') {
-      return b.upvotes - b.downvotes - (a.upvotes - a.downvotes);
+      const aScore = Number(a.upvotes || 0) - Number(a.downvotes || 0);
+      const bScore = Number(b.upvotes || 0) - Number(b.downvotes || 0);
+      return bScore - aScore;
     } else if (sortBy === 'recent') {
-      return new Date(b.createdAt) - new Date(a.createdAt);
+      return new Date(b.createdAt || Date.now()) - new Date(a.createdAt || Date.now());
     }
     return 0;
   });
@@ -216,6 +218,61 @@ export default function DiscussionRoom() {
     }
   };
 
+  // Add this function to handle replies to comments
+  const handleReplyToComment = async (postId, commentId, replyContent) => {
+    try {
+      const replyAuthor = {
+        name: `${session?.firstname || ''} ${session?.lastname || ''}`.trim() || 'Anonymous',
+        avatar: session?.profilePic || '/placeholder.svg',
+      };
+
+      const response = await API.post('/room/reply/comment', {
+        roomId,
+        postId,
+        commentid: commentId,
+        replycontent: replyContent,
+        replyauthor: replyAuthor,
+      });
+
+      if (response.data && response.data.reply) {
+        const newReply = response.data.reply;
+
+        // Update the posts state while preserving all existing comments and their replies
+        const updatedPosts = posts.map((post) => {
+          if (post.postid === postId) {
+            const updatedComments = post.comments.map((comment) => {
+              if (comment.commentid === commentId) {
+                return {
+                  ...comment,
+                  commentreplies: [
+                    ...(Array.isArray(comment.commentreplies) ? comment.commentreplies : []),
+                    newReply
+                  ]
+                };
+              }
+              return comment;
+            });
+            
+            return {
+              ...post,
+              comments: updatedComments
+            };
+          }
+          return post;
+        });
+
+        setPosts(updatedPosts);
+        toast.success('Reply added successfully!');
+      } else {
+        console.warn('Unexpected response structure:', response.data);
+        toast.error('Failed to process the reply. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error replying to comment:', error);
+      toast.error('Error adding reply');
+    }
+  };
+
   // Function to handle upvote
   const handleUpvote = async (postId) => {
     try {
@@ -234,7 +291,12 @@ export default function DiscussionRoom() {
       if (response.status === 200) {
         // Update the post's upvote count in the UI
         const updatedPosts = posts.map((post) =>
-          post.postid === postId ? { ...post, upvotes: response.data.upvotes } : post,
+          post.postid === postId
+            ? {
+                ...post,
+                upvotes: Number(response.data.upvotes || 0),
+              }
+            : post,
         );
         setPosts(updatedPosts);
 
@@ -363,7 +425,7 @@ export default function DiscussionRoom() {
                       <ArrowUp className="h-5 w-5" />
                     </Button>
                     <span className="text-sm font-medium my-1">
-                      {post.upvotes - post.downvotes}
+                      {Number(post.upvotes || 0) - Number(post.downvotes || 0)}
                     </span>
                     <Button
                       variant="ghost"
@@ -443,13 +505,13 @@ export default function DiscussionRoom() {
                                 key={comment.commentid}
                                 comment={{
                                   ...comment,
-                                  id: comment.commentid, // Ensure id is assigned
+                                  id: comment.commentid,
                                   content: comment.commentcontent,
                                   author: comment.commentauthor,
                                   timestamp: comment.commenttimestamp,
                                   replies: (comment.commentreplies || []).map((reply) => ({
                                     ...reply,
-                                    id: reply.replyid || reply.id || `temp-id-${Math.random()}`, // Ensure id is assigned
+                                    id: reply.replyid || reply.id || `temp-id-${Math.random()}`,
                                     content: reply.replycontent,
                                     author: reply.replyauthor,
                                     timestamp: reply.replytimestamp,
@@ -458,6 +520,9 @@ export default function DiscussionRoom() {
                                 }}
                                 postId={post.postid}
                                 roomId={roomId}
+                                onAddReply={(commentId, replyContent) =>
+                                  handleReplyToComment(post.postid, commentId, replyContent)
+                                }
                                 onUpdateComments={(updatedComments) => {
                                   // Update the comments for the specific post
                                   setPosts((prevPosts) =>
