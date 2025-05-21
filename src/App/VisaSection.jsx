@@ -195,7 +195,8 @@ const formatDate = (dateString) => {
 
 export default function VisaSection() {
   // State for tabs
-  const [setActiveTab] = useState("experiences")
+  // eslint-disable-next-line no-unused-vars
+  const [activeTab, setActiveTab] = useState("experiences")
   const [innerTab, setInnerTab] = useState("all")
   const [shareDialogOpen, setShareDialogOpen] = useState(false)
 

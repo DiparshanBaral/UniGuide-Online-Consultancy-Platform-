@@ -1,6 +1,5 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import { ImageIcon, X } from "lucide-react";
 import { Button } from "@/Components/ui/button";
 import { Input } from "@/Components/ui/input";
 import { Textarea } from "@/Components/ui/textarea";
@@ -17,33 +16,8 @@ import { Label } from "@/Components/ui/label";
 export function CreatePost({ onClose, onSubmit }) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [images, setImages] = useState([]);
-  const [imagePreview, setImagePreview] = useState(null);
   const [errors, setErrors] = useState({});
 
-  // Handle image upload
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const imageUrl = reader.result;
-        setImagePreview(imageUrl);
-        setImages([...images, imageUrl]);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  // Remove an image
-  const handleRemoveImage = (indexToRemove) => {
-    setImages(images.filter((_, index) => index !== indexToRemove));
-    if (images.length === 1) {
-      setImagePreview(null);
-    } else if (imagePreview === images[indexToRemove]) {
-      setImagePreview(images[0]);
-    }
-  };
 
   // Submit the post
   const handleSubmit = async () => {
@@ -64,7 +38,6 @@ export function CreatePost({ onClose, onSubmit }) {
         roomId,
         title,
         description,
-        images,
       };
 
       onSubmit(postData); // Pass the created post back to the parent
@@ -111,45 +84,6 @@ export function CreatePost({ onClose, onSubmit }) {
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
             />
-          </div>
-
-          {/* Image Upload */}
-          <div className="grid gap-2">
-            <Label>Images (optional)</Label>
-            <div className="flex items-center gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => document.getElementById("image-upload").click()}
-              >
-                <ImageIcon className="h-4 w-4 mr-2" />
-                Add Image
-              </Button>
-              <input id="image-upload" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-            </div>
-
-            {images.length > 0 && (
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                {images.map((image, index) => (
-                  <div key={index} className="relative">
-                    <img
-                      src={image || "/placeholder.svg"}
-                      alt={`Preview ${index + 1}`}
-                      className="h-24 w-full object-cover rounded-md"
-                    />
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-1 right-1 h-6 w-6"
-                      onClick={() => handleRemoveImage(index)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
 
