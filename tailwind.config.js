@@ -66,19 +66,37 @@ export default {
   				ring: 'hsl(var(--sidebar-ring))'
   			}
   		},
-      animation: {
-        'bounce-subtle': 'bounce-subtle 2s infinite',
-      },
-      keyframes: {
-        'bounce-subtle': {
-          '0%, 100%': {
-            transform: 'translateY(0)',
-          },
-          '50%': {
-            transform: 'translateY(-5px)',
-          },
-        },
-      },
+  		animation: {
+  			'bounce-subtle': 'bounce-subtle 2s infinite',
+  			'accordion-down': 'accordion-down 0.2s ease-out',
+  			'accordion-up': 'accordion-up 0.2s ease-out'
+  		},
+  		keyframes: {
+  			'bounce-subtle': {
+  				'0%, 100%': {
+  					transform: 'translateY(0)'
+  				},
+  				'50%': {
+  					transform: 'translateY(-5px)'
+  				}
+  			},
+  			'accordion-down': {
+  				from: {
+  					height: '0'
+  				},
+  				to: {
+  					height: 'var(--radix-accordion-content-height)'
+  				}
+  			},
+  			'accordion-up': {
+  				from: {
+  					height: 'var(--radix-accordion-content-height)'
+  				},
+  				to: {
+  					height: '0'
+  				}
+  			}
+  		}
   	}
   },
   plugins: [tailwindcssAnimate],

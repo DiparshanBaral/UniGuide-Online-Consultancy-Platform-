@@ -54,6 +54,18 @@ export default function Navbar() {
   }, [setSession]);
 
   const fetchUserData = async (userId, token, role) => {
+    // Don't try to fetch if any required data is missing
+    if (!userId || !token || !role) {
+      setIsFetchingUser(false);
+      return;
+    }
+    
+    // Skip fetching for admin users
+    if (role === 'admin') {
+      setIsFetchingUser(false);
+      return;
+    }
+    
     try {
       setIsFetchingUser(true);
       const endpoint = role === 'mentor' ? `/mentor/${userId}` : `/student/${userId}`;

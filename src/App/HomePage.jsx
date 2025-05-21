@@ -58,23 +58,34 @@ function HomePage() {
     };
   }, []);
 
-  // Full search when "Find Universities" button is clicked
+  // Add resetFilters function similar to Universities.jsx
+  const resetFilters = () => {
+    setSelectedCountry('');
+    setSelectedFieldOfStudy('');
+    setSelectedBudgetRange('');
+    setSearchQuery('');
+    setFilteredUniversities([]);
+    setShowDropdown(false);
+  };
+
+  // Update handleSearch to match Universities.jsx implementation
   const handleSearch = () => {
-    if (searchQuery.length > 0) {
-      API.post('/universities/find', {
-        query: searchQuery,
-        country: selectedCountry,
-        fieldOfStudy: selectedFieldOfStudy,
-        budgetRange: selectedBudgetRange,
+    // Create a search payload with all filters
+    const searchPayload = {
+      query: searchQuery || "a", // Send "a" as a default query if searchQuery is empty
+      country: selectedCountry,
+      fieldOfStudy: selectedFieldOfStudy,
+      budgetRange: selectedBudgetRange
+    };
+    
+    API.post('/universities/find', searchPayload)
+      .then((response) => {
+        setFilteredUniversities(response.data);
+        setShowDropdown(false); // Hide dropdown after search
       })
-        .then((response) => {
-          setFilteredUniversities(response.data); // Update filtered results
-          setShowDropdown(false); // Hide dropdown after search
-        })
-        .catch((error) => {
-          console.error('Error finding universities:', error);
-        });
-    }
+      .catch((error) => {
+        console.error('Error finding universities:', error);
+      });
   };
 
   return (
@@ -133,7 +144,7 @@ function HomePage() {
             <div className="mx-auto max-w-3xl mt-8 grid gap-4">
               <div className="grid gap-4 md:grid-cols-3">
                 {/* Country Dropdown */}
-                <Select onValueChange={(value) => setSelectedCountry(value)}>
+                <Select value={selectedCountry} onValueChange={(value) => setSelectedCountry(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select Country" />
                   </SelectTrigger>
@@ -146,20 +157,20 @@ function HomePage() {
                 </Select>
 
                 {/* Field of Study Dropdown */}
-                <Select onValueChange={(value) => setSelectedFieldOfStudy(value)}>
+                <Select value={selectedFieldOfStudy} onValueChange={(value) => setSelectedFieldOfStudy(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Field of Study" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="cs">Computer Science</SelectItem>
-                    <SelectItem value="business">Business</SelectItem>
-                    <SelectItem value="engineering">Engineering</SelectItem>
-                    <SelectItem value="arts">Arts & Design</SelectItem>
+                    <SelectItem value="Computer Science">Computer Science</SelectItem>
+                    <SelectItem value="Business">Business</SelectItem>
+                    <SelectItem value="Engineering">Engineering</SelectItem>
+                    <SelectItem value="Arts">Arts & Design</SelectItem>
                   </SelectContent>
                 </Select>
 
                 {/* Budget Range Dropdown */}
-                <Select onValueChange={(value) => setSelectedBudgetRange(value)}>
+                <Select value={selectedBudgetRange} onValueChange={(value) => setSelectedBudgetRange(value)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Budget Range" />
                   </SelectTrigger>
@@ -178,7 +189,7 @@ function HomePage() {
                   placeholder="Search universities by name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setShowDropdown(true)} // Show dropdown when focused
+                  onFocus={() => setShowDropdown(true)} 
                   className="pl-8"
                 />
                 {showDropdown && suggestions.length > 0 && (
@@ -190,7 +201,7 @@ function HomePage() {
                         onClick={() => {
                           navigate(`/universityprofile/${uni.country.toLowerCase()}/${uni._id}`);
                           setSuggestions([]);
-                          setShowDropdown(false); // Hide dropdown after selection
+                          setShowDropdown(false);
                         }}
                       >
                         {uni.name} ({uni.country})
@@ -200,10 +211,17 @@ function HomePage() {
                 )}
               </div>
 
-              {/* Find Universities Button */}
-              <Button className="w-full" size="lg" onClick={handleSearch}>
-                Find Universities
-              </Button>
+              {/* Buttons */}
+              <div className="flex gap-2">
+                <Button className="flex-1" size="lg" onClick={handleSearch}>
+                  Find Universities
+                </Button>
+                {(searchQuery || selectedCountry || selectedFieldOfStudy || selectedBudgetRange) && (
+                  <Button variant="outline" size="lg" onClick={resetFilters}>
+                    Reset
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </section>

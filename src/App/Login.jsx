@@ -108,7 +108,11 @@ export default function LoginForm() {
     };
 
     if (role === 'admin') {
-      sessionData = { role: 'admin', token: user.token };
+      sessionData = { 
+        _id: "67b1a5f12167e10a7e2c2f89",
+        role: 'admin', 
+        token: user.token 
+      };
     }
 
     // Save session data

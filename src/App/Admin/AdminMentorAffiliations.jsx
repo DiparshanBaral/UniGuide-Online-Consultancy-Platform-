@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
 import API from '@/api';
 import { Button } from '@/Components/ui/button';
@@ -133,8 +133,34 @@ export default function AdminMentorAffiliations() {
     }
   };
 
-  // Fetch pending affiliation requests
-  const fetchPendingRequests = async () => {
+  // Wrap fetchMentorNegotiations with useCallback
+  const fetchMentorNegotiations = useCallback(async (mentorId) => {
+    try {
+      const sessionData = JSON.parse(localStorage.getItem('session'));
+      const token = sessionData ? sessionData.token : null;
+
+      if (!token) throw new Error('No token found');
+
+      const response = await API.get(`/paymentnegotiation/mentor/${mentorId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (response.data.success && response.data.negotiations.length > 0) {
+        // Store negotiations by mentor ID
+        setMentorNegotiations((prev) => ({
+          ...prev,
+          [mentorId]: response.data.negotiations,
+        }));
+        return response.data.negotiations;
+      }
+    } catch (error) {
+      console.error(`Error fetching negotiations for mentor ${mentorId}:`, error);
+      return null;
+    }
+  }, []);
+
+  // Wrap fetchPendingRequests with useCallback
+  const fetchPendingRequests = useCallback(async () => {
     try {
       setIsLoading(true);
       const sessionData = JSON.parse(localStorage.getItem('session'));
@@ -158,36 +184,10 @@ export default function AdminMentorAffiliations() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  // function to fetch negotiations for each mentor
-  const fetchMentorNegotiations = async (mentorId) => {
-    try {
-      const sessionData = JSON.parse(localStorage.getItem('session'));
-      const token = sessionData ? sessionData.token : null;
-
-      if (!token) throw new Error('No token found');
-
-      const response = await API.get(`/paymentnegotiation/mentor/${mentorId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (response.data.success && response.data.negotiations.length > 0) {
-        // Store negotiations by mentor ID
-        setMentorNegotiations((prev) => ({
-          ...prev,
-          [mentorId]: response.data.negotiations,
-        }));
-        return response.data.negotiations;
-      }
-    } catch (error) {
-      console.error(`Error fetching negotiations for mentor ${mentorId}:`, error);
-      return null;
-    }
-  };
-
-  // Fetch approved affiliation requests
-  const fetchApprovedRequests = async () => {
+  // Wrap fetchApprovedRequests with useCallback
+  const fetchApprovedRequests = useCallback(async () => {
     try {
       setIsLoading(true);
       const sessionData = JSON.parse(localStorage.getItem('session'));
@@ -214,12 +214,12 @@ export default function AdminMentorAffiliations() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [fetchMentorNegotiations]);
 
   useEffect(() => {
     fetchPendingRequests();
     fetchApprovedRequests();
-  }, []);
+  }, [fetchPendingRequests, fetchApprovedRequests]);
 
   // Auto-scroll negotiation history containers to bottom
   useEffect(() => {
