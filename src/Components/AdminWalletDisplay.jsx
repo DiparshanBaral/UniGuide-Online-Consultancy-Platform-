@@ -3,7 +3,6 @@ import { useAtom } from 'jotai';
 import { sessionAtom } from '@/atoms/session';
 import API from '../api';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
-import { Button } from '@/Components/ui/button';
 import { Wallet, Download } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -88,10 +87,6 @@ const AdminWalletDisplay = () => {
               <p className="text-sm text-muted-foreground">Available Balance</p>
               <p className="text-2xl font-bold">{formatAmount(walletData?.balance || 0, walletData?.currency)}</p>
             </div>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
-              Export Report
-            </Button>
           </div>
           
           <div className="space-y-2">

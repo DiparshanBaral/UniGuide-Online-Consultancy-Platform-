@@ -317,7 +317,7 @@ const Chat = () => {
                 <div>
                   <CardTitle className="text-base">{`${otherUser.firstname} ${otherUser.lastname}`}</CardTitle>
                   <CardDescription className="text-xs">
-                    {session.role === "student" ? "Mentor" : "Student"} • <span className="text-green-600">Online</span>
+                    {session.role === "student" ? "Mentor" : "Student"} 
                   </CardDescription>
                 </div>
               </div>

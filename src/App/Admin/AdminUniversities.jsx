@@ -1,9 +1,16 @@
-import { useState, useEffect } from "react"
-import { toast } from "sonner"
-import API from "@/api"
-import { Button } from "@/Components/ui/button"
-import { Input } from "@/Components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/Components/ui/table"
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import API from '@/api';
+import { Button } from '@/Components/ui/button';
+import { Input } from '@/Components/ui/input';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/Components/ui/table';
 import {
   Dialog,
   DialogContent,
@@ -11,12 +18,18 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/Components/ui/dialog"
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/Components/ui/select"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/Components/ui/card"
-import { Badge } from "@/Components/ui/badge"
-import { Separator } from "@/Components/ui/separator"
-import { Textarea } from "@/Components/ui/textarea"
+} from '@/Components/ui/dialog';
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue,
+} from '@/Components/ui/select';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/Components/ui/card';
+import { Badge } from '@/Components/ui/badge';
+import { Separator } from '@/Components/ui/separator';
+import { Textarea } from '@/Components/ui/textarea';
 import {
   Building2,
   Search,
@@ -35,7 +48,10 @@ import {
   Eye,
   Filter,
   ArrowUpDown,
-} from "lucide-react"
+  Upload,
+  FileImage,
+  X,
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,211 +59,308 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/Components/ui/dropdown-menu"
+} from '@/Components/ui/dropdown-menu';
 
 export default function AdminUniversities() {
-  const [universities, setUniversities] = useState([])
-  const [filteredUniversities, setFilteredUniversities] = useState([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCountry, setSelectedCountry] = useState("all")
-  const [isLoading, setIsLoading] = useState(true)
-  const [modalOpen, setModalOpen] = useState(false)
-  const [viewModalOpen, setViewModalOpen] = useState(false)
-  const [editModalOpen, setEditModalOpen] = useState(false)
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
-  const [selectedUniversity, setSelectedUniversity] = useState(null)
-  const [sortConfig, setSortConfig] = useState({ key: "name", direction: "ascending" })
+  const [universities, setUniversities] = useState([]);
+  const [filteredUniversities, setFilteredUniversities] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState('all');
+  const [isLoading, setIsLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedUniversity, setSelectedUniversity] = useState(null);
+  const [editImageFile, setEditImageFile] = useState(null);
+  const [editImagePreview, setEditImagePreview] = useState(null);
+  const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
 
   const [form, setForm] = useState({
-    country: "",
-    name: "",
-    location: "",
-    ranking: "",
+    country: '',
+    name: '',
+    location: '',
+    ranking: '',
     coursesOffered: [],
     contact: {
-      phone: "",
-      email: "",
+      phone: '',
+      email: '',
     },
-    website: "",
-    description: "",
-    tuitionFee: { undergraduate: "", graduate: "" },
-    acceptanceRate: "",
-    graduationRate: "",
-  })
+    website: '',
+    description: '',
+    tuitionFee: { undergraduate: '', graduate: '' },
+    acceptanceRate: '',
+    graduationRate: '',
+  });
+
+  const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
 
   // Fetch universities data
   useEffect(() => {
     const fetchUniversities = async () => {
-      setIsLoading(true)
+      setIsLoading(true);
       try {
         // In a real app, you would fetch from your API
         // For now, we'll simulate with mock data
-        const countries = ["us", "uk", "canada", "australia"]
-        let allUniversities = []
+        const countries = ['us', 'uk', 'canada', 'australia'];
+        let allUniversities = [];
 
         for (const country of countries) {
           try {
-            const response = await API.get(`/universities/${country}`)
+            const response = await API.get(`/universities/${country}`);
             if (response.data && Array.isArray(response.data)) {
-              allUniversities = [...allUniversities, ...response.data]
+              allUniversities = [...allUniversities, ...response.data];
             }
           } catch (error) {
-            console.error(`Error fetching ${country} universities:`, error)
+            console.error(`Error fetching ${country} universities:`, error);
           }
         }
 
-        setUniversities(allUniversities)
-        setFilteredUniversities(allUniversities)
+        setUniversities(allUniversities);
+        setFilteredUniversities(allUniversities);
       } catch (error) {
-        console.error("Error fetching universities:", error)
-        toast.error("Failed to load universities")
+        console.error('Error fetching universities:', error);
+        toast.error('Failed to load universities');
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchUniversities()
-  }, [])
+    fetchUniversities();
+  }, []);
 
   // Filter universities based on search query and selected country
   useEffect(() => {
-    let filtered = [...universities]
+    let filtered = [...universities];
 
-    if (selectedCountry !== "all") {
-      filtered = filtered.filter((uni) => uni.country.toLowerCase() === selectedCountry.toLowerCase())
+    if (selectedCountry !== 'all') {
+      filtered = filtered.filter(
+        (uni) => uni.country.toLowerCase() === selectedCountry.toLowerCase(),
+      );
     }
 
     if (searchQuery) {
-      const query = searchQuery.toLowerCase()
+      const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
-        (uni) => uni.name.toLowerCase().includes(query) || uni.location.toLowerCase().includes(query),
-      )
+        (uni) =>
+          uni.name.toLowerCase().includes(query) || uni.location.toLowerCase().includes(query),
+      );
     }
 
     // Apply sorting
     if (sortConfig.key) {
       filtered.sort((a, b) => {
         if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === "ascending" ? -1 : 1
+          return sortConfig.direction === 'ascending' ? -1 : 1;
         }
         if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === "ascending" ? 1 : -1
+          return sortConfig.direction === 'ascending' ? 1 : -1;
         }
-        return 0
-      })
+        return 0;
+      });
     }
 
-    setFilteredUniversities(filtered)
-  }, [universities, searchQuery, selectedCountry, sortConfig])
+    setFilteredUniversities(filtered);
+  }, [universities, searchQuery, selectedCountry, sortConfig]);
 
   const handleSort = (key) => {
-    let direction = "ascending"
-    if (sortConfig.key === key && sortConfig.direction === "ascending") {
-      direction = "descending"
+    let direction = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
     }
-    setSortConfig({ key, direction })
-  }
+    setSortConfig({ key, direction });
+  };
 
   const openAddModal = () => {
     setForm({
-      country: "",
-      name: "",
-      location: "",
-      ranking: "",
+      country: '',
+      name: '',
+      location: '',
+      ranking: '',
       coursesOffered: [],
-      contact: { phone: "", email: "" },
-      website: "",
-      description: "",
-      tuitionFee: { undergraduate: "", graduate: "" },
-      acceptanceRate: "",
-      graduationRate: "",
-    })
-    setModalOpen(true)
-  }
+      contact: { phone: '', email: '' },
+      website: '',
+      description: '',
+      tuitionFee: { undergraduate: '', graduate: '' },
+      acceptanceRate: '',
+      graduationRate: '',
+    });
+    setImageFile(null);
+    setImagePreview(null);
+    setModalOpen(true);
+  };
 
   const openViewModal = (university) => {
-    setSelectedUniversity(university)
-    setViewModalOpen(true)
-  }
+    setSelectedUniversity(university);
+    setViewModalOpen(true);
+  };
 
   const openEditModal = (university) => {
-    setSelectedUniversity(university)
+    setSelectedUniversity(university);
     setForm({
-      country: university.country || "",
-      name: university.name || "",
-      location: university.location || "",
-      ranking: university.ranking || "",
+      country: university.country || '',
+      name: university.name || '',
+      location: university.location || '',
+      ranking: university.ranking || '',
       coursesOffered: university.coursesOffered || [],
       contact: {
-        phone: university.contact?.phone || "",
-        email: university.contact?.email || "",
+        phone: university.contact?.phone || '',
+        email: university.contact?.email || '',
       },
-      website: university.website || "",
-      description: university.description || "",
+      website: university.website || '',
+      description: university.description || '',
       tuitionFee: {
-        undergraduate: university.tuitionFee?.undergraduate || "",
-        graduate: university.tuitionFee?.graduate || "",
+        undergraduate: university.tuitionFee?.undergraduate || '',
+        graduate: university.tuitionFee?.graduate || '',
       },
-      acceptanceRate: university.acceptanceRate || "",
-      graduationRate: university.graduationRate || "",
-    })
-    setEditModalOpen(true)
-  }
+      acceptanceRate: university.acceptanceRate || '',
+      graduationRate: university.graduationRate || '',
+    });
+
+    // Set image preview if university has an image
+    setEditImageFile(null);
+    setEditImagePreview(university.image || null);
+
+    setEditModalOpen(true);
+  };
 
   const openDeleteModal = (university) => {
-    setSelectedUniversity(university)
-    setDeleteModalOpen(true)
-  }
+    setSelectedUniversity(university);
+    setDeleteModalOpen(true);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+    }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      await API.post("/universities/add", form)
-      toast.success("University added successfully!")
-      setModalOpen(false)
+      const formData = new FormData();
 
-      // Refresh the universities list
-      const response = await API.get(`/universities/${form.country.toLowerCase()}`)
+      Object.entries(form).forEach(([key, value]) => {
+        if (key === 'contact') {
+          formData.append('contact[email]', value.email);
+          formData.append('contact[phone]', value.phone);
+        } else if (key === 'tuitionFee') {
+          formData.append('tuitionFee[undergraduate]', value.undergraduate);
+          formData.append('tuitionFee[graduate]', value.graduate);
+        } else if (key === 'coursesOffered') {
+          formData.append('coursesOffered', value.join(','));
+        } else {
+          formData.append(key, value);
+        }
+      });
+
+      if (imageFile) {
+        formData.append('image', imageFile);
+      }
+
+      await API.post('/universities/add', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      toast.success('University added successfully!');
+      setModalOpen(false);
+      setImageFile(null);
+      setImagePreview(null);
+
+      const response = await API.get(`/universities/${form.country.toLowerCase()}`);
       if (response.data && Array.isArray(response.data)) {
         setUniversities((prev) => [
           ...prev,
-          ...response.data.filter((uni) => !prev.some((existingUni) => existingUni._id === uni._id)),
-        ])
+          ...response.data.filter(
+            (uni) => !prev.some((existingUni) => existingUni._id === uni._id),
+          ),
+        ]);
       }
     } catch (error) {
-      console.error("Error adding university:", error)
-      toast.error("An error occurred. Please try again.")
+      console.error('Error adding university:', error);
+      toast.error('An error occurred. Please try again.');
     }
-  }
+  };
 
   const handleUpdate = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      await API.put(`/universities/${selectedUniversity.country.toLowerCase()}/${selectedUniversity._id}`, form)
-      toast.success("University updated successfully!")
-      setEditModalOpen(false)
+      // Create FormData to handle image upload
+      const formData = new FormData();
 
-      // Update the university in the local state
-      setUniversities((prev) => prev.map((uni) => (uni._id === selectedUniversity._id ? { ...uni, ...form } : uni)))
+      // Add all form fields to FormData
+      Object.entries(form).forEach(([key, value]) => {
+        if (key === 'contact') {
+          formData.append('contact[email]', value.email);
+          formData.append('contact[phone]', value.phone);
+        } else if (key === 'tuitionFee') {
+          formData.append('tuitionFee[undergraduate]', value.undergraduate);
+          formData.append('tuitionFee[graduate]', value.graduate);
+        } else if (key === 'coursesOffered') {
+          formData.append('coursesOffered', value.join(','));
+        } else {
+          formData.append(key, value);
+        }
+      });
+
+      // Add the image file if a new one was selected
+      if (editImageFile) {
+        formData.append('image', editImageFile);
+      }
+
+      // Send the request with FormData
+      const response = await API.put(
+        `/universities/${selectedUniversity.country.toLowerCase()}/${selectedUniversity._id}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        },
+      );
+
+      toast.success('University updated successfully!');
+      setEditModalOpen(false);
+
+      // Update local state with the response data
+      setUniversities((prev) =>
+        prev.map((uni) => (uni._id === selectedUniversity._id ? response.data : uni)),
+      );
     } catch (error) {
-      console.error("Error updating university:", error)
-      toast.error("An error occurred. Please try again.")
+      console.error('Error updating university:', error);
+      toast.error('An error occurred. Please try again.');
     }
-  }
+  };
 
   const handleDelete = async () => {
     try {
-      await API.delete(`/universities/${selectedUniversity.country.toLowerCase()}/${selectedUniversity._id}`)
-      toast.success("University deleted successfully!")
-      setDeleteModalOpen(false)
+      await API.delete(
+        `/universities/${selectedUniversity.country.toLowerCase()}/${selectedUniversity._id}`,
+      );
+      toast.success('University deleted successfully!');
+      setDeleteModalOpen(false);
 
-      // Remove the university from the local state
-      setUniversities((prev) => prev.filter((uni) => uni._id !== selectedUniversity._id))
+      setUniversities((prev) => prev.filter((uni) => uni._id !== selectedUniversity._id));
     } catch (error) {
-      console.error("Error deleting university:", error)
-      toast.error("An error occurred. Please try again.")
+      console.error('Error deleting university:', error);
+      toast.error('An error occurred. Please try again.');
     }
-  }
+  };
+
+  const handleEditImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setEditImageFile(file);
+      const previewUrl = URL.createObjectURL(file);
+      setEditImagePreview(previewUrl);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -313,7 +426,9 @@ export default function AdminUniversities() {
             <div className="text-center py-12">
               <Building2 className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900">No universities found</h3>
-              <p className="text-muted-foreground mt-2">Try adjusting your search or filter criteria.</p>
+              <p className="text-muted-foreground mt-2">
+                Try adjusting your search or filter criteria.
+              </p>
             </div>
           ) : (
             <div className="rounded-md border w-full">
@@ -321,25 +436,37 @@ export default function AdminUniversities() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-[300px]">
-                      <div className="flex items-center cursor-pointer" onClick={() => handleSort("name")}>
+                      <div
+                        className="flex items-center cursor-pointer"
+                        onClick={() => handleSort('name')}
+                      >
                         Name
                         <ArrowUpDown className="ml-2 h-4 w-4" />
                       </div>
                     </TableHead>
                     <TableHead>
-                      <div className="flex items-center cursor-pointer" onClick={() => handleSort("country")}>
+                      <div
+                        className="flex items-center cursor-pointer"
+                        onClick={() => handleSort('country')}
+                      >
                         Country
                         <ArrowUpDown className="ml-2 h-4 w-4" />
                       </div>
                     </TableHead>
                     <TableHead>
-                      <div className="flex items-center cursor-pointer" onClick={() => handleSort("ranking")}>
+                      <div
+                        className="flex items-center cursor-pointer"
+                        onClick={() => handleSort('ranking')}
+                      >
                         Ranking
                         <ArrowUpDown className="ml-2 h-4 w-4" />
                       </div>
                     </TableHead>
                     <TableHead>
-                      <div className="flex items-center cursor-pointer" onClick={() => handleSort("acceptanceRate")}>
+                      <div
+                        className="flex items-center cursor-pointer"
+                        onClick={() => handleSort('acceptanceRate')}
+                      >
                         Acceptance Rate
                         <ArrowUpDown className="ml-2 h-4 w-4" />
                       </div>
@@ -368,10 +495,18 @@ export default function AdminUniversities() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon" onClick={() => openViewModal(university)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openViewModal(university)}
+                          >
                             <Eye className="h-4 w-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => openEditModal(university)}>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditModal(university)}
+                          >
                             <Edit className="h-4 w-4" />
                           </Button>
                           <Button
@@ -401,7 +536,9 @@ export default function AdminUniversities() {
               <Building2 className="h-5 w-5 mr-2 text-primary" />
               Add New University
             </DialogTitle>
-            <DialogDescription>Fill in the details below to add a new university to the system.</DialogDescription>
+            <DialogDescription>
+              Fill in the details below to add a new university to the system.
+            </DialogDescription>
           </DialogHeader>
 
           <form onSubmit={handleSubmit} className="mt-4">
@@ -416,7 +553,10 @@ export default function AdminUniversities() {
 
               <div>
                 <label className="text-sm font-medium mb-1 flex items-center">Country</label>
-                <Select value={form.country} onValueChange={(value) => setForm({ ...form, country: value })}>
+                <Select
+                  value={form.country}
+                  onValueChange={(value) => setForm({ ...form, country: value })}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Country" />
                   </SelectTrigger>
@@ -435,7 +575,9 @@ export default function AdminUniversities() {
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-1 flex items-center">University Name</label>
+                <label className="text-sm font-medium mb-1 flex items-center">
+                  University Name
+                </label>
                 <Input
                   type="text"
                   placeholder="e.g. Harvard University"
@@ -481,11 +623,11 @@ export default function AdminUniversities() {
                 <Input
                   type="text"
                   placeholder="e.g. Computer Science, Business, Medicine (comma separated)"
-                  value={form.coursesOffered.join(", ")}
+                  value={form.coursesOffered.join(', ')}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      coursesOffered: e.target.value.split(",").map((course) => course.trim()),
+                      coursesOffered: e.target.value.split(',').map((course) => course.trim()),
                     })
                   }
                   required
@@ -509,7 +651,9 @@ export default function AdminUniversities() {
                   type="text"
                   placeholder="e.g. +1 (123) 456-7890"
                   value={form.contact.phone}
-                  onChange={(e) => setForm({ ...form, contact: { ...form.contact, phone: e.target.value } })}
+                  onChange={(e) =>
+                    setForm({ ...form, contact: { ...form.contact, phone: e.target.value } })
+                  }
                 />
               </div>
 
@@ -522,7 +666,9 @@ export default function AdminUniversities() {
                   type="email"
                   placeholder="e.g. admissions@university.edu"
                   value={form.contact.email}
-                  onChange={(e) => setForm({ ...form, contact: { ...form.contact, email: e.target.value } })}
+                  onChange={(e) =>
+                    setForm({ ...form, contact: { ...form.contact, email: e.target.value } })
+                  }
                 />
               </div>
 
@@ -622,6 +768,68 @@ export default function AdminUniversities() {
                   required
                 />
               </div>
+
+              {/* Image Upload Section */}
+              <div className="space-y-4 col-span-2">
+                <h3 className="text-sm font-medium text-muted-foreground flex items-center">
+                  <FileImage className="h-4 w-4 mr-2" />
+                  University Image
+                </h3>
+                <Separator />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Upload University Image
+                    </label>
+                    <div className="flex items-center justify-center w-full">
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Upload className="w-8 h-8 mb-3 text-gray-400" />
+                          <p className="mb-2 text-sm text-gray-500">
+                            <span className="font-semibold">Click to upload</span> or drag and drop
+                          </p>
+                          <p className="text-xs text-gray-500">PNG, JPG or WEBP (Max 5MB)</p>
+                        </div>
+                        <input
+                          id="dropzone-file"
+                          type="file"
+                          className="hidden"
+                          accept="image/png, image/jpeg, image/webp"
+                          onChange={handleImageChange}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    {imagePreview ? (
+                      <div className="relative aspect-video rounded-lg overflow-hidden border border-gray-200">
+                        <img
+                          src={imagePreview}
+                          alt="University preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 h-8 w-8"
+                          onClick={() => {
+                            setImageFile(null);
+                            setImagePreview(null);
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-32 bg-gray-100 rounded-lg border border-dashed border-gray-300">
+                        <p className="text-sm text-gray-500">Image preview will appear here</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
 
             <DialogFooter className="mt-8">
@@ -649,7 +857,7 @@ export default function AdminUniversities() {
               <div className="flex flex-col md:flex-row gap-6">
                 <div className="md:w-1/3">
                   <img
-                    src={selectedUniversity.image || "/placeholder.svg?height=200&width=300"}
+                    src={selectedUniversity.image || '/placeholder.svg?height=200&width=300'}
                     alt={selectedUniversity.name}
                     className="w-full h-auto rounded-lg object-cover"
                   />
@@ -664,7 +872,7 @@ export default function AdminUniversities() {
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Award className="h-4 w-4" />
-                    <span>Global Ranking: #{selectedUniversity.ranking || "N/A"}</span>
+                    <span>Global Ranking: #{selectedUniversity.ranking || 'N/A'}</span>
                   </div>
                   <p className="text-muted-foreground">{selectedUniversity.description}</p>
                 </div>
@@ -678,11 +886,11 @@ export default function AdminUniversities() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <Phone className="h-4 w-4 text-primary" />
-                      <span>{selectedUniversity.contact?.phone || "N/A"}</span>
+                      <span>{selectedUniversity.contact?.phone || 'N/A'}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4 text-primary" />
-                      <span>{selectedUniversity.contact?.email || "N/A"}</span>
+                      <span>{selectedUniversity.contact?.email || 'N/A'}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Globe className="h-4 w-4 text-primary" />
@@ -692,7 +900,7 @@ export default function AdminUniversities() {
                         rel="noopener noreferrer"
                         className="text-primary hover:underline"
                       >
-                        {selectedUniversity.website || "N/A"}
+                        {selectedUniversity.website || 'N/A'}
                       </a>
                     </div>
                   </div>
@@ -745,8 +953,8 @@ export default function AdminUniversities() {
                 </Button>
                 <Button
                   onClick={() => {
-                    setViewModalOpen(false)
-                    openEditModal(selectedUniversity)
+                    setViewModalOpen(false);
+                    openEditModal(selectedUniversity);
                   }}
                 >
                   Edit University
@@ -781,7 +989,10 @@ export default function AdminUniversities() {
 
               <div>
                 <label className="text-sm font-medium mb-1 flex items-center">Country</label>
-                <Select value={form.country} onValueChange={(value) => setForm({ ...form, country: value })}>
+                <Select
+                  value={form.country}
+                  onValueChange={(value) => setForm({ ...form, country: value })}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Country" />
                   </SelectTrigger>
@@ -800,7 +1011,9 @@ export default function AdminUniversities() {
               </div>
 
               <div>
-                <label className="text-sm font-medium mb-1 flex items-center">University Name</label>
+                <label className="text-sm font-medium mb-1 flex items-center">
+                  University Name
+                </label>
                 <Input
                   type="text"
                   placeholder="e.g. Harvard University"
@@ -847,11 +1060,11 @@ export default function AdminUniversities() {
                 <Input
                   type="text"
                   placeholder="e.g. Computer Science, Business, Medicine (comma separated)"
-                  value={form.coursesOffered.join(", ")}
+                  value={form.coursesOffered.join(', ')}
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      coursesOffered: e.target.value.split(",").map((course) => course.trim()),
+                      coursesOffered: e.target.value.split(',').map((course) => course.trim()),
                     })
                   }
                   required
@@ -875,7 +1088,9 @@ export default function AdminUniversities() {
                   type="text"
                   placeholder="e.g. +1 (123) 456-7890"
                   value={form.contact.phone}
-                  onChange={(e) => setForm({ ...form, contact: { ...form.contact, phone: e.target.value } })}
+                  onChange={(e) =>
+                    setForm({ ...form, contact: { ...form.contact, phone: e.target.value } })
+                  }
                 />
               </div>
 
@@ -888,7 +1103,9 @@ export default function AdminUniversities() {
                   type="email"
                   placeholder="e.g. admissions@university.edu"
                   value={form.contact.email}
-                  onChange={(e) => setForm({ ...form, contact: { ...form.contact, email: e.target.value } })}
+                  onChange={(e) =>
+                    setForm({ ...form, contact: { ...form.contact, email: e.target.value } })
+                  }
                 />
               </div>
 
@@ -988,6 +1205,66 @@ export default function AdminUniversities() {
                   required
                 />
               </div>
+
+              {/* Image Upload Section */}
+              <div className="space-y-4 col-span-2">
+                <h3 className="text-sm font-medium text-muted-foreground flex items-center">
+                  <FileImage className="h-4 w-4 mr-2" />
+                  University Image
+                </h3>
+                <Separator />
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Upload University Image</label>
+                    <div className="flex items-center justify-center w-full">
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Upload className="w-8 h-8 mb-3 text-gray-400" />
+                          <p className="mb-2 text-sm text-gray-500">
+                            <span className="font-semibold">Click to upload</span> or drag and drop
+                          </p>
+                          <p className="text-xs text-gray-500">PNG, JPG or WEBP (Max 5MB)</p>
+                        </div>
+                        <input 
+                          id="edit-dropzone-file" 
+                          type="file" 
+                          className="hidden"
+                          accept="image/png, image/jpeg, image/webp"
+                          onChange={handleEditImageChange}
+                        />
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    {editImagePreview ? (
+                      <div className="relative aspect-video rounded-lg overflow-hidden border border-gray-200">
+                        <img 
+                          src={editImagePreview} 
+                          alt="University preview" 
+                          className="w-full h-full object-cover"
+                        />
+                        <Button
+                          type="button"
+                          variant="destructive" 
+                          size="icon"
+                          className="absolute top-2 right-2 h-8 w-8"
+                          onClick={() => {
+                            setEditImageFile(null);
+                            setEditImagePreview(selectedUniversity.image || null);
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center h-32 bg-gray-100 rounded-lg border border-dashed border-gray-300">
+                        <p className="text-sm text-gray-500">Image preview will appear here</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
 
             <DialogFooter className="mt-8">
@@ -1033,5 +1310,5 @@ export default function AdminUniversities() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

@@ -97,16 +97,6 @@ const ConnectedStudentCard = ({ connection }) => {
 
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-full bg-primary/10 text-primary">
-                <School className="h-4 w-4" />
-              </div>
-              <div>
-                <span className="text-sm text-muted-foreground">University</span>
-                <p className="font-medium">{connection.studentId.university || "N/A"}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-full bg-primary/10 text-primary">
                 <Calendar className="h-4 w-4" />
               </div>
               <div>
