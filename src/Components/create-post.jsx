@@ -40,8 +40,8 @@ export function CreatePost({ onClose, onSubmit }) {
         description,
       };
 
-      onSubmit(postData); // Pass the created post back to the parent
-      onClose(); // Close the dialog after successful submission
+      onSubmit(postData);
+      onClose();
     } catch (error) {
       console.error("Error creating post:", error);
     }
