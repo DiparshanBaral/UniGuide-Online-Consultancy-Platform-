@@ -24,7 +24,8 @@ export const CallProvider = ({ children, session }) => {
 
         // Fetch the token from the backend
         const response = await fetch(
-          `http://localhost:5000/auth/stream-token?userId=${session._id}&userName=${session.firstname} ${session.lastname}`
+          // `http://localhost:5000/auth/stream-token?userId=${session._id}&userName=${session.firstname} ${session.lastname}`
+          `https://uni-guide-frontend.vercel.app/auth/stream-token?userId=${session._id}&userName=${session.firstname} ${session.lastname}`
         );
 
         if (!response.ok) {

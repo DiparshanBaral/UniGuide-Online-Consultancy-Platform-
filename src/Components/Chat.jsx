@@ -80,7 +80,8 @@ const Chat = () => {
     }
 
     // Create a new socket instance
-    const socketInstance = io("http://localhost:5000", {
+    // const socketInstance = io("http://localhost:5000", {
+    const socketInstance = io("https://uni-guide-backend-six.vercel.app", {
       query: { userId: senderId, userRole: senderRole },
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
