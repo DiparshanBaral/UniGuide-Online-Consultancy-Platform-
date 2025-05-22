@@ -3,7 +3,8 @@ import axios from 'axios';
 // Set up the base URL for your backend API
 const API = axios.create({
   // baseURL: 'http://localhost:5000',
-  baseURL: 'https://uni-guide-frontend-git-main-diparshanbarals-projects.vercel.app',
+  // baseURL: 'https://uni-guide-frontend-git-main-diparshanbarals-projects.vercel.app',
+  baseURL: 'https://uniguide-backend-git-main-diparshanbarals-projects.vercel.app',
   withCredentials: true,
 });
 
