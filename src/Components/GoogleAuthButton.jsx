@@ -19,7 +19,7 @@ export default function GoogleAuthButton({ isSignup = false }) {
   const initiateGoogleAuth = (role) => {
     const action = isSignup ? 'signup' : 'login';
     // window.location.href = `http://localhost:5000/auth/google/${role}?action=${action}`;
-    window.location.href = `https://uni-guide-frontend.vercel.app/auth/google/${role}?action=${action}`;
+    window.location.href = `https://uni-guide-frontend-git-main-diparshanbarals-projects.vercel.app/auth/google/${role}?action=${action}`;
   };
 
   return (

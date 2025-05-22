@@ -140,7 +140,7 @@ const CallPage = () => {
         // Add timestamp to URL to prevent caching
         const response = await fetch(
           // `http://localhost:5000/auth/stream-token?userId=${session._id}&userName=${session.firstname} ${session.lastname}&_t=${Date.now()}`,
-          `https://uni-guide-backend-six.vercel.app/auth/stream-token?userId=${session._id}&userName=${session.firstname} ${session.lastname}&_t=${Date.now()}`,
+          `https://uni-guide-frontend-git-main-diparshanbarals-projects.vercel.app/auth/stream-token?userId=${session._id}&userName=${session.firstname} ${session.lastname}&_t=${Date.now()}`,
         );
 
         if (!response.ok) {
