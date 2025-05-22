@@ -25,12 +25,12 @@ import PaymentPage from './App/PaymentPage';
 import AuthSuccess from '@/App/AuthSuccess';
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import Payment from './Components/StripePayment';
-import AccessDenied from './Components/AccessDenied';
+import Payment from '@/Components/StripePayment';
+import AccessDenied from '@/Components/AccessDenied';
 import ForgotPassword from '@/Components/ForgotPassword';
 import ResetPassword from '@/Components/ResetPassword';
 import EnterOTP from '@/Components/EnterOTP';
-import CallPage from './Components/Call/CallPage';
+import CallPage from '@/Components/Call/callPage';
 
 function App() {
   const location = useLocation();
