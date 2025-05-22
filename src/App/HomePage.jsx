@@ -10,11 +10,12 @@ import {
 } from '@/Components/ui/select';
 import { Button } from '@/Components/ui/button';
 import { Input } from '@/Components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle} from '@/Components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/Components/ui/card';
 import { Badge } from '@/Components/ui/badge';
 import API from '../api';
 import { motion } from 'framer-motion';
-import { Separator } from "@/Components/ui/separator";
+import { Separator } from '@/Components/ui/separator';
+import HomePageBanner from '../assets/HomePageBanner.jpeg';
 
 function HomePage() {
   const navigate = useNavigate();
@@ -72,12 +73,12 @@ function HomePage() {
   const handleSearch = () => {
     // Create a search payload with all filters
     const searchPayload = {
-      query: searchQuery || "a", // Send "a" as a default query if searchQuery is empty
+      query: searchQuery || 'a', // Send "a" as a default query if searchQuery is empty
       country: selectedCountry,
       fieldOfStudy: selectedFieldOfStudy,
-      budgetRange: selectedBudgetRange
+      budgetRange: selectedBudgetRange,
     };
-    
+
     API.post('/universities/find', searchPayload)
       .then((response) => {
         setFilteredUniversities(response.data);
@@ -94,7 +95,7 @@ function HomePage() {
         {/* Hero Section */}
         <section
           className="relative mb-5 h-[450px] bg-cover bg-center rounded-lg"
-          style={{ backgroundImage: `url('./src/assets/HomePageBanner.jpeg')` }}
+          style={{ backgroundImage: `url(${HomePageBanner})` }}
         >
           <div className="absolute inset-0 bg-gradient-to-b from-black via-black to-black opacity-60 rounded-lg"></div>
           <div className="relative z-10 flex justify-center items-center h-full">
@@ -144,7 +145,10 @@ function HomePage() {
             <div className="mx-auto max-w-3xl mt-8 grid gap-4">
               <div className="grid gap-4 md:grid-cols-3">
                 {/* Country Dropdown */}
-                <Select value={selectedCountry} onValueChange={(value) => setSelectedCountry(value)}>
+                <Select
+                  value={selectedCountry}
+                  onValueChange={(value) => setSelectedCountry(value)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Select Country" />
                   </SelectTrigger>
@@ -157,7 +161,10 @@ function HomePage() {
                 </Select>
 
                 {/* Field of Study Dropdown */}
-                <Select value={selectedFieldOfStudy} onValueChange={(value) => setSelectedFieldOfStudy(value)}>
+                <Select
+                  value={selectedFieldOfStudy}
+                  onValueChange={(value) => setSelectedFieldOfStudy(value)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Field of Study" />
                   </SelectTrigger>
@@ -170,7 +177,10 @@ function HomePage() {
                 </Select>
 
                 {/* Budget Range Dropdown */}
-                <Select value={selectedBudgetRange} onValueChange={(value) => setSelectedBudgetRange(value)}>
+                <Select
+                  value={selectedBudgetRange}
+                  onValueChange={(value) => setSelectedBudgetRange(value)}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Budget Range" />
                   </SelectTrigger>
@@ -189,7 +199,7 @@ function HomePage() {
                   placeholder="Search universities by name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setShowDropdown(true)} 
+                  onFocus={() => setShowDropdown(true)}
                   className="pl-8"
                 />
                 {showDropdown && suggestions.length > 0 && (
@@ -216,7 +226,10 @@ function HomePage() {
                 <Button className="flex-1" size="lg" onClick={handleSearch}>
                   Find Universities
                 </Button>
-                {(searchQuery || selectedCountry || selectedFieldOfStudy || selectedBudgetRange) && (
+                {(searchQuery ||
+                  selectedCountry ||
+                  selectedFieldOfStudy ||
+                  selectedBudgetRange) && (
                   <Button variant="outline" size="lg" onClick={resetFilters}>
                     Reset
                   </Button>
@@ -265,7 +278,11 @@ function HomePage() {
                     <Button
                       className="w-full text-white"
                       onClick={() =>
-                        navigate(`/universityprofile/${university.country.toLowerCase()}/${university._id}`)
+                        navigate(
+                          `/universityprofile/${university.country.toLowerCase()}/${
+                            university._id
+                          }`,
+                        )
                       }
                     >
                       View Details
@@ -275,7 +292,7 @@ function HomePage() {
               ))}
             </div>
           </section>
-          )}
+        )}
 
         {/* Explore More Section */}
         <section className="mb-16 py-12">
