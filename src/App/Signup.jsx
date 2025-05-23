@@ -74,14 +74,7 @@ export default function SignupForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const { firstname, lastname, email, password, confirmPassword, role } = formData;
-
-    // Ensure passwords match
-    if (password.trim() !== confirmPassword.trim()) {
-      toast.error('Passwords do not match!');
-      return;
-    }
 
     // Check for empty fields
     if (!firstname || !lastname || !email || !password || !confirmPassword) {
@@ -92,18 +85,37 @@ export default function SignupForm() {
     // Validate email format - accept Gmail and educational domains
     const emailParts = email.split('@');
     const domain = emailParts.length === 2 ? emailParts[1].toLowerCase() : '';
-
-    if (!(domain === 'gmail.com' || domain.endsWith('.edu') || domain.includes('.edu.') || domain.includes('.org'))) {
+    if (
+      !(
+        domain === 'gmail.com' ||
+        domain.endsWith('.edu') ||
+        domain.includes('.edu.') ||
+        domain.includes('.org')
+      )
+    ) {
       toast.error('Please enter a valid Gmail address or educational email (.edu)!');
       return;
     }
 
-    setLoading(true);
+    // Validate password strength
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!password.match(passwordRegex)) {
+      toast.error(
+        'Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, and one number.',
+      );
+      return;
+    }
 
+    // Ensure passwords match
+    if (password.trim() !== confirmPassword.trim()) {
+      toast.error('Passwords do not match!');
+      return;
+    }
+
+    setLoading(true);
     try {
       // First verify the email address by sending an OTP
       const verifyResponse = await API.post('/auth/verify-email', { email });
-
       if (verifyResponse.status === 200) {
         // Store registration data in localStorage to use after OTP verification
         localStorage.setItem(
@@ -117,7 +129,6 @@ export default function SignupForm() {
             role,
           }),
         );
-
         // Navigate to OTP verification page
         navigate('/verify-otp?action=signup');
       }
@@ -130,15 +141,15 @@ export default function SignupForm() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-primary/5 to-background">
-      <div className="w-full max-w-md relative z-10">
-        <div className="absolute inset-0 bg-white/30 rounded-2xl blur-xl -z-10 transform -rotate-3" />
-        <div className="absolute inset-0 bg-white/30 rounded-2xl blur-xl -z-10 transform rotate-3" />
+    <div className="flex items-center justify-center w-full min-h-screen px-4 py-12 sm:px-6 lg:px-8 bg-gradient-to-b from-primary/5 to-background">
+      <div className="relative z-10 w-full max-w-md">
+        <div className="absolute inset-0 transform bg-white/30 rounded-2xl blur-xl -z-10 -rotate-3" />
+        <div className="absolute inset-0 transform bg-white/30 rounded-2xl blur-xl -z-10 rotate-3" />
 
-        <Card className="w-full border border-primary/20 shadow-xl bg-card/95">
-          <CardHeader className="space-y-1 pb-6">
+        <Card className="w-full border shadow-xl border-primary/20 bg-card/95">
+          <CardHeader className="pb-6 space-y-1">
             <div className="flex justify-center mb-4">
-              <img src={logo || '/placeholder.svg'} alt="UniGuide Logo" className="h-16 w-auto" />
+              <img src={logo || '/placeholder.svg'} alt="UniGuide Logo" className="w-auto h-16" />
             </div>
             <CardTitle className="text-2xl font-bold text-center">Create an Account</CardTitle>
             <CardDescription className="text-center">
@@ -156,7 +167,7 @@ export default function SignupForm() {
                 <span className="w-full border-t"></span>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+                <span className="px-2 bg-background text-muted-foreground">Or continue with</span>
               </div>
             </div>
 
@@ -225,10 +236,10 @@ export default function SignupForm() {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-0 top-0 h-10 w-10"
+                    className="absolute top-0 right-0 w-10 h-10"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     <span className="sr-only">
                       {showPassword ? 'Hide password' : 'Show password'}
                     </span>
@@ -253,13 +264,13 @@ export default function SignupForm() {
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute right-0 top-0 h-10 w-10"
+                    className="absolute top-0 right-0 w-10 h-10"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4" />
+                      <EyeOff className="w-4 h-4" />
                     ) : (
-                      <Eye className="h-4 w-4" />
+                      <Eye className="w-4 h-4" />
                     )}
                     <span className="sr-only">
                       {showConfirmPassword ? 'Hide password' : 'Show password'}
@@ -294,15 +305,15 @@ export default function SignupForm() {
           <CardFooter className="flex justify-center pb-6">
             <p className="text-sm text-muted-foreground">
               Already have an account?{' '}
-              <Link to="/login" className="text-primary font-medium hover:underline">
+              <Link to="/login" className="font-medium text-primary hover:underline">
                 Log in
               </Link>
             </p>
           </CardFooter>
         </Card>
 
-        <div className="absolute -bottom-4 -right-4 h-24 w-24 bg-primary/10 rounded-full blur-xl -z-10" />
-        <div className="absolute -top-4 -left-4 h-20 w-20 bg-primary/10 rounded-full blur-xl -z-10" />
+        <div className="absolute w-24 h-24 rounded-full -bottom-4 -right-4 bg-primary/10 blur-xl -z-10" />
+        <div className="absolute w-20 h-20 rounded-full -top-4 -left-4 bg-primary/10 blur-xl -z-10" />
       </div>
     </div>
   );
