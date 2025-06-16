@@ -25,7 +25,7 @@ const Chat = () => {
   const messagesRef = useRef(messages)
   const { client } = useCallContext()
 
-  // Update the ref whenever `messages` changes
+  // Update the ref whenever messages` changes
   useEffect(() => {
     messagesRef.current = messages
   }, [messages])
