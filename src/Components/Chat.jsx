@@ -30,7 +30,7 @@ const Chat = () => {
     messagesRef.current = messages
   }, [messages])
 
-  // Fetch session data from localStorage on initial render
+  // Fetch session data from localStorag on initial render
   useEffect(() => {
     const savedSession = localStorage.getItem("session")
     if (savedSession) {
