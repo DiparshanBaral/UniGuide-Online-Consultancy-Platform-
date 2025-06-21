@@ -10,7 +10,7 @@ import { CreatePost } from '@/Components/create-post';
 import { toast } from 'sonner';
 import { Badge } from '@/Components/ui/badge';
 
-// Utility function to format relative time
+// Utilityfunction to format relative time
 const formatRelativeTime = (timestamp) => {
   if (!timestamp) return 'Just now';
   const now = new Date();
