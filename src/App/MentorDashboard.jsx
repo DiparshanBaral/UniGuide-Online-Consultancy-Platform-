@@ -23,7 +23,7 @@ import {
 import { Badge } from "@/Components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/Components/ui/tabs"
 
-// Student Card Component
+// Student Card Component yes
 const StudentCard = ({ student }) => {
   return (
     <div className="flex items-center gap-3">
